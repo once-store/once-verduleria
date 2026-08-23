@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · horario</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="admin.html" class="btn-volver">‹</a>
+  <span class="brand-sub">horario habitual</span>
+</header>
+
+<main id="vista-horario" class="admin-contenido oculto">
+
+  <p class="muted" style="margin-bottom:20px;">
+    Este horario se usa para saber cuándo el local está "abierto" y así detectar
+    si pasó un día entero sin ventas. Agregá o borrá franjas por día.
+  </p>
+
+  <form id="form-nueva-franja" class="form-carga" style="margin-bottom:24px;">
+    <label>Día
+      <select id="franja-dia" required>
+        <option value="1">Lunes</option>
+        <option value="2">Martes</option>
+        <option value="3">Miércoles</option>
+        <option value="4">Jueves</option>
+        <option value="5">Viernes</option>
+        <option value="6">Sábado</option>
+        <option value="0">Domingo</option>
+      </select>
+    </label>
+    <div class="fila-2">
+      <label>Desde
+        <input type="time" id="franja-inicio" required>
+      </label>
+      <label>Hasta
+        <input type="time" id="franja-fin" required>
+      </label>
+    </div>
+    <button type="submit" class="btn-primario btn-ancho">+ Agregar franja</button>
+    <p id="franja-error" class="error oculto"></p>
+  </form>
+
+  <div id="lista-horario"><p class="muted">Cargando…</p></div>
+
+</main>
+
+<script type="module" src="horario.js"></script>
+</body>
+</html>
