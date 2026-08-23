@@ -11,6 +11,9 @@
 <header class="topbar">
   <span class="brand">once</span>
   <span class="brand-sub">panel</span>
+  <button id="btn-campana" class="btn-campana oculto" aria-label="Alertas">
+    🔔<span id="badge-alertas" class="badge-alertas oculto">0</span>
+  </button>
 </header>
 
 <section id="vista-login" class="admin-contenido">
@@ -44,6 +47,25 @@
 
   <button id="btn-salir" class="btn-texto">Cerrar sesión</button>
 </main>
+
+<div id="modal-alerta-critica" class="modal-alerta oculto">
+  <div class="modal-alerta-caja modal-alerta-critica-caja">
+    <span class="modal-alerta-icono">⚠️</span>
+    <h3>Atención</h3>
+    <p id="modal-alerta-critica-mensaje"></p>
+    <button id="btn-cerrar-alerta-critica" class="btn-primario btn-ancho">Entendido</button>
+  </div>
+</div>
+
+<div id="modal-lista-alertas" class="modal-alerta oculto">
+  <div class="modal-alerta-caja modal-lista-caja">
+    <div class="panel-header">
+      <h2>Alertas</h2>
+      <button id="btn-cerrar-lista-alertas" class="btn-texto">Cerrar</button>
+    </div>
+    <div id="lista-alertas-contenido"><p class="muted">Cargando…</p></div>
+  </div>
+</div>
 
 <script type="module" src="admin.js"></script>
 </body>
