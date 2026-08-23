@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · promociones</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="admin.html" class="btn-volver">‹</a>
+  <span class="brand-sub">promociones</span>
+</header>
+
+<main id="vista-promociones" class="admin-contenido oculto">
+
+  <button id="btn-nueva-promo" class="btn-primario">+ Nueva promoción</button>
+
+  <div id="lista-promos" class="bloque" style="margin-top:20px;">
+    <p class="muted">Cargando…</p>
+  </div>
+
+</main>
+
+<!-- Formulario crear/editar, mismo patrón que compras.html -->
+<div id="panel-form-promo" class="panel oculto">
+  <div class="panel-header">
+    <h2 id="form-promo-titulo">Nueva promoción</h2>
+    <button id="btn-cerrar-form-promo" class="btn-texto">Cerrar</button>
+  </div>
+
+  <form id="form-promo" class="form-carga">
+    <input type="hidden" id="promo-id">
+
+    <label>Nombre
+      <input type="text" id="promo-nombre" placeholder="ej: 3x2 en cítricos" required>
+    </label>
+
+    <label>Descripción <span class="muted">(opcional, se muestra en el detalle)</span>
+      <input type="text" id="promo-descripcion">
+    </label>
+
+    <label>Tipo de promoción
+      <select id="promo-tipo" required>
+        <option value="oferta_producto">Oferta sobre producto (precio fijo)</option>
+        <option value="descuento_porcentual">Descuento porcentual</option>
+        <option value="nxm">Llevá X pagá Y (ej: 3x2)</option>
+        <option value="combo">Combo (precio cerrado por el conjunto)</option>
+      </select>
+    </label>
+
+    <div id="campo-precio-oferta" class="campo-tipo oculto">
+      <label>Precio de oferta
+        <input type="number" id="promo-precio-oferta" min="0" step="1">
+      </label>
+    </div>
+
+    <div id="campo-descuento-pct" class="campo-tipo oculto">
+      <label>Descuento %
+        <input type="number" id="promo-descuento-pct" min="1" max="99" step="1">
+      </label>
+    </div>
+
+    <div id="campo-nxm" class="campo-tipo oculto fila-2">
+      <label>Llevá
+        <input type="number" id="promo-cantidad-lleva" min="2" step="1">
+      </label>
+      <label>Pagá
+        <input type="number" id="promo-cantidad-paga" min="1" step="1">
+      </label>
+    </div>
+
+    <div id="campo-combo" class="campo-tipo oculto">
+      <label>Precio del combo
+        <input type="number" id="promo-precio-combo" min="0" step="1">
+      </label>
+    </div>
+
+    <p class="subtitulo">Productos incluidos</p>
+    <p class="muted" style="margin:-6px 0 10px;">Tildá los productos a los que aplica esta promoción.</p>
+    <div id="lista-productos-promo" class="lista-check-productos">
+      <p class="muted">Cargando productos…</p>
+    </div>
+
+    <label>Categoría <span class="muted">(opcional, para filtrar/agrupar)</span>
+      <select id="promo-categoria"><option value="">Sin categoría</option></select>
+    </label>
+
+    <p class="subtitulo">Imagen para el hero <span class="muted" style="font-weight:400;">(opcional)</span></p>
+    <p class="muted" style="margin:-6px 0 10px;">Si no subís nada, el hero usa la foto real del producto.</p>
+    <div id="preview-imagen-promo" class="preview-imagen-promo oculto">
+      <img id="preview-imagen-promo-img" src="" alt="">
+      <button type="button" id="btn-quitar-imagen-promo" class="btn-texto">Quitar imagen</button>
+    </div>
+    <input type="file" id="promo-imagen-input" accept="image/*">
+    <p id="promo-imagen-error" class="error oculto"></p>
+
+    <div class="switch-fila">
+      <span class="switch-etiqueta">Destacada (rota en el hero)</span>
+      <label class="switch">
+        <input type="checkbox" id="promo-destacada">
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <div class="switch-fila">
+      <span class="switch-etiqueta">Activa</span>
+      <label class="switch">
+        <input type="checkbox" id="promo-activa" checked>
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <div class="fila-2">
+      <label>Desde
+        <input type="date" id="promo-fecha-desde">
+      </label>
+      <label>Hasta <span class="muted">(opcional)</span>
+        <input type="date" id="promo-fecha-hasta">
+      </label>
+    </div>
+
+    <label>Orden <span class="muted">(si hay varias destacadas, menor número aparece primero)</span>
+      <input type="number" id="promo-orden" min="0" step="1" value="0">
+    </label>
+
+    <button type="submit" id="btn-guardar-promo" class="btn-primario">Guardar promoción</button>
+    <button type="button" id="btn-eliminar-promo" class="btn-cancelar oculto" style="margin-top:8px; width:100%;">Eliminar promoción</button>
+    <p id="promo-error" class="error oculto"></p>
+  </form>
+</div>
+
+<script type="module" src="promociones.js"></script>
+</body>
+</html>
