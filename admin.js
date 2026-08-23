@@ -11,8 +11,17 @@ const formLogin = document.getElementById('form-login')
 const loginError = document.getElementById('login-error')
 const listaPendientes = document.getElementById('lista-pendientes')
 const resumenHoy = document.getElementById('resumen-hoy')
+const btnCampana = document.getElementById('btn-campana')
+const badgeAlertas = document.getElementById('badge-alertas')
+const modalCritica = document.getElementById('modal-alerta-critica')
+const modalCriticaMensaje = document.getElementById('modal-alerta-critica-mensaje')
+const btnCerrarAlertaCritica = document.getElementById('btn-cerrar-alerta-critica')
+const modalListaAlertas = document.getElementById('modal-lista-alertas')
+const listaAlertasContenido = document.getElementById('lista-alertas-contenido')
+const btnCerrarListaAlertas = document.getElementById('btn-cerrar-lista-alertas')
 
 let refrescoInterval = null
+let alertaCriticaAbierta = null // id de la alerta crítica mostrada en el popup, para no reabrirlo solo mientras espera que la cierren
 
 function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
@@ -50,9 +59,11 @@ function mostrarPanel() {
   vistaPanel.classList.remove('oculto')
   cargarPendientes()
   cargarResumenHoy()
+  cargarAlertas()
   refrescoInterval = setInterval(() => {
     cargarPendientes()
     cargarResumenHoy()
+    cargarAlertas()
   }, 5000)
 }
 
@@ -191,6 +202,120 @@ async function cargarResumenHoy() {
     <div class="resumen-item"><span class="muted">Efectivo</span><strong>${formatoMoneda(totalEfectivo)}</strong></div>
   `
 }
+
+// --- Alertas ---
+function formatoFechaAlerta(iso) {
+  const d = new Date(iso)
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }) +
+    ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+}
+
+async function cargarAlertas() {
+  const { data, error } = await supabase
+    .from('alertas')
+    .select('*')
+    .eq('vista', false)
+    .order('fecha', { ascending: false })
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  btnCampana.classList.remove('oculto')
+
+  if (data.length === 0) {
+    badgeAlertas.classList.add('oculto')
+  } else {
+    badgeAlertas.textContent = data.length
+    badgeAlertas.classList.remove('oculto')
+  }
+
+  // Si hay una alerta crítica sin ver y no está ya mostrada en el popup, la mostramos
+  const critica = data.find(a => a.prioridad === 'critica')
+  if (critica && alertaCriticaAbierta !== critica.id) {
+    alertaCriticaAbierta = critica.id
+    modalCriticaMensaje.textContent = critica.mensaje
+    modalCritica.classList.remove('oculto')
+  }
+  if (!critica) {
+    alertaCriticaAbierta = null
+  }
+
+  // Si la lista completa está abierta, la mantenemos actualizada
+  if (!modalListaAlertas.classList.contains('oculto')) {
+    dibujarListaAlertas(data)
+  }
+}
+
+function dibujarListaAlertas(data) {
+  if (data.length === 0) {
+    listaAlertasContenido.innerHTML = '<p class="muted">No hay alertas pendientes.</p>'
+    return
+  }
+  listaAlertasContenido.innerHTML = data.map(a => `
+    <div class="alerta-item prioridad-${a.prioridad}">
+      <div class="alerta-item-texto">
+        <p class="alerta-item-mensaje">${a.mensaje}</p>
+        <span class="alerta-item-fecha">${formatoFechaAlerta(a.fecha)}</span>
+      </div>
+      <button class="btn-marcar-visto" data-id="${a.id}">Marcar visto</button>
+    </div>
+  `).join('')
+}
+
+btnCampana.addEventListener('click', async () => {
+  modalListaAlertas.classList.remove('oculto')
+  const { data, error } = await supabase
+    .from('alertas')
+    .select('*')
+    .eq('vista', false)
+    .order('fecha', { ascending: false })
+  if (error) {
+    console.error(error)
+    return
+  }
+  dibujarListaAlertas(data)
+})
+
+btnCerrarListaAlertas.addEventListener('click', () => {
+  modalListaAlertas.classList.add('oculto')
+})
+
+listaAlertasContenido.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-marcar-visto')
+  if (!btn) return
+  btn.disabled = true
+  const { error } = await supabase
+    .from('alertas')
+    .update({ vista: true })
+    .eq('id', btn.dataset.id)
+  if (error) {
+    console.error(error)
+    btn.disabled = false
+    return
+  }
+  cargarAlertas()
+  btnCampana.click() // recarga la lista abierta con el dato fresco
+})
+
+btnCerrarAlertaCritica.addEventListener('click', async () => {
+  if (!alertaCriticaAbierta) {
+    modalCritica.classList.add('oculto')
+    return
+  }
+  const { error } = await supabase
+    .from('alertas')
+    .update({ vista: true })
+    .eq('id', alertaCriticaAbierta)
+  if (error) {
+    console.error(error)
+    return
+  }
+  modalCritica.classList.add('oculto')
+  alertaCriticaAbierta = null
+  cargarAlertas()
+})
 
 // Por si quedó un Service Worker viejo registrado (de una versión anterior con
 // caché agresivo), lo sacamos siempre, para que esta página nunca quede pegada
