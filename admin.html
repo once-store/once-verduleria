@@ -50,6 +50,10 @@
   </section>
 
   <section class="bloque">
+    <a href="clientes.html" class="btn-primario btn-enlace">Clientes y cuenta corriente</a>
+  </section>
+
+  <section class="bloque">
     <a href="horario.html" class="btn-texto btn-enlace" style="text-align:center; display:block;">Editar horario habitual</a>
   </section>
 
@@ -62,6 +66,21 @@
     <h3>Atención</h3>
     <p id="modal-alerta-critica-mensaje"></p>
     <button id="btn-cerrar-alerta-critica" class="btn-primario btn-ancho">Entendido</button>
+  </div>
+</div>
+
+<div id="modal-cuenta-corriente" class="modal-alerta oculto">
+  <div class="modal-alerta-caja modal-lista-caja">
+    <div class="panel-header">
+      <h2>Cargar a cuenta</h2>
+      <button id="btn-cerrar-modal-cc" class="btn-texto">Cerrar</button>
+    </div>
+    <p class="muted" style="margin-top:-4px;">Se recalcula el pedido a precio de lista, sin promociones.</p>
+    <label>Cliente
+      <select id="cc-select-cliente"></select>
+    </label>
+    <button id="btn-confirmar-cc" class="btn-primario btn-ancho" style="margin-top:12px;">Confirmar cargo</button>
+    <p id="cc-error" class="error oculto"></p>
   </div>
 </div>
 
