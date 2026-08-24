@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · clientes</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="admin.html" class="btn-volver">‹</a>
+  <span class="brand-sub">clientes</span>
+</header>
+
+<main id="vista-clientes" class="admin-contenido oculto">
+
+  <button id="btn-nuevo-cliente" class="btn-primario">+ Nuevo cliente</button>
+
+  <div id="lista-clientes" class="bloque" style="margin-top:20px;">
+    <p class="muted">Cargando…</p>
+  </div>
+
+</main>
+
+<!-- Formulario nuevo/editar cliente -->
+<div id="panel-form-cliente" class="panel oculto">
+<div class="panel-shell narrow-shell">
+  <div class="panel-header">
+    <h2 id="form-cliente-titulo">Nuevo cliente</h2>
+    <button id="btn-cerrar-form-cliente" class="btn-texto">Cerrar</button>
+  </div>
+
+  <form id="form-cliente" class="form-carga">
+    <input type="hidden" id="cliente-id">
+
+    <label>Nombre
+      <input type="text" id="cliente-nombre" placeholder="ej: Rosa (casa azul)" required>
+    </label>
+
+    <label>WhatsApp <span class="muted">(opcional)</span>
+      <input type="tel" id="cliente-whatsapp" placeholder="ej: 3804123456">
+    </label>
+
+    <label>Límite de fiado <span class="muted">(0 = sin fiado habilitado)</span>
+      <input type="number" id="cliente-limite" min="0" step="1" value="0">
+    </label>
+
+    <div class="switch-fila">
+      <span class="switch-etiqueta">Activo</span>
+      <label class="switch">
+        <input type="checkbox" id="cliente-activo" checked>
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <button type="submit" id="btn-guardar-cliente" class="btn-primario">Guardar cliente</button>
+    <p id="cliente-error" class="error oculto"></p>
+  </form>
+</div>
+</div>
+
+<!-- Ficha de cliente: saldo, historial, registrar pago -->
+<div id="panel-ficha-cliente" class="panel oculto">
+<div class="panel-shell narrow-shell">
+  <div class="panel-header">
+    <h2 id="ficha-cliente-nombre">Cliente</h2>
+    <button id="btn-cerrar-ficha-cliente" class="btn-texto">Cerrar</button>
+  </div>
+
+  <div class="resumen-grid" style="margin-bottom:16px;">
+    <div class="resumen-item"><span class="muted">Saldo</span><strong id="ficha-cliente-saldo">$0</strong></div>
+    <div class="resumen-item"><span class="muted">Límite</span><strong id="ficha-cliente-limite">$0</strong></div>
+  </div>
+
+  <button id="btn-editar-cliente" class="btn-texto" style="margin-bottom:16px;">Editar datos del cliente</button>
+
+  <p class="subtitulo">Registrar pago</p>
+  <form id="form-pago" class="form-carga fila-2" style="margin-bottom:20px;">
+    <input type="hidden" id="pago-cliente-id">
+    <label>Monto
+      <input type="number" id="pago-monto" min="1" step="1" required>
+    </label>
+    <label>Nota <span class="muted">(opcional)</span>
+      <input type="text" id="pago-nota" placeholder="ej: pagó en efectivo">
+    </label>
+    <button type="submit" id="btn-registrar-pago" class="btn-primario" style="grid-column: 1 / -1;">Registrar pago</button>
+    <p id="pago-error" class="error oculto" style="grid-column: 1 / -1;"></p>
+  </form>
+
+  <p class="subtitulo">Historial</p>
+  <div id="ficha-cliente-historial"><p class="muted">Cargando…</p></div>
+</div>
+</div>
+
+<script type="module" src="clientes.js"></script>
+</body>
+</html>
