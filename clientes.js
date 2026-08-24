@@ -17,6 +17,7 @@ const clienteError = document.getElementById('cliente-error')
 
 const campoId = document.getElementById('cliente-id')
 const campoNombre = document.getElementById('cliente-nombre')
+const campoDni = document.getElementById('cliente-dni')
 const campoWhatsapp = document.getElementById('cliente-whatsapp')
 const campoLimite = document.getElementById('cliente-limite')
 const campoActivo = document.getElementById('cliente-activo')
@@ -74,7 +75,10 @@ async function cargarClientes() {
   listaClientes.innerHTML = clientesCache.map(c => `
     <div class="fila-pendiente-wrap">
       <button class="fila-cliente" data-id="${c.cliente_id}" style="width:100%; text-align:left; background:none; border:none; padding:12px 0; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-        <span class="fila-titulo">${c.nombre}</span>
+        <span>
+          <span class="fila-titulo">${c.nombre}</span><br>
+          <span class="muted">DNI ${c.dni}</span>
+        </span>
         <span class="${Number(c.saldo_actual) > 0 ? '' : 'muted'}">${formatoMoneda(c.saldo_actual)}${Number(c.saldo_actual) > 0 ? ' debe' : ''}</span>
       </button>
     </div>
@@ -92,6 +96,7 @@ btnNuevoCliente.addEventListener('click', () => {
   formClienteTitulo.textContent = 'Nuevo cliente'
   campoId.value = ''
   campoNombre.value = ''
+  campoDni.value = ''
   campoWhatsapp.value = ''
   campoLimite.value = '0'
   campoActivo.checked = true
@@ -107,6 +112,7 @@ formCliente.addEventListener('submit', async (e) => {
 
   const payload = {
     nombre: campoNombre.value.trim(),
+    dni: campoDni.value.trim(),
     whatsapp: campoWhatsapp.value.trim() || null,
     limite_fiado: Number(campoLimite.value) || 0,
     activo: campoActivo.checked
@@ -118,7 +124,9 @@ formCliente.addEventListener('submit', async (e) => {
 
   const { error } = await query
   if (error) {
-    clienteError.textContent = 'No se pudo guardar. Probá de nuevo.'
+    clienteError.textContent = error.code === '23505'
+      ? 'Ya hay un cliente cargado con ese DNI.'
+      : 'No se pudo guardar. Probá de nuevo.'
     clienteError.classList.remove('oculto')
     console.error(error)
     return
@@ -182,6 +190,7 @@ btnEditarCliente.addEventListener('click', () => {
   formClienteTitulo.textContent = 'Editar cliente'
   campoId.value = c.cliente_id
   campoNombre.value = c.nombre
+  campoDni.value = c.dni
   campoWhatsapp.value = c.whatsapp || ''
   campoLimite.value = c.limite_fiado
   campoActivo.checked = c.activo
