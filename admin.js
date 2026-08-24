@@ -19,6 +19,12 @@ const btnCerrarAlertaCritica = document.getElementById('btn-cerrar-alerta-critic
 const modalListaAlertas = document.getElementById('modal-lista-alertas')
 const listaAlertasContenido = document.getElementById('lista-alertas-contenido')
 const btnCerrarListaAlertas = document.getElementById('btn-cerrar-lista-alertas')
+const modalCC = document.getElementById('modal-cuenta-corriente')
+const btnCerrarModalCC = document.getElementById('btn-cerrar-modal-cc')
+const ccSelectCliente = document.getElementById('cc-select-cliente')
+const btnConfirmarCC = document.getElementById('btn-confirmar-cc')
+const ccError = document.getElementById('cc-error')
+let ccPedidoIdActual = null
 
 let refrescoInterval = null
 let alertaCriticaAbierta = null // id de la alerta crítica mostrada en el popup, para no reabrirlo solo mientras espera que la cierren
@@ -129,6 +135,7 @@ async function cargarPendientes() {
         <div class="detalle-items">${filaItems || '<p class="muted">Sin productos cargados</p>'}</div>
         <div class="acciones-pedido">
           <button class="btn-confirmar" data-id="${pedido.id}">Confirmar</button>
+          <button class="btn-texto btn-a-cuenta" data-id="${pedido.id}">A cuenta</button>
           <button class="btn-cancelar" data-id="${pedido.id}">Cancelar</button>
         </div>
       </details>
@@ -169,6 +176,72 @@ listaPendientes.addEventListener('click', async (e) => {
     btn.textContent = 'Confirmar'
     return
   }
+  cargarPendientes()
+  cargarResumenHoy()
+})
+
+listaPendientes.addEventListener('click', async (e) => {
+  const btnACuenta = e.target.closest('.btn-a-cuenta')
+  if (!btnACuenta) return
+  ccPedidoIdActual = btnACuenta.dataset.id
+  ccError.classList.add('oculto')
+
+  const { data, error } = await supabase
+    .from('clientes')
+    .select('id, nombre, limite_fiado')
+    .eq('activo', true)
+    .gt('limite_fiado', 0)
+    .order('nombre')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  if (!data || data.length === 0) {
+    ccSelectCliente.innerHTML = '<option value="">Ningún cliente tiene fiado habilitado</option>'
+  } else {
+    ccSelectCliente.innerHTML = data.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
+  }
+
+  modalCC.classList.remove('oculto')
+})
+
+btnCerrarModalCC.addEventListener('click', () => {
+  modalCC.classList.add('oculto')
+  ccPedidoIdActual = null
+})
+
+btnConfirmarCC.addEventListener('click', async () => {
+  const clienteId = ccSelectCliente.value
+  if (!clienteId || !ccPedidoIdActual) {
+    ccError.textContent = 'Elegí un cliente con fiado habilitado.'
+    ccError.classList.remove('oculto')
+    return
+  }
+
+  btnConfirmarCC.disabled = true
+  btnConfirmarCC.textContent = '...'
+
+  const { error } = await supabase.rpc('cargar_pedido_a_cuenta', {
+    p_pedido_id: ccPedidoIdActual,
+    p_cliente_id: clienteId
+  })
+
+  btnConfirmarCC.disabled = false
+  btnConfirmarCC.textContent = 'Confirmar cargo'
+
+  if (error) {
+    ccError.textContent = error.message.includes('limite')
+      ? 'Este pedido supera el límite de fiado del cliente.'
+      : 'No se pudo cargar a cuenta. Probá de nuevo.'
+    ccError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  modalCC.classList.add('oculto')
+  ccPedidoIdActual = null
   cargarPendientes()
   cargarResumenHoy()
 })
