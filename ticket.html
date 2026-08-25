@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · ticket</title>
+<style>
+  :root {
+    --verde-oscuro: #1F5636;
+    --texto: #2B2B26;
+    --texto-suave: #6B6A62;
+    --borde: #E7E2D6;
+    --crema: #FAF7F0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--crema);
+    color: var(--texto);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 12px 100px;
+  }
+  #ticket {
+    background: #fff;
+    width: 100%;
+    max-width: 340px;
+    padding: 20px 18px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+  }
+  .t-marca { text-align: center; font-weight: 800; font-size: 20px; color: var(--verde-oscuro); letter-spacing: 1px; }
+  .t-sub { text-align: center; color: var(--texto-suave); font-size: 13px; margin-top: 2px; }
+  .t-linea { border: none; border-top: 1px dashed var(--borde); margin: 14px 0; }
+  .t-fila { display: flex; justify-content: space-between; font-size: 14px; margin: 3px 0; }
+  .t-fila.muted { color: var(--texto-suave); }
+  .t-item { margin: 8px 0; }
+  .t-item-nombre { font-size: 14px; }
+  .t-item-detalle { display: flex; justify-content: space-between; font-size: 13px; color: var(--texto-suave); }
+  .t-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; margin-top: 10px; }
+  .t-footer { text-align: center; font-size: 12px; color: var(--texto-suave); margin-top: 14px; }
+  #acciones { max-width: 340px; width: 100%; margin-top: 16px; display: flex; gap: 10px; }
+  button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #btn-imprimir { background: var(--verde-oscuro); color: #fff; }
+  #btn-compartir { background: #fff; color: var(--verde-oscuro); border: 1px solid var(--verde-oscuro); }
+  .oculto { display: none; }
+  #mensaje { text-align: center; color: var(--texto-suave); margin-top: 40px; }
+
+  @media print {
+    body { padding: 0; background: #fff; }
+    #acciones { display: none; }
+    #ticket { border: none; max-width: 280px; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="ticket" class="oculto">
+  <div class="t-marca">once</div>
+  <div class="t-sub" id="t-fecha"></div>
+  <div class="t-sub">Pedido #<span id="t-numero"></span></div>
+  <hr class="t-linea">
+  <div id="t-items"></div>
+  <hr class="t-linea">
+  <div class="t-total"><span>Total</span><span id="t-total"></span></div>
+  <div id="t-desglose"></div>
+  <div class="t-fila muted" style="margin-top:8px;"><span>Método de pago</span><span id="t-metodo"></span></div>
+  <div class="t-footer">Comprobante interno — sin validez fiscal</div>
+</div>
+
+<p id="mensaje" class="oculto"></p>
+
+<div id="acciones" class="oculto">
+  <button id="btn-imprimir">Imprimir</button>
+  <button id="btn-compartir">Compartir</button>
+</div>
+
+<script type="module" src="ticket.js"></script>
+</body>
+</html>
