@@ -178,10 +178,8 @@ listaPendientes.addEventListener('click', async (e) => {
   }
   cargarPendientes()
   cargarResumenHoy()
+  window.open(`ticket.html?pedido=${btn.dataset.id}`, '_blank')
 })
-
-listaPendientes.addEventListener('click', async (e) => {
-  const btnACuenta = e.target.closest('.btn-a-cuenta')
   if (!btnACuenta) return
   ccPedidoIdActual = btnACuenta.dataset.id
   ccError.classList.add('oculto')
@@ -241,9 +239,10 @@ btnConfirmarCC.addEventListener('click', async () => {
   }
 
   modalCC.classList.add('oculto')
-  ccPedidoIdActual = null
   cargarPendientes()
   cargarResumenHoy()
+  window.open(`ticket.html?pedido=${ccPedidoIdActual}`, '_blank')
+  ccPedidoIdActual = null
 })
 
 // --- Resumen del día ---
