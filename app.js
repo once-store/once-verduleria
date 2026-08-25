@@ -733,6 +733,9 @@ function iniciarPolling() {
       document.getElementById('espera-estado').textContent = 'Pago confirmado'
       document.getElementById('espera-estado').className = 'espera-estado pagado'
       document.getElementById('btn-nuevo-pedido').classList.remove('oculto')
+      const linkTicket = document.getElementById('link-ticket')
+      linkTicket.href = `ticket.html?pedido=${pedidoActualId}`
+      linkTicket.classList.remove('oculto')
       clearInterval(pollingInterval)
     } else if (estado === 'vencido' || estado === 'cancelado') {
       document.getElementById('espera-estado').textContent =
@@ -748,6 +751,7 @@ document.getElementById('btn-nuevo-pedido').addEventListener('click', () => {
   pedidoActualId = null
   pedidoNumeroCorto = null
   elBadgePedido.classList.add('oculto')
+  document.getElementById('link-ticket').classList.add('oculto')
   mostrar(null)
 })
 
