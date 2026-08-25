@@ -180,6 +180,10 @@ listaPendientes.addEventListener('click', async (e) => {
   cargarResumenHoy()
   window.open(`ticket.html?pedido=${btn.dataset.id}`, '_blank')
 })
+
+  listaPendientes.addEventListener('click', async (e) => {
+  const btnACuenta = e.target.closest('.btn-a-cuenta')
+  
   if (!btnACuenta) return
   ccPedidoIdActual = btnACuenta.dataset.id
   ccError.classList.add('oculto')
