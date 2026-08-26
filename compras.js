@@ -56,12 +56,14 @@ function resetearMadurez() {
 
 const elSwitchUbicacion = document.getElementById('compra-ubicacion')
 
-// --- Resumen de lo cargado en esta sesión (se pierde al recargar la página,
-// es solo para tener a la vista mientras cargás varios productos seguidos) ---
+// --- Resumen de lo cargado en esta compra/boleta (se pierde al recargar la
+// página o al tocar "Finalizar esta compra"; es para no perder el hilo
+// mientras cargás muchos productos seguidos de un mismo remito) ---
 let comprasSesion = []
 const elResumenSesion = document.getElementById('resumen-sesion-compra')
 const elListaSesion = document.getElementById('lista-sesion-compra')
 const elTotalSesion = document.getElementById('total-sesion-compra')
+const btnFinalizarCarga = document.getElementById('btn-finalizar-carga')
 
 function renderComprasSesion() {
   if (comprasSesion.length === 0) {
@@ -69,15 +71,25 @@ function renderComprasSesion() {
     return
   }
   elResumenSesion.classList.remove('oculto')
-  elListaSesion.innerHTML = comprasSesion.map(c => `
-    <div class="t-fila" style="display:flex; justify-content:space-between; padding:4px 0;">
-      <span>${c.nombre} — ${c.cantidad} ${c.unidad}</span>
-      <span>${formatoMoneda(c.costoTotal)}</span>
+  elListaSesion.innerHTML = comprasSesion.map((c, i) => `
+    <div class="t-fila" style="display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--borde);">
+      <span>
+        <strong>${i + 1}.</strong> ${c.nombre} — ${c.cantidad} ${c.unidad}
+        <br><span class="muted" style="font-size:13px;">${formatoMoneda(c.costoUnitario)} por ${c.unidad === 'kg' ? 'kilo' : 'unidad'}</span>
+      </span>
+      <span style="font-weight:700;">${formatoMoneda(c.costoTotal)}</span>
     </div>
   `).join('')
   const total = comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0)
   elTotalSesion.textContent = formatoMoneda(total)
 }
+
+btnFinalizarCarga.addEventListener('click', () => {
+  if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?`)) return
+  comprasSesion = []
+  document.getElementById('compra-proveedor').value = ''
+  renderComprasSesion()
+})
 
 // --- Productos (compartido entre compra y merma) ---
 let productosCompraMerma = []
@@ -270,9 +282,18 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   }
 
   const resultado = data[0]
+  comprasSesion.push({
+    productoId: producto.id,
+    nombre: producto.nombre,
+    cantidad,
+    unidad: unidadConfirm,
+    costoTotal,
+    costoUnitario: resultado.costo_unitario
+  })
+  renderComprasSesion()
+
   document.getElementById('compra-cantidad').value = ''
   document.getElementById('compra-costo').value = ''
-  document.getElementById('compra-proveedor').value = ''
   resetearMadurez()
   elSwitchUbicacion.checked = true
 
