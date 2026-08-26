@@ -87,7 +87,8 @@ function renderComprasSesion() {
 btnFinalizarCarga.addEventListener('click', () => {
   if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?`)) return
   comprasSesion = []
-  document.getElementById('compra-proveedor').value = ''
+  selectCompraProveedor.value = ''
+  desbloquearProveedor()
   renderComprasSesion()
 })
 
@@ -214,7 +215,82 @@ document.getElementById('btn-crear-producto').addEventListener('click', async ()
   document.getElementById('btn-cancelar-nuevo-producto').click()
 })
 
-// El margen se guarda al toque, apenas lo cambian.
+// --- Proveedores: lista desplegable + alta rápida, igual que productos ---
+let proveedoresCargados = []
+const selectCompraProveedor = document.getElementById('compra-proveedor')
+
+async function cargarProveedores() {
+  const { data, error } = await supabase
+    .from('proveedores')
+    .select('id, nombre')
+    .eq('activo', true)
+    .order('nombre')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+  proveedoresCargados = data || []
+  const seleccionActual = selectCompraProveedor.value
+  selectCompraProveedor.innerHTML =
+    '<option value="">— Sin especificar —</option>' +
+    proveedoresCargados.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('')
+  if (seleccionActual) selectCompraProveedor.value = seleccionActual
+}
+cargarProveedores()
+
+const elFormNuevoProveedor = document.getElementById('form-nuevo-proveedor')
+const elNuevoProveedorError = document.getElementById('nuevo-proveedor-error')
+
+document.getElementById('btn-mostrar-nuevo-proveedor').addEventListener('click', () => {
+  elFormNuevoProveedor.classList.remove('oculto')
+})
+
+document.getElementById('btn-cancelar-nuevo-proveedor').addEventListener('click', () => {
+  elFormNuevoProveedor.classList.add('oculto')
+  elNuevoProveedorError.classList.add('oculto')
+  document.getElementById('nuevo-proveedor-nombre').value = ''
+})
+
+document.getElementById('btn-crear-proveedor').addEventListener('click', async () => {
+  elNuevoProveedorError.classList.add('oculto')
+  const nombre = document.getElementById('nuevo-proveedor-nombre').value.trim()
+  if (!nombre) {
+    elNuevoProveedorError.textContent = 'Ponele un nombre al proveedor.'
+    elNuevoProveedorError.classList.remove('oculto')
+    return
+  }
+
+  const boton = document.getElementById('btn-crear-proveedor')
+  boton.disabled = true
+  const { data: nuevoId, error } = await supabase.rpc('crear_proveedor', { p_nombre: nombre })
+  boton.disabled = false
+
+  if (error) {
+    elNuevoProveedorError.textContent = 'No se pudo crear el proveedor. Probá de nuevo.'
+    elNuevoProveedorError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  await cargarProveedores()
+  selectCompraProveedor.value = nuevoId
+  document.getElementById('btn-cancelar-nuevo-proveedor').click()
+})
+
+// Una vez cargado el primer producto de la boleta, el proveedor queda fijo
+// (bloqueado) hasta "Finalizar esta compra" -- así no cambia sin querer
+// a mitad de una boleta con varios productos.
+function bloquearProveedor() {
+  selectCompraProveedor.disabled = true
+  document.getElementById('btn-mostrar-nuevo-proveedor').disabled = true
+}
+function desbloquearProveedor() {
+  selectCompraProveedor.disabled = false
+  document.getElementById('btn-mostrar-nuevo-proveedor').disabled = false
+}
+
+
 elCompraMargen.addEventListener('change', async () => {
   const p = productoSeleccionado(selectCompraProducto.value)
   if (!p) return
@@ -241,7 +317,7 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   const producto = productoSeleccionado(selectCompraProducto.value)
   const cantidad = Number(document.getElementById('compra-cantidad').value)
   const costoTotal = Number(document.getElementById('compra-costo').value)
-  const proveedor = document.getElementById('compra-proveedor').value.trim() || null
+  const proveedorId = selectCompraProveedor.value || null
   const ubicacion = elSwitchUbicacion.checked ? 'salon' : 'deposito'
 
   const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
@@ -267,7 +343,7 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
     p_producto_id: producto.id,
     p_cantidad: cantidad,
     p_costo_total: costoTotal,
-    p_proveedor: proveedor,
+    p_proveedor_id: proveedorId,
     p_avance_madurez_pct: madurezSeleccionada,
     p_ubicacion: ubicacion
   })
@@ -291,6 +367,7 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
     costoUnitario: resultado.costo_unitario
   })
   renderComprasSesion()
+  bloquearProveedor()
 
   document.getElementById('compra-cantidad').value = ''
   document.getElementById('compra-costo').value = ''
