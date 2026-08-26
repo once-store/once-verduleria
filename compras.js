@@ -209,6 +209,17 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   const proveedor = document.getElementById('compra-proveedor').value.trim() || null
   const ubicacion = elSwitchUbicacion.checked ? 'salon' : 'deposito'
 
+  const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
+  const costoUnitarioPreview = cantidad > 0 ? costoTotal / cantidad : 0
+  const confirmado = confirm(
+    `Vas a cargar:\n\n` +
+    `${cantidad} ${unidadConfirm} de ${producto?.nombre ?? ''}\n` +
+    `Costo total: ${formatoMoneda(costoTotal)}\n` +
+    `Costo por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'}: ${formatoMoneda(costoUnitarioPreview)}\n\n` +
+    `¿Está bien este costo? Si el número por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'} te parece raro, cancelá y revisá el costo total que pusiste.`
+  )
+  if (!confirmado) return
+
   const boton = e.target.querySelector('button[type="submit"]')
   boton.disabled = true
 
@@ -459,7 +470,7 @@ async function cargarLotesParaPrecio() {
 
   const { data, error } = await supabase
     .from('lotes')
-    .select('id, cantidad_restante, ubicacion, precio, precio_original, fecha_ingreso')
+    .select('id, cantidad_restante, ubicacion, precio, precio_original, costo_unitario, fecha_ingreso')
     .eq('producto_id', productoId)
     .gt('cantidad_restante', 0)
     .order('fecha_ingreso')
@@ -484,7 +495,10 @@ async function cargarLotesParaPrecio() {
       <div class="detalle-pedido">
         <div class="fila-titulo">${lote.cantidad_restante} ${unidad} · ${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</div>
         <p class="muted">Precio original: ${formatoMoneda(lote.precio_original)}</p>
-        <label>Precio actual de este lote
+        <label>Costo de este lote <span class="muted">(lo que te costó a vos)</span>
+          <input type="number" min="0" step="1" class="input-costo-lote" value="${lote.costo_unitario}" data-lote-id="${lote.id}">
+        </label>
+        <label>Precio actual de este lote <span class="muted">(lo que le cobrás al cliente)</span>
           <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-lote-id="${lote.id}">
         </label>
         <div class="acciones-pedido">
@@ -500,14 +514,30 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
   const btn = e.target.closest('.btn-guardar-precio-lote')
   if (!btn) return
 
-  const input = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${btn.dataset.loteId}"]`)
-  const precio = Number(input.value)
-  if (!precio || precio <= 0) {
-    alert('Poné un precio válido.')
+  const inputPrecio = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const inputCosto = elListaPrecioLotes.querySelector(`.input-costo-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const precio = Number(inputPrecio.value)
+  const costo = Number(inputCosto.value)
+
+  if (!precio || precio <= 0 || !costo || costo <= 0) {
+    alert('Poné un costo y un precio válidos, mayores a cero.')
     return
   }
 
   btn.disabled = true
+
+  const { error: errorCosto } = await supabase.rpc('corregir_costo_lote', {
+    p_lote_id: btn.dataset.loteId,
+    p_costo: costo
+  })
+
+  if (errorCosto) {
+    btn.disabled = false
+    alert('No se pudo guardar el costo. Probá de nuevo.')
+    console.error(errorCosto)
+    return
+  }
+
   const { error } = await supabase.rpc('confirmar_precio_maduracion', {
     p_lote_id: btn.dataset.loteId,
     p_precio: precio
@@ -516,7 +546,7 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
   btn.disabled = false
 
   if (error) {
-    alert('No se pudo guardar el precio. Probá de nuevo.')
+    alert('El costo se guardó, pero no se pudo guardar el precio. Probá de nuevo.')
     console.error(error)
     return
   }
