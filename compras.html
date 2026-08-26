@@ -63,8 +63,20 @@
       </div>
 
       <label>Proveedor <span class="muted">(opcional)</span>
-        <input type="text" id="compra-proveedor">
+        <select id="compra-proveedor"></select>
       </label>
+      <button type="button" id="btn-mostrar-nuevo-proveedor" class="btn-texto btn-enlace-chico">+ Nuevo proveedor</button>
+
+      <div id="form-nuevo-proveedor" class="form-carga oculto">
+        <label>Nombre del proveedor
+          <input type="text" id="nuevo-proveedor-nombre" placeholder="ej: Distribuidora El Sol">
+        </label>
+        <div class="acciones-pedido">
+          <button type="button" id="btn-crear-proveedor" class="btn-confirmar">Crear proveedor</button>
+          <button type="button" id="btn-cancelar-nuevo-proveedor" class="btn-cancelar">Cancelar</button>
+        </div>
+        <p id="nuevo-proveedor-error" class="error oculto"></p>
+      </div>
 
       <label>Margen objetivo %
         <input type="number" id="compra-margen" min="0" step="1" placeholder="ej: 30">
