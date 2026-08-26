@@ -56,6 +56,29 @@ function resetearMadurez() {
 
 const elSwitchUbicacion = document.getElementById('compra-ubicacion')
 
+// --- Resumen de lo cargado en esta sesión (se pierde al recargar la página,
+// es solo para tener a la vista mientras cargás varios productos seguidos) ---
+let comprasSesion = []
+const elResumenSesion = document.getElementById('resumen-sesion-compra')
+const elListaSesion = document.getElementById('lista-sesion-compra')
+const elTotalSesion = document.getElementById('total-sesion-compra')
+
+function renderComprasSesion() {
+  if (comprasSesion.length === 0) {
+    elResumenSesion.classList.add('oculto')
+    return
+  }
+  elResumenSesion.classList.remove('oculto')
+  elListaSesion.innerHTML = comprasSesion.map(c => `
+    <div class="t-fila" style="display:flex; justify-content:space-between; padding:4px 0;">
+      <span>${c.nombre} — ${c.cantidad} ${c.unidad}</span>
+      <span>${formatoMoneda(c.costoTotal)}</span>
+    </div>
+  `).join('')
+  const total = comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0)
+  elTotalSesion.textContent = formatoMoneda(total)
+}
+
 // --- Productos (compartido entre compra y merma) ---
 let productosCompraMerma = []
 
@@ -211,12 +234,17 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
 
   const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
   const costoUnitarioPreview = cantidad > 0 ? costoTotal / cantidad : 0
+  const yaCargado = comprasSesion.find(c => c.productoId === producto.id)
+  const avisoRepetido = yaCargado
+    ? `\n⚠ Ya cargaste ${producto?.nombre} en esta sesión (${yaCargado.cantidad} ${yaCargado.unidad}). ¿Es otra compra distinta?\n`
+    : ''
   const confirmado = confirm(
     `Vas a cargar:\n\n` +
     `${cantidad} ${unidadConfirm} de ${producto?.nombre ?? ''}\n` +
     `Costo total: ${formatoMoneda(costoTotal)}\n` +
-    `Costo por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'}: ${formatoMoneda(costoUnitarioPreview)}\n\n` +
-    `¿Está bien este costo? Si el número por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'} te parece raro, cancelá y revisá el costo total que pusiste.`
+    `Costo por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'}: ${formatoMoneda(costoUnitarioPreview)}\n` +
+    avisoRepetido +
+    `\n¿Está bien este costo? Si el número por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'} te parece raro, cancelá y revisá el costo total que pusiste.`
   )
   if (!confirmado) return
 
