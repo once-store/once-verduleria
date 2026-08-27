@@ -5,226 +5,815 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-const vistaClientes = document.getElementById('vista-clientes')
-const listaClientes = document.getElementById('lista-clientes')
-const btnNuevoCliente = document.getElementById('btn-nuevo-cliente')
+const vistaCompras = document.getElementById('vista-compras')
 
-const panelForm = document.getElementById('panel-form-cliente')
-const formClienteTitulo = document.getElementById('form-cliente-titulo')
-const btnCerrarFormCliente = document.getElementById('btn-cerrar-form-cliente')
-const formCliente = document.getElementById('form-cliente')
-const clienteError = document.getElementById('cliente-error')
-
-const campoId = document.getElementById('cliente-id')
-const campoNombre = document.getElementById('cliente-nombre')
-const campoDni = document.getElementById('cliente-dni')
-const campoWhatsapp = document.getElementById('cliente-whatsapp')
-const campoLimite = document.getElementById('cliente-limite')
-const campoActivo = document.getElementById('cliente-activo')
-
-const panelFicha = document.getElementById('panel-ficha-cliente')
-const fichaNombre = document.getElementById('ficha-cliente-nombre')
-const fichaSaldo = document.getElementById('ficha-cliente-saldo')
-const fichaLimite = document.getElementById('ficha-cliente-limite')
-const fichaHistorial = document.getElementById('ficha-cliente-historial')
-const btnCerrarFicha = document.getElementById('btn-cerrar-ficha-cliente')
-const btnEditarCliente = document.getElementById('btn-editar-cliente')
-
-const formPago = document.getElementById('form-pago')
-const campoPagoClienteId = document.getElementById('pago-cliente-id')
-const campoPagoMonto = document.getElementById('pago-monto')
-const campoPagoNota = document.getElementById('pago-nota')
-const pagoError = document.getElementById('pago-error')
-
-let clientesCache = []
-let clienteFichaActual = null
+// Esta página vive protegida por la sesión que ya abriste en admin.html.
+// Si entrás acá directo sin haber iniciado sesión, te manda de vuelta.
+const { data: { session } } = await supabase.auth.getSession()
+if (!session) {
+  window.location.href = 'admin.html'
+} else {
+  vistaCompras.classList.remove('oculto')
+  cargarProductosParaCompraYMerma()
+}
 
 function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
 }
 
-// --- Auth: misma protección que el resto de las subpáginas del admin ---
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
-  window.location.href = 'admin.html'
-} else {
-  vistaClientes.classList.remove('oculto')
-  cargarClientes()
+// --- Pestañas ---
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('activa'))
+    btn.classList.add('activa')
+    document.getElementById('panel-compra').classList.toggle('oculto', btn.dataset.tab !== 'compra')
+    document.getElementById('panel-merma').classList.toggle('oculto', btn.dataset.tab !== 'merma')
+    document.getElementById('panel-deposito').classList.toggle('oculto', btn.dataset.tab !== 'deposito')
+    document.getElementById('panel-maduracion').classList.toggle('oculto', btn.dataset.tab !== 'maduracion')
+    document.getElementById('panel-precio').classList.toggle('oculto', btn.dataset.tab !== 'precio')
+    if (btn.dataset.tab === 'deposito') cargarDeposito()
+    if (btn.dataset.tab === 'maduracion') cargarMaduracion()
+    if (btn.dataset.tab === 'precio') cargarLotesParaPrecio()
+  })
+})
+
+// --- Selector de madurez inicial (Recién llega / A mitad / Para vender ya) ---
+let madurezSeleccionada = 0
+const grupoMadurez = document.getElementById('grupo-madurez')
+grupoMadurez.addEventListener('click', (e) => {
+  const btn = e.target.closest('.opcion-btn')
+  if (!btn) return
+  grupoMadurez.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('activa'))
+  btn.classList.add('activa')
+  madurezSeleccionada = Number(btn.dataset.valor)
+})
+
+function resetearMadurez() {
+  madurezSeleccionada = 0
+  grupoMadurez.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('activa'))
+  grupoMadurez.querySelector('.opcion-btn[data-valor="0"]').classList.add('activa')
 }
 
-// --- Listado ---
-async function cargarClientes() {
+const elSwitchUbicacion = document.getElementById('compra-ubicacion')
+
+// --- Resumen de lo cargado en esta compra/boleta (se pierde al recargar la
+// página o al tocar "Finalizar esta compra"; es para no perder el hilo
+// mientras cargás muchos productos seguidos de un mismo remito) ---
+let comprasSesion = []
+const elResumenSesion = document.getElementById('resumen-sesion-compra')
+const elListaSesion = document.getElementById('lista-sesion-compra')
+const elTotalSesion = document.getElementById('total-sesion-compra')
+const btnFinalizarCarga = document.getElementById('btn-finalizar-carga')
+
+function renderComprasSesion() {
+  if (comprasSesion.length === 0) {
+    elResumenSesion.classList.add('oculto')
+    return
+  }
+  elResumenSesion.classList.remove('oculto')
+  elListaSesion.innerHTML = comprasSesion.map((c, i) => `
+    <div class="t-fila" style="display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--borde);">
+      <span>
+        <strong>${i + 1}.</strong> ${c.nombre} — ${c.cantidad} ${c.unidad}
+        <br><span class="muted" style="font-size:13px;">${formatoMoneda(c.costoUnitario)} por ${c.unidad === 'kg' ? 'kilo' : 'unidad'}</span>
+      </span>
+      <span style="font-weight:700;">${formatoMoneda(c.costoTotal)}</span>
+    </div>
+  `).join('')
+  const total = comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0)
+  elTotalSesion.textContent = formatoMoneda(total)
+}
+
+btnFinalizarCarga.addEventListener('click', () => {
+  if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?`)) return
+  comprasSesion = []
+  selectCompraProveedor.value = ''
+  desbloquearProveedor()
+  renderComprasSesion()
+})
+
+// --- Productos (compartido entre compra y merma) ---
+let productosCompraMerma = []
+
+const selectCompraProducto = document.getElementById('compra-producto')
+const selectMermaProducto = document.getElementById('merma-producto')
+const elCompraStockActual = document.getElementById('compra-stock-actual')
+const elCompraMargen = document.getElementById('compra-margen')
+const elCompraError = document.getElementById('compra-error')
+const elMermaError = document.getElementById('merma-error')
+const elCompraSugerencia = document.getElementById('compra-sugerencia')
+const selectCompraPresentacion = document.getElementById('compra-presentacion')
+const labelCompraPresentacion = document.getElementById('label-compra-presentacion')
+const labelCompraCantidad = document.getElementById('label-compra-cantidad')
+
+async function cargarProductosParaCompraYMerma() {
   const { data, error } = await supabase
-    .from('clientes_saldo')
-    .select('*')
+    .from('productos')
+    .select('id, nombre, tipo, precio, margen_objetivo_pct')
     .order('nombre')
 
   if (error) {
-    listaClientes.innerHTML = '<p class="muted">No se pudo cargar la lista de clientes.</p>'
     console.error(error)
     return
   }
 
-  clientesCache = data || []
+  productosCompraMerma = data
+  const opciones = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('')
+  selectCompraProducto.innerHTML = opciones
+  selectMermaProducto.innerHTML = opciones
+  document.getElementById('precio-producto').innerHTML = opciones
 
-  if (clientesCache.length === 0) {
-    listaClientes.innerHTML = '<p class="muted">Todavía no hay clientes cargados.</p>'
-    return
-  }
-
-  listaClientes.innerHTML = clientesCache.map(c => `
-    <div class="fila-pendiente-wrap">
-      <button class="fila-cliente" data-id="${c.cliente_id}" style="width:100%; text-align:left; background:none; border:none; padding:12px 0; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-        <span>
-          <span class="fila-titulo">${c.nombre}</span><br>
-          <span class="muted">DNI ${c.dni}</span>
-        </span>
-        <span class="${Number(c.saldo_actual) > 0 ? '' : 'muted'}">${formatoMoneda(c.saldo_actual)}${Number(c.saldo_actual) > 0 ? ' debe' : ''}</span>
-      </button>
-    </div>
-  `).join('')
+  actualizarInfoProductoCompra()
 }
 
-listaClientes.addEventListener('click', (e) => {
-  const btn = e.target.closest('.fila-cliente')
-  if (!btn) return
-  abrirFicha(btn.dataset.id)
-})
+function productoSeleccionado(id) {
+  return productosCompraMerma.find(p => p.id === id)
+}
 
-// --- Alta / edición ---
-btnNuevoCliente.addEventListener('click', () => {
-  formClienteTitulo.textContent = 'Nuevo cliente'
-  campoId.value = ''
-  campoNombre.value = ''
-  campoDni.value = ''
-  campoWhatsapp.value = ''
-  campoLimite.value = '0'
-  campoActivo.checked = true
-  clienteError.classList.add('oculto')
-  panelForm.classList.remove('oculto')
-})
+// Stock vendible actual del producto elegido (suma de sus lotes en salón)
+async function actualizarInfoProductoCompra() {
+  const p = productoSeleccionado(selectCompraProducto.value)
+  if (!p) return
 
-btnCerrarFormCliente.addEventListener('click', () => panelForm.classList.add('oculto'))
+  elCompraMargen.value = p.margen_objetivo_pct ?? ''
+  elCompraSugerencia.classList.add('oculto')
 
-formCliente.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  clienteError.classList.add('oculto')
+  const { data, error } = await supabase
+    .from('lotes')
+    .select('cantidad_restante')
+    .eq('producto_id', p.id)
+    .eq('ubicacion', 'salon')
+    .gt('cantidad_restante', 0)
 
-  const payload = {
-    nombre: campoNombre.value.trim(),
-    dni: campoDni.value.trim(),
-    whatsapp: campoWhatsapp.value.trim() || null,
-    limite_fiado: Number(campoLimite.value) || 0,
-    activo: campoActivo.checked
-  }
-
-  const query = campoId.value
-    ? supabase.from('clientes').update(payload).eq('id', campoId.value)
-    : supabase.from('clientes').insert(payload)
-
-  const { error } = await query
   if (error) {
-    clienteError.textContent = error.code === '23505'
-      ? 'Ya hay un cliente cargado con ese DNI.'
-      : 'No se pudo guardar. Probá de nuevo.'
-    clienteError.classList.remove('oculto')
     console.error(error)
     return
   }
 
-  panelForm.classList.add('oculto')
-  cargarClientes()
-  if (clienteFichaActual) abrirFicha(clienteFichaActual)
-})
+  const total = data.reduce((a, l) => a + Number(l.cantidad_restante), 0)
+  const unidad = p.tipo === 'peso' ? 'kg' : 'unidades'
+  elCompraStockActual.textContent = `En salón: ${total} ${unidad}`
+  elCompraStockActual.classList.remove('oculto')
 
-// --- Ficha de cliente ---
-async function abrirFicha(clienteId) {
-  clienteFichaActual = clienteId
-  fichaNombre.textContent = 'Cargando…'
-  fichaHistorial.innerHTML = '<p class="muted">Cargando…</p>'
-  panelFicha.classList.remove('oculto')
+  // Presentaciones de compra (ej. "Maple", "Cajón" para Huevo). Si el
+  // producto no tiene ninguna, se compra directo en la unidad base de siempre.
+  const { data: presentaciones, error: errorPres } = await supabase
+    .from('presentaciones')
+    .select('id, nombre, cantidad_unidades')
+    .eq('producto_id', p.id)
+    .eq('activa', true)
+    .eq('usar_en_compra', true)
+    .order('orden')
 
-  const [{ data: cliente, error: errCliente }, { data: movimientos, error: errMov }] = await Promise.all([
-    supabase.from('clientes_saldo').select('*').eq('cliente_id', clienteId).single(),
-    supabase.from('cuenta_corriente_movimientos').select('*').eq('cliente_id', clienteId).order('creado_en', { ascending: false })
-  ])
+  if (errorPres) console.error(errorPres)
 
-  if (errCliente) {
-    console.error(errCliente)
-    fichaNombre.textContent = 'Error al cargar'
-    return
+  if (presentaciones && presentaciones.length > 0) {
+    selectCompraPresentacion.innerHTML =
+      `<option value="">${unidad === 'kg' ? 'Kilo suelto' : 'Unidad suelta'}</option>` +
+      presentaciones.map(pr => `<option value="${pr.id}" data-cantidad="${pr.cantidad_unidades}">${pr.nombre} (${pr.cantidad_unidades} ${unidad})</option>`).join('')
+    labelCompraPresentacion.classList.remove('oculto')
+  } else {
+    selectCompraPresentacion.innerHTML = ''
+    labelCompraPresentacion.classList.add('oculto')
   }
-
-  fichaNombre.textContent = cliente.nombre
-  fichaSaldo.textContent = formatoMoneda(cliente.saldo_actual)
-  fichaLimite.textContent = formatoMoneda(cliente.limite_fiado)
-  campoPagoClienteId.value = clienteId
-
-  if (errMov) {
-    console.error(errMov)
-    fichaHistorial.innerHTML = '<p class="muted">No se pudo cargar el historial.</p>'
-    return
-  }
-
-  if (!movimientos || movimientos.length === 0) {
-    fichaHistorial.innerHTML = '<p class="muted">Sin movimientos todavía.</p>'
-    return
-  }
-
-  fichaHistorial.innerHTML = movimientos.map(m => `
-    <div class="item-detalle">
-      <span>${m.tipo === 'cargo' ? 'Cargo' : 'Pago'} · ${new Date(m.creado_en).toLocaleDateString('es-AR')}${m.nota ? ' · ' + m.nota : ''}</span>
-      <span>${m.tipo === 'cargo' ? '+' : '-'}${formatoMoneda(m.monto)}</span>
-    </div>
-  `).join('')
+  actualizarEtiquetaCantidadCompra()
 }
 
-btnCerrarFicha.addEventListener('click', () => {
-  panelFicha.classList.add('oculto')
-  clienteFichaActual = null
+function actualizarEtiquetaCantidadCompra() {
+  const p = productoSeleccionado(selectCompraProducto.value)
+  const unidad = p?.tipo === 'peso' ? 'kg' : 'unidades'
+  const opcion = selectCompraPresentacion.selectedOptions[0]
+  if (opcion && opcion.value) {
+    labelCompraCantidad.firstChild.textContent = `Cuántos ${opcion.textContent.split(' (')[0].toLowerCase()}s`
+  } else {
+    labelCompraCantidad.firstChild.textContent = `Cantidad (${unidad})`
+  }
+}
+
+selectCompraPresentacion.addEventListener('change', actualizarEtiquetaCantidadCompra)
+
+selectCompraProducto.addEventListener('change', actualizarInfoProductoCompra)
+
+// --- Alta de producto nuevo, sin salir de esta pantalla ---
+const elFormNuevoProducto = document.getElementById('form-nuevo-producto')
+const elNuevoProductoError = document.getElementById('nuevo-producto-error')
+
+document.getElementById('btn-mostrar-nuevo-producto').addEventListener('click', () => {
+  elFormNuevoProducto.classList.remove('oculto')
 })
 
-btnEditarCliente.addEventListener('click', () => {
-  const c = clientesCache.find(x => x.cliente_id === clienteFichaActual)
-  if (!c) return
-  formClienteTitulo.textContent = 'Editar cliente'
-  campoId.value = c.cliente_id
-  campoNombre.value = c.nombre
-  campoDni.value = c.dni
-  campoWhatsapp.value = c.whatsapp || ''
-  campoLimite.value = c.limite_fiado
-  campoActivo.checked = c.activo
-  clienteError.classList.add('oculto')
-  panelForm.classList.remove('oculto')
+document.getElementById('btn-cancelar-nuevo-producto').addEventListener('click', () => {
+  elFormNuevoProducto.classList.add('oculto')
+  elNuevoProductoError.classList.add('oculto')
+  document.getElementById('nuevo-producto-nombre').value = ''
+  document.getElementById('nuevo-producto-precio').value = ''
+  document.getElementById('nuevo-producto-tipo').checked = false
 })
 
-// --- Registrar pago ---
-formPago.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  pagoError.classList.add('oculto')
+document.getElementById('btn-crear-producto').addEventListener('click', async () => {
+  elNuevoProductoError.classList.add('oculto')
 
-  const monto = Number(campoPagoMonto.value)
-  if (!monto || monto <= 0) {
-    pagoError.textContent = 'Ingresá un monto válido.'
-    pagoError.classList.remove('oculto')
+  const nombre = document.getElementById('nuevo-producto-nombre').value.trim()
+  const precio = Number(document.getElementById('nuevo-producto-precio').value)
+  const tipo = document.getElementById('nuevo-producto-tipo').checked ? 'unidad' : 'peso'
+
+  if (!nombre) {
+    elNuevoProductoError.textContent = 'Ponele un nombre al producto.'
+    elNuevoProductoError.classList.remove('oculto')
+    return
+  }
+  if (!precio || precio <= 0) {
+    elNuevoProductoError.textContent = 'Ponele un precio inicial mayor a cero.'
+    elNuevoProductoError.classList.remove('oculto')
     return
   }
 
-  const { error } = await supabase.rpc('registrar_pago_cuenta_corriente', {
-    p_cliente_id: campoPagoClienteId.value,
-    p_monto: monto,
-    p_nota: campoPagoNota.value.trim() || null
+  const boton = document.getElementById('btn-crear-producto')
+  boton.disabled = true
+
+  const { data, error } = await supabase
+    .from('productos')
+    .insert({ nombre, tipo, precio, disponible: true })
+    .select('id')
+    .single()
+
+  boton.disabled = false
+
+  if (error) {
+    elNuevoProductoError.textContent = error.message.includes('duplicate')
+      ? 'Ya existe un producto con ese nombre.'
+      : 'No se pudo crear el producto. Probá de nuevo.'
+    elNuevoProductoError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  await cargarProductosParaCompraYMerma()
+  selectCompraProducto.value = data.id
+  actualizarInfoProductoCompra()
+  document.getElementById('btn-cancelar-nuevo-producto').click()
+})
+
+// --- Proveedores: lista desplegable + alta rápida, igual que productos ---
+let proveedoresCargados = []
+const selectCompraProveedor = document.getElementById('compra-proveedor')
+
+async function cargarProveedores() {
+  const { data, error } = await supabase
+    .from('proveedores')
+    .select('id, nombre')
+    .eq('activo', true)
+    .order('nombre')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+  proveedoresCargados = data || []
+  const seleccionActual = selectCompraProveedor.value
+  selectCompraProveedor.innerHTML =
+    '<option value="">— Sin especificar —</option>' +
+    proveedoresCargados.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('')
+  if (seleccionActual) selectCompraProveedor.value = seleccionActual
+}
+cargarProveedores()
+
+const elFormNuevoProveedor = document.getElementById('form-nuevo-proveedor')
+const elNuevoProveedorError = document.getElementById('nuevo-proveedor-error')
+
+document.getElementById('btn-mostrar-nuevo-proveedor').addEventListener('click', () => {
+  elFormNuevoProveedor.classList.remove('oculto')
+})
+
+document.getElementById('btn-cancelar-nuevo-proveedor').addEventListener('click', () => {
+  elFormNuevoProveedor.classList.add('oculto')
+  elNuevoProveedorError.classList.add('oculto')
+  document.getElementById('nuevo-proveedor-nombre').value = ''
+})
+
+document.getElementById('btn-crear-proveedor').addEventListener('click', async () => {
+  elNuevoProveedorError.classList.add('oculto')
+  const nombre = document.getElementById('nuevo-proveedor-nombre').value.trim()
+  if (!nombre) {
+    elNuevoProveedorError.textContent = 'Ponele un nombre al proveedor.'
+    elNuevoProveedorError.classList.remove('oculto')
+    return
+  }
+
+  const boton = document.getElementById('btn-crear-proveedor')
+  boton.disabled = true
+  const { data: nuevoId, error } = await supabase.rpc('crear_proveedor', { p_nombre: nombre })
+  boton.disabled = false
+
+  if (error) {
+    elNuevoProveedorError.textContent = 'No se pudo crear el proveedor. Probá de nuevo.'
+    elNuevoProveedorError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  await cargarProveedores()
+  selectCompraProveedor.value = nuevoId
+  document.getElementById('btn-cancelar-nuevo-proveedor').click()
+})
+
+// Una vez cargado el primer producto de la boleta, el proveedor queda fijo
+// (bloqueado) hasta "Finalizar esta compra" -- así no cambia sin querer
+// a mitad de una boleta con varios productos.
+function bloquearProveedor() {
+  selectCompraProveedor.disabled = true
+  document.getElementById('btn-mostrar-nuevo-proveedor').disabled = true
+}
+function desbloquearProveedor() {
+  selectCompraProveedor.disabled = false
+  document.getElementById('btn-mostrar-nuevo-proveedor').disabled = false
+}
+
+
+elCompraMargen.addEventListener('change', async () => {
+  const p = productoSeleccionado(selectCompraProducto.value)
+  if (!p) return
+  const valor = elCompraMargen.value === '' ? null : Number(elCompraMargen.value)
+
+  const { error } = await supabase
+    .from('productos')
+    .update({ margen_objetivo_pct: valor })
+    .eq('id', p.id)
+
+  if (error) {
+    console.error(error)
+    return
+  }
+  p.margen_objetivo_pct = valor
+})
+
+// --- Registrar compra (crea un lote nuevo) ---
+document.getElementById('form-compra').addEventListener('submit', async (e) => {
+  e.preventDefault()
+  elCompraError.classList.add('oculto')
+  elCompraSugerencia.classList.add('oculto')
+
+  const producto = productoSeleccionado(selectCompraProducto.value)
+  const cantidadIngresada = Number(document.getElementById('compra-cantidad').value)
+  const costoTotal = Number(document.getElementById('compra-costo').value)
+  const proveedorId = selectCompraProveedor.value || null
+  const ubicacion = elSwitchUbicacion.checked ? 'salon' : 'deposito'
+  const presentacionId = selectCompraPresentacion.value || null
+  const opcionPresentacion = selectCompraPresentacion.selectedOptions[0]
+
+  const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
+  // Si eligió una presentación (ej. "Cajón"), la cantidad final en unidades
+  // base es la cantidad ingresada multiplicada por lo que trae cada una.
+  const cantidadBasePreview = presentacionId
+    ? cantidadIngresada * Number(opcionPresentacion.dataset.cantidad)
+    : cantidadIngresada
+  const costoUnitarioPreview = cantidadBasePreview > 0 ? costoTotal / cantidadBasePreview : 0
+  const yaCargado = comprasSesion.find(c => c.productoId === producto.id)
+  const avisoRepetido = yaCargado
+    ? `\n⚠ Ya cargaste ${producto?.nombre} en esta sesión (${yaCargado.cantidad} ${yaCargado.unidad}). ¿Es otra compra distinta?\n`
+    : ''
+  const detallePresentacion = presentacionId
+    ? `${cantidadIngresada} ${opcionPresentacion.textContent.split(' (')[0]} = ${cantidadBasePreview} ${unidadConfirm} de ${producto?.nombre ?? ''}\n`
+    : `${cantidadIngresada} ${unidadConfirm} de ${producto?.nombre ?? ''}\n`
+  const confirmado = confirm(
+    `Vas a cargar:\n\n` +
+    detallePresentacion +
+    `Costo total: ${formatoMoneda(costoTotal)}\n` +
+    `Costo por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'}: ${formatoMoneda(costoUnitarioPreview)}\n` +
+    avisoRepetido +
+    `\n¿Está bien este costo? Si el número por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'} te parece raro, cancelá y revisá el costo total que pusiste.`
+  )
+  if (!confirmado) return
+
+  const boton = e.target.querySelector('button[type="submit"]')
+  boton.disabled = true
+
+  const { data, error } = await supabase.rpc('registrar_compra', {
+    p_producto_id: producto.id,
+    p_cantidad: cantidadIngresada,
+    p_costo_total: costoTotal,
+    p_proveedor_id: proveedorId,
+    p_avance_madurez_pct: madurezSeleccionada,
+    p_ubicacion: ubicacion,
+    p_presentacion_id: presentacionId
   })
 
+  boton.disabled = false
+
   if (error) {
-    pagoError.textContent = 'No se pudo registrar el pago. Probá de nuevo.'
-    pagoError.classList.remove('oculto')
+    elCompraError.textContent = error.message || 'No se pudo registrar la compra.'
+    elCompraError.classList.remove('oculto')
     console.error(error)
     return
   }
 
-  campoPagoMonto.value = ''
-  campoPagoNota.value = ''
-  cargarClientes()
-  abrirFicha(clienteFichaActual)
+  const resultado = data[0]
+  comprasSesion.push({
+    productoId: producto.id,
+    nombre: producto.nombre,
+    cantidad: resultado.cantidad_base,
+    unidad: unidadConfirm,
+    costoTotal,
+    costoUnitario: resultado.costo_unitario
+  })
+  renderComprasSesion()
+  bloquearProveedor()
+
+  document.getElementById('compra-cantidad').value = ''
+  document.getElementById('compra-costo').value = ''
+  selectCompraPresentacion.value = ''
+  actualizarEtiquetaCantidadCompra()
+  resetearMadurez()
+  elSwitchUbicacion.checked = true
+
+  await actualizarInfoProductoCompra()
+
+  // Buscamos el precio con el que quedó el lote recién creado, para mostrarlo
+  // aunque no haya margen configurado (en ese caso usó el precio actual del producto).
+  const { data: loteNuevo } = await supabase
+    .from('lotes')
+    .select('precio')
+    .eq('id', resultado.lote_id)
+    .single()
+
+  document.getElementById('sug-precio-actual').textContent = formatoMoneda(loteNuevo?.precio ?? 0)
+  document.getElementById('sug-precio-manual').value = loteNuevo?.precio ?? ''
+  elCompraSugerencia.dataset.loteId = resultado.lote_id
+
+  if (resultado.precio_sugerido == null) {
+    // No hay margen objetivo configurado: no hay sugerencia para mostrar,
+    // pero igual dejamos el campo abierto por si quiere poner un precio a mano.
+    document.getElementById('sug-costo').textContent = formatoMoneda(resultado.costo_unitario)
+    document.getElementById('sug-precio').textContent = '(sin margen configurado)'
+    elCompraSugerencia.classList.remove('oculto')
+    return
+  }
+
+  document.getElementById('sug-costo').textContent = formatoMoneda(resultado.costo_unitario)
+  document.getElementById('sug-precio').textContent = formatoMoneda(resultado.precio_sugerido)
+  elCompraSugerencia.classList.remove('oculto')
 })
+
+document.getElementById('btn-usar-sugerido').addEventListener('click', async () => {
+  const loteId = elCompraSugerencia.dataset.loteId
+  const precio = Number(document.getElementById('sug-precio-manual').value)
+
+  if (!precio || precio <= 0) {
+    alert('Poné un precio válido.')
+    return
+  }
+
+  const { error } = await supabase
+    .from('lotes')
+    .update({ precio })
+    .eq('id', loteId)
+
+  if (error) {
+    alert('No se pudo actualizar el precio del lote. Probá de nuevo.')
+    console.error(error)
+    return
+  }
+  elCompraSugerencia.classList.add('oculto')
+})
+
+document.getElementById('btn-mantener-precio').addEventListener('click', () => {
+  elCompraSugerencia.classList.add('oculto')
+})
+
+// --- Registrar merma ---
+document.getElementById('form-merma').addEventListener('submit', async (e) => {
+  e.preventDefault()
+  elMermaError.classList.add('oculto')
+
+  const producto = productoSeleccionado(selectMermaProducto.value)
+  const cantidad = Number(document.getElementById('merma-cantidad').value)
+  const motivo = document.getElementById('merma-motivo').value
+
+  const boton = e.target.querySelector('button[type="submit"]')
+  boton.disabled = true
+
+  const { error } = await supabase.rpc('registrar_merma', {
+    p_producto_id: producto.id,
+    p_cantidad: cantidad,
+    p_motivo: motivo
+  })
+
+  boton.disabled = false
+
+  if (error) {
+    elMermaError.textContent = error.message || 'No se pudo registrar la merma.'
+    elMermaError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  document.getElementById('merma-cantidad').value = ''
+  await actualizarInfoProductoCompra()
+})
+
+// --- Depósito: lotes esperando pasar a salón ---
+const elListaDeposito = document.getElementById('lista-deposito')
+
+async function cargarDeposito() {
+  elListaDeposito.innerHTML = '<p class="muted">Cargando…</p>'
+
+  const { data, error } = await supabase
+    .from('lotes')
+    .select('id, cantidad_restante, fecha_ingreso, productos(nombre, tipo)')
+    .eq('ubicacion', 'deposito')
+    .gt('cantidad_restante', 0)
+    .order('fecha_ingreso', { ascending: true })
+
+  if (error) {
+    console.error(error)
+    elListaDeposito.innerHTML = '<p class="muted">No se pudo cargar el depósito.</p>'
+    return
+  }
+
+  if (data.length === 0) {
+    elListaDeposito.innerHTML = '<p class="muted">No hay lotes en depósito.</p>'
+    return
+  }
+
+  const hoy = new Date()
+  elListaDeposito.innerHTML = ''
+  data.forEach(lote => {
+    const unidad = lote.productos?.tipo === 'peso' ? 'kg' : 'unidades'
+    const dias = Math.floor((hoy - new Date(lote.fecha_ingreso)) / 86400000)
+    const fila = document.createElement('div')
+    fila.className = 'fila-pendiente-wrap'
+    fila.innerHTML = `
+      <div class="item-detalle">
+        <span>${lote.productos?.nombre || '?'} · ${lote.cantidad_restante} ${unidad} · ${dias}d</span>
+        <button class="btn-confirmar btn-pasar-salon" data-id="${lote.id}">Pasar a salón</button>
+      </div>
+    `
+    elListaDeposito.appendChild(fila)
+  })
+}
+
+elListaDeposito.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-pasar-salon')
+  if (!btn) return
+  btn.disabled = true
+
+  const { error } = await supabase
+    .from('lotes')
+    .update({ ubicacion: 'salon' })
+    .eq('id', btn.dataset.id)
+
+  if (error) {
+    alert('No se pudo mover el lote. Probá de nuevo.')
+    console.error(error)
+    btn.disabled = false
+    return
+  }
+  cargarDeposito()
+})
+
+// --- Maduración: sugerencias de descuento u retiro por lote ---
+const elListaMaduracion = document.getElementById('lista-maduracion')
+
+async function cargarMaduracion() {
+  elListaMaduracion.innerHTML = '<p class="muted">Cargando…</p>'
+
+  const { data, error } = await supabase
+    .from('sugerencias_maduracion')
+    .select('*')
+    .order('dias_efectivos', { ascending: false })
+
+  if (error) {
+    console.error(error)
+    elListaMaduracion.innerHTML = '<p class="muted">No se pudieron cargar las sugerencias.</p>'
+    return
+  }
+
+  if (data.length === 0) {
+    elListaMaduracion.innerHTML = '<p class="muted">Ningún lote necesita atención hoy.</p>'
+    return
+  }
+
+  elListaMaduracion.innerHTML = ''
+  data.forEach(s => {
+    const fila = document.createElement('div')
+    fila.className = 'fila-pendiente-wrap'
+
+    if (s.retirar) {
+      const productoDeEsteLote = productoSeleccionado(s.producto_id)
+      const unidadLote = productoDeEsteLote?.tipo === 'unidad' ? 'unidades' : 'kg'
+      fila.innerHTML = `
+        <div class="detalle-pedido">
+          <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
+          <p class="muted">Este lote ya pasó su punto de venta. Quedan ${s.cantidad_restante} ${unidadLote} — si parte todavía se puede vender (ej: sacando hojas feas), poné solo lo que se pierde.</p>
+          <label>Cantidad que se pierde
+            <input type="number" min="0.01" step="0.01" class="input-cantidad-baja" value="${s.cantidad_restante}" data-max="${s.cantidad_restante}">
+          </label>
+          <div class="acciones-pedido">
+            <button class="btn-cancelar btn-dar-de-baja" data-producto-id="${s.producto_id}">Registrar como merma</button>
+          </div>
+        </div>
+      `
+    } else {
+      fila.innerHTML = `
+        <div class="detalle-pedido">
+          <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
+          <p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} → sugerido ${formatoMoneda(s.precio_sugerido)} (-${s.descuento_pct}%)</p>
+          <label class="oculto campo-precio-maduracion">Precio a aplicar
+            <input type="number" min="0" step="1" class="input-precio-maduracion" value="${s.precio_sugerido}">
+          </label>
+          <div class="acciones-pedido">
+            <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}">Usar este precio</button>
+            <button class="btn-cancelar btn-ignorar-maduracion">Ignorar</button>
+          </div>
+        </div>
+      `
+    }
+    elListaMaduracion.appendChild(fila)
+  })
+}
+
+// --- Precio manual: editar el precio de cualquier lote activo, sin esperar
+// ni a la sugerencia de compra ni a la de maduración ---
+const selectPrecioProducto = document.getElementById('precio-producto')
+const elListaPrecioLotes = document.getElementById('lista-precio-lotes')
+
+selectPrecioProducto.addEventListener('change', cargarLotesParaPrecio)
+
+async function cargarLotesParaPrecio() {
+  const productoId = selectPrecioProducto.value
+  if (!productoId) return
+  elListaPrecioLotes.innerHTML = '<p class="muted">Cargando…</p>'
+
+  const producto = productoSeleccionado(productoId)
+
+  const { data, error } = await supabase
+    .from('lotes')
+    .select('id, cantidad_restante, ubicacion, precio, precio_original, costo_unitario, fecha_ingreso')
+    .eq('producto_id', productoId)
+    .gt('cantidad_restante', 0)
+    .order('fecha_ingreso')
+
+  if (error) {
+    console.error(error)
+    elListaPrecioLotes.innerHTML = '<p class="muted">No se pudieron cargar los lotes.</p>'
+    return
+  }
+
+  if (data.length === 0) {
+    elListaPrecioLotes.innerHTML = '<p class="muted">Este producto no tiene ningún lote activo todavía.</p>'
+    return
+  }
+
+  const unidad = producto?.tipo === 'peso' ? 'kg' : 'unidades'
+  elListaPrecioLotes.innerHTML = ''
+  data.forEach(lote => {
+    const fila = document.createElement('div')
+    fila.className = 'fila-pendiente-wrap'
+    fila.innerHTML = `
+      <div class="detalle-pedido">
+        <div class="fila-titulo">${lote.cantidad_restante} ${unidad} · ${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</div>
+        <p class="muted">Precio original: ${formatoMoneda(lote.precio_original)}</p>
+        <label>Costo de este lote <span class="muted">(lo que te costó a vos)</span>
+          <input type="number" min="0" step="1" class="input-costo-lote" value="${lote.costo_unitario}" data-lote-id="${lote.id}">
+        </label>
+        <label>Precio actual de este lote <span class="muted">(lo que le cobrás al cliente)</span>
+          <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-lote-id="${lote.id}">
+        </label>
+        <div class="acciones-pedido">
+          <button class="btn-confirmar btn-guardar-precio-lote" data-lote-id="${lote.id}">Guardar</button>
+        </div>
+      </div>
+    `
+    elListaPrecioLotes.appendChild(fila)
+  })
+}
+
+elListaPrecioLotes.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-guardar-precio-lote')
+  if (!btn) return
+
+  const inputPrecio = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const inputCosto = elListaPrecioLotes.querySelector(`.input-costo-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const precio = Number(inputPrecio.value)
+  const costo = Number(inputCosto.value)
+
+  if (!precio || precio <= 0 || !costo || costo <= 0) {
+    alert('Poné un costo y un precio válidos, mayores a cero.')
+    return
+  }
+
+  btn.disabled = true
+
+  const { error: errorCosto } = await supabase.rpc('corregir_costo_lote', {
+    p_lote_id: btn.dataset.loteId,
+    p_costo: costo
+  })
+
+  if (errorCosto) {
+    btn.disabled = false
+    alert('No se pudo guardar el costo. Probá de nuevo.')
+    console.error(errorCosto)
+    return
+  }
+
+  const { error } = await supabase.rpc('confirmar_precio_maduracion', {
+    p_lote_id: btn.dataset.loteId,
+    p_precio: precio
+  })
+
+  btn.disabled = false
+
+  if (error) {
+    alert('El costo se guardó, pero no se pudo guardar el precio. Probá de nuevo.')
+    console.error(error)
+    return
+  }
+  btn.textContent = 'Guardado ✓'
+  setTimeout(() => { btn.textContent = 'Guardar' }, 1500)
+})
+
+elListaMaduracion.addEventListener('click', async (e) => {
+  const btnIgnorar = e.target.closest('.btn-ignorar-maduracion')
+  if (btnIgnorar) {
+    btnIgnorar.closest('.fila-pendiente-wrap').remove()
+    return
+  }
+
+  const btnAplicar = e.target.closest('.btn-aplicar-maduracion')
+  if (btnAplicar) {
+    const fila = btnAplicar.closest('.detalle-pedido')
+    const campo = fila.querySelector('.campo-precio-maduracion')
+    const input = fila.querySelector('.input-precio-maduracion')
+
+    if (campo.classList.contains('oculto')) {
+      // Primer toque: solo mostramos el campo con el sugerido ya seleccionado, no guardamos todavía
+      campo.classList.remove('oculto')
+      input.focus()
+      input.select()
+      btnAplicar.textContent = 'Guardar'
+      return
+    }
+
+    const precio = Number(input.value)
+    if (!precio || precio <= 0) {
+      alert('Poné un precio válido.')
+      return
+    }
+
+    btnAplicar.disabled = true
+    const { error } = await supabase.rpc('confirmar_precio_maduracion', {
+      p_lote_id: btnAplicar.dataset.loteId,
+      p_precio: precio
+    })
+
+    if (error) {
+      alert('No se pudo actualizar el precio del lote. Probá de nuevo.')
+      console.error(error)
+      btnAplicar.disabled = false
+      return
+    }
+    btnAplicar.closest('.fila-pendiente-wrap').remove()
+    return
+  }
+
+  const btnBaja = e.target.closest('.btn-dar-de-baja')
+  if (btnBaja) {
+    const fila = btnBaja.closest('.detalle-pedido')
+    const inputCantidad = fila.querySelector('.input-cantidad-baja')
+    const cantidad = Number(inputCantidad.value)
+    const maximo = Number(inputCantidad.dataset.max)
+
+    if (!cantidad || cantidad <= 0) {
+      alert('Poné cuánto se pierde.')
+      return
+    }
+    if (cantidad > maximo) {
+      alert(`No puede ser más de lo que queda en el lote (${maximo}).`)
+      return
+    }
+
+    if (!confirm(`¿Registrar ${cantidad} como merma?`)) return
+    btnBaja.disabled = true
+    const { error } = await supabase.rpc('registrar_merma', {
+      p_producto_id: btnBaja.dataset.productoId,
+      p_cantidad: cantidad,
+      p_motivo: 'vencido'
+    })
+
+    if (error) {
+      alert('No se pudo registrar la merma. Probá de nuevo.')
+      console.error(error)
+      btnBaja.disabled = false
+      return
+    }
+    btnBaja.closest('.fila-pendiente-wrap').remove()
+  }
+})
+
+// Mismo motivo que en admin.js: sacar cualquier Service Worker viejo que haya
+// quedado registrado, para que esta página no quede pegada en una copia vieja.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister())
+  })
+}
