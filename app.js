@@ -11,8 +11,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 let productos = []
 let categorias = []
 let promociones = []
+let presentaciones = [] // presentaciones de venta activas (ej. Docena/Maple de Huevo)
 let categoriaFiltroActiva = '' // '' = "Todo"
-let carrito = {} // { producto_id: cantidad }
+let carrito = {} // { producto_id: cantidad } o { "producto_id::presentacion_id": cantidad_de_presentaciones }
 let pedidoActualId = null
 let pedidoNumeroCorto = null
 let pollingInterval = null
@@ -137,11 +138,12 @@ function mostrar(vista) {
 let promocionProductos = []
 
 async function cargarProductos() {
-  const [resProductos, resCategorias, resPromociones, resPromoProductos] = await Promise.all([
+  const [resProductos, resCategorias, resPromociones, resPromoProductos, resPresentaciones] = await Promise.all([
     supabase.from('catalogo_disponible').select('*').order('nombre'),
     supabase.from('categorias').select('*').order('orden'),
     supabase.from('promociones').select('*').eq('activa', true),
-    supabase.from('promocion_productos').select('*')
+    supabase.from('promocion_productos').select('*'),
+    supabase.from('presentaciones').select('*').eq('activa', true).eq('usar_en_venta', true).order('orden')
   ])
 
   if (resProductos.error) {
@@ -153,6 +155,7 @@ async function cargarProductos() {
   productos = resProductos.data
   categorias = resCategorias.data || []
   promocionProductos = resPromoProductos.data || []
+  presentaciones = resPresentaciones.data || []
   // Filtramos acá las vigentes por fecha (no todas las "activa=true" están
   // necesariamente dentro de su rango de fecha_desde/fecha_hasta hoy)
   const hoy = new Date().toISOString().slice(0, 10)
@@ -351,6 +354,12 @@ function renderProductos() {
   }
 
   productosFiltrados.forEach(p => {
+    const presentacionesProducto = presentaciones.filter(pr => pr.producto_id === p.id)
+    if (presentacionesProducto.length > 0) {
+      presentacionesProducto.forEach(pres => renderTarjetaPresentacion(p, pres))
+      return
+    }
+
     const cantidad = carrito[p.id] || 0
     const esPeso = p.tipo === 'peso'
     const unidad = esPeso ? '/kg' : ''
@@ -394,6 +403,38 @@ function renderProductos() {
     `
     elLista.appendChild(card)
   })
+}
+
+// Una tarjeta por presentación (ej. "Huevo · Docena", "Huevo · Maple"), en
+// vez de una sola tarjeta de "Huevo" con un selector escondido -- así el
+// cliente ve todos los precios de un vistazo, como pidió Martin.
+function renderTarjetaPresentacion(p, pres) {
+  const key = `${p.id}::${pres.id}`
+  const cantidad = carrito[key] || 0
+  const card = document.createElement('div')
+  card.className = 'tarjeta-producto'
+
+  const controles = cantidad === 0
+    ? `<button class="btn-agregar" data-id="${key}">Agregar</button>`
+    : `<div class="fila-cantidad">
+        <button class="btn-cantidad" data-id="${key}" data-accion="restar">−</button>
+        <input type="number" class="input-unidad" data-id="${key}" min="1" step="1" value="${cantidad}">
+        <button class="btn-cantidad" data-id="${key}" data-accion="sumar">+</button>
+      </div>`
+
+  card.innerHTML = `
+    <div class="foto-wrap">
+      ${p.foto_url
+        ? `<img class="foto-producto${cantidad > 0 ? ' en-carrito' : ''}" src="${p.foto_url}" alt="${p.nombre}" loading="lazy">`
+        : `<div class="foto-producto foto-vacia${cantidad > 0 ? ' en-carrito' : ''}"></div>`
+      }
+      ${cantidad > 0 ? '<span class="badge-check">✓</span>' : ''}
+    </div>
+    <span class="nombre">${p.nombre} · ${pres.nombre}</span>
+    <span class="precio">${formatoMoneda(pres.precio_venta)}</span>
+    ${controles}
+  `
+  elLista.appendChild(card)
 }
 
 elLista.addEventListener('click', async (e) => {
@@ -480,10 +521,39 @@ document.getElementById('btn-agregar-pesaje').addEventListener('click', async ()
   mostrar(null)
 })
 
+// Interpreta una entrada del carrito, sea un producto normal (kg/unidad) o
+// una presentación (ej. "Huevo · Docena"). Centraliza esto acá para no tener
+// que repetir el "si tiene ::, es una presentación" en cada lugar que lee el carrito.
+function detalleLineaCarrito(key, cantidadEnCarrito) {
+  if (key.includes('::')) {
+    const [productoId, presentacionId] = key.split('::')
+    const p = productos.find(pr => pr.id === productoId)
+    const pres = presentaciones.find(pr => pr.id === presentacionId)
+    if (!p || !pres) return null
+    return {
+      producto: p,
+      presentacion: pres,
+      cantidadUnidadesBase: pres.cantidad_unidades * cantidadEnCarrito,
+      totalLinea: pres.precio_venta * cantidadEnCarrito,
+      nombreMostrado: `${p.nombre} · ${pres.nombre}`
+    }
+  }
+  const p = productos.find(pr => pr.id === key)
+  if (!p) return null
+  const precio = precioPorCantidad(p, cantidadEnCarrito)
+  return {
+    producto: p,
+    presentacion: null,
+    cantidadUnidadesBase: cantidadEnCarrito,
+    totalLinea: precio * cantidadEnCarrito,
+    nombreMostrado: p.nombre
+  }
+}
+
 function totalCarrito() {
-  return Object.entries(carrito).reduce((acc, [id, cant]) => {
-    const p = productos.find(p => p.id === id)
-    return acc + (p ? precioPorCantidad(p, cant) * cant : 0)
+  return Object.entries(carrito).reduce((acc, [key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    return acc + (d ? d.totalLinea : 0)
   }, 0)
 }
 
@@ -500,13 +570,13 @@ function actualizarBarraCarrito() {
 
 function renderCarrito() {
   elListaCarrito.innerHTML = ''
-  Object.entries(carrito).forEach(([id, cant]) => {
-    const p = productos.find(p => p.id === id)
-    if (!p) return
+  Object.entries(carrito).forEach(([key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    if (!d) return
     const fila = document.createElement('div')
     fila.className = 'fila-carrito'
-    const unidad = p.tipo === 'peso' ? 'kg' : ''
-    fila.innerHTML = `<span>${p.nombre} · ${cant}${unidad}</span><span>${formatoMoneda(precioPorCantidad(p, cant) * cant)}</span>`
+    const etiquetaCantidad = d.presentacion ? `x${cant}` : `${cant}${d.producto.tipo === 'peso' ? 'kg' : ''}`
+    fila.innerHTML = `<span>${d.nombreMostrado} · ${etiquetaCantidad}</span><span>${formatoMoneda(d.totalLinea)}</span>`
     elListaCarrito.appendChild(fila)
   })
   elCarritoTotal2.textContent = formatoMoneda(totalCarrito())
@@ -565,17 +635,20 @@ async function confirmarPedido(metodo, montoEfectivo) {
     return
   }
 
-  const items = Object.entries(carrito).map(([producto_id, cantidad]) => {
-    const p = productos.find(p => p.id === producto_id)
-    const precio = precioPorCantidad(p, cantidad)
+  const items = Object.entries(carrito).map(([key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    if (!d) return null
+    const precioUnitario = d.presentacion
+      ? d.presentacion.precio_venta / d.presentacion.cantidad_unidades
+      : precioPorCantidad(d.producto, cant)
     return {
       pedido_id: pedidoActualId,
-      producto_id,
-      cantidad,
-      precio_unitario: precio,
-      subtotal: precio * cantidad
+      producto_id: d.producto.id,
+      cantidad: d.cantidadUnidadesBase,
+      precio_unitario: precioUnitario,
+      subtotal: d.totalLinea
     }
-  })
+  }).filter(Boolean)
 
   // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
   // doble click, un método que falló y se probó con otro), primero limpiamos
@@ -623,17 +696,20 @@ async function pagarConMercadoPago() {
     return
   }
 
-  const items = Object.entries(carrito).map(([producto_id, cantidad]) => {
-    const p = productos.find(p => p.id === producto_id)
-    const precio = precioPorCantidad(p, cantidad)
+  const items = Object.entries(carrito).map(([key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    if (!d) return null
+    const precioUnitario = d.presentacion
+      ? d.presentacion.precio_venta / d.presentacion.cantidad_unidades
+      : precioPorCantidad(d.producto, cant)
     return {
       pedido_id: pedidoActualId,
-      producto_id,
-      cantidad,
-      precio_unitario: precio,
-      subtotal: precio * cantidad
+      producto_id: d.producto.id,
+      cantidad: d.cantidadUnidadesBase,
+      precio_unitario: precioUnitario,
+      subtotal: d.totalLinea
     }
-  })
+  }).filter(Boolean)
 
   // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
   // doble click, un método que falló y se probó con otro), primero limpiamos
@@ -665,12 +741,14 @@ async function pagarConMercadoPago() {
 
   // Un solo ítem por línea con cantidad 1 (evita problemas con Mercado Pago
   // y cantidades fraccionadas, como 1.5 kg de algo)
-  const itemsParaMP = Object.entries(carrito).map(([producto_id, cantidad]) => {
-    const p = productos.find(p => p.id === producto_id)
-    const totalLinea = precioPorCantidad(p, cantidad) * cantidad
-    const nombre = p.tipo === 'peso' ? `${p.nombre} (${cantidad} kg)` : p.nombre
-    return { nombre, cantidad: 1, precioUnitario: totalLinea }
-  })
+  const itemsParaMP = Object.entries(carrito).map(([key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    if (!d) return null
+    const nombre = d.presentacion
+      ? `${d.nombreMostrado} x${cant}`
+      : (d.producto.tipo === 'peso' ? `${d.producto.nombre} (${cant} kg)` : d.producto.nombre)
+    return { nombre, cantidad: 1, precioUnitario: d.totalLinea }
+  }).filter(Boolean)
 
   let initPoint
   try {
