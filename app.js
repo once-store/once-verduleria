@@ -164,43 +164,7 @@ async function cargarProductos() {
   )
 
   renderProductos()
-  renderPromoDestacada()
   iniciarHeroRotativo()
-}
-
-const elPromoStrip = document.getElementById('promo-strip')
-const elPromoStripTitulo = document.getElementById('promo-strip-titulo')
-const elPromoStripDetalle = document.getElementById('promo-strip-detalle')
-
-// Muestra el banner superior SOLO si hay una promoción marcada como
-// "destacada" en la base -- si no hay ninguna, el banner queda oculto
-// (nunca se inventa contenido de relleno).
-function renderPromoDestacada() {
-  const destacada = promociones.find(p => p.destacada)
-  if (!destacada) {
-    elPromoStrip.classList.add('oculto')
-    return
-  }
-
-  let detalle = destacada.descripcion || ''
-  if (destacada.tipo === 'oferta_producto') {
-    const prod = productos.find(p =>
-      // La promoción sabe a qué producto aplica a través de promocion_productos,
-      // que no traemos acá todavía -- por ahora usamos el nombre de la promo.
-      destacada.nombre.toLowerCase().includes(p.nombre.toLowerCase())
-    )
-    if (prod) detalle = `${prod.nombre} a ${formatoMoneda(destacada.precio_oferta)}${prod.tipo === 'peso' ? '/kg' : ''}`
-  } else if (destacada.tipo === 'descuento_porcentual') {
-    detalle = `${destacada.descuento_pct}% de descuento`
-  } else if (destacada.tipo === 'nxm') {
-    detalle = `Llevá ${destacada.cantidad_lleva} y pagá ${destacada.cantidad_paga}`
-  } else if (destacada.tipo === 'combo') {
-    detalle = `Combo por ${formatoMoneda(destacada.precio_combo)}`
-  }
-
-  elPromoStripTitulo.textContent = destacada.nombre
-  elPromoStripDetalle.textContent = detalle
-  elPromoStrip.classList.remove('oculto')
 }
 
 // --- Hero rotativo ---
