@@ -217,9 +217,9 @@ const elHeroTitulo = document.getElementById('hero-titulo')
 const elHeroSubtitulo = document.getElementById('hero-subtitulo')
 const elHeroNota = document.getElementById('hero-nota')
 const elHeroImgPrincipal = document.getElementById('hero-img-principal')
-const elHeroImgSecundaria = document.getElementById('hero-img-secundaria')
+const elHeroDots = document.getElementById('hero-dots')
 
-const MAX_ESCENAS_HERO = 4
+const MAX_ESCENAS_HERO = 5
 
 function armarEscenasHero() {
   const escenas = []
@@ -291,13 +291,26 @@ function armarEscenasHero() {
   return escenasFinal
 }
 
-function mostrarEscenaHero(escena) {
+function mostrarEscenaHero(escena, indice) {
   if (!escena) return
   elHeroEyebrow.textContent = escena.eyebrow
   elHeroTitulo.innerHTML = escena.titulo
   elHeroSubtitulo.textContent = escena.subtitulo
   if (escena.foto) {
     elHeroImgPrincipal.src = escena.foto
+  }
+  elHeroDots.querySelectorAll('.hero-dot').forEach((dot, i) => {
+    dot.classList.toggle('activo', i === indice)
+  })
+}
+
+function renderHeroDots(cantidad) {
+  elHeroDots.innerHTML = ''
+  if (cantidad <= 1) return // con una sola escena no hace falta mostrar puntitos
+  for (let i = 0; i < cantidad; i++) {
+    const dot = document.createElement('span')
+    dot.className = 'hero-dot'
+    elHeroDots.appendChild(dot)
   }
 }
 
@@ -308,11 +321,12 @@ function iniciarHeroRotativo() {
 
   if (heroEscenas.length === 0) return // se queda con el texto por defecto del HTML
 
-  mostrarEscenaHero(heroEscenas[0])
+  renderHeroDots(heroEscenas.length)
+  mostrarEscenaHero(heroEscenas[0], 0)
   if (heroEscenas.length > 1) {
     heroInterval = setInterval(() => {
       heroIndice = (heroIndice + 1) % heroEscenas.length
-      mostrarEscenaHero(heroEscenas[heroIndice])
+      mostrarEscenaHero(heroEscenas[heroIndice], heroIndice)
     }, 5000)
   }
 }
