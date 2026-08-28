@@ -330,23 +330,30 @@ formPromo.addEventListener('submit', async (e) => {
       if (error) throw new Error(error.message)
       promocionId = data
     } else {
-      // Editar: actualizamos la promo y reemplazamos sus productos vinculados.
-      const { error: errorUpdate } = await supabase
-        .from('promociones')
-        .update(campos)
-        .eq('id', promocionId)
+      // Editar: usamos actualizar_promocion() para que el update de la promo
+      // y el reemplazo de sus productos vinculados pasen en una sola
+      // transacción -- si se hacían por separado, el DELETE de productos
+      // dejaba la promo con 0 productos por una fracción de segundo, y el
+      // trigger que exige "oferta_producto siempre con 1 producto" lo rechazaba.
+      const { error: errorUpdate } = await supabase.rpc('actualizar_promocion', {
+        p_id: promocionId,
+        p_tipo: campos.tipo,
+        p_nombre: campos.nombre,
+        p_productos: productosSeleccionados,
+        p_descripcion: campos.descripcion,
+        p_categoria_id: campos.categoria_id,
+        p_descuento_pct: campos.descuento_pct,
+        p_precio_oferta: campos.precio_oferta,
+        p_cantidad_lleva: campos.cantidad_lleva,
+        p_cantidad_paga: campos.cantidad_paga,
+        p_precio_combo: campos.precio_combo,
+        p_destacada: campos.destacada,
+        p_orden: campos.orden,
+        p_activa: campos.activa,
+        p_fecha_desde: campos.fecha_desde,
+        p_fecha_hasta: campos.fecha_hasta,
+      })
       if (errorUpdate) throw new Error(errorUpdate.message)
-
-      const { error: errorDelete } = await supabase
-        .from('promocion_productos')
-        .delete()
-        .eq('promocion_id', promocionId)
-      if (errorDelete) throw new Error(errorDelete.message)
-
-      const { error: errorInsert } = await supabase
-        .from('promocion_productos')
-        .insert(productosSeleccionados.map(p => ({ ...p, promocion_id: promocionId })))
-      if (errorInsert) throw new Error(errorInsert.message)
     }
 
     // Imagen: subir la nueva si eligió una, o borrar la referencia si tildó "quitar"
