@@ -7,6 +7,8 @@
   --texto-suave: #6B6A62;
   --borde: #E7E2D6;
   --blanco: #FFFFFF;
+  --clima: #3B82F6;
+  --clima-fondo: #EFF6FF;
 }
 
 * { box-sizing: border-box; }
@@ -1009,6 +1011,42 @@ body {
 .alerta-item.prioridad-critica { border-left-color: var(--tomate); }
 .alerta-item.prioridad-atencion { border-left-color: #E0A62C; }
 .alerta-item.prioridad-informacion { border-left-color: var(--verde); }
+
+.tarjeta-clima {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--clima-fondo);
+  border: 1px solid var(--clima);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.tarjeta-clima-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tarjeta-clima-icono {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.tarjeta-clima-texto {
+  flex: 1;
+  color: var(--texto);
+  font-size: 14px;
+}
+.tarjeta-clima-cerrar {
+  background: none;
+  border: none;
+  color: var(--clima);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  align-self: flex-start;
+}
 
 .alerta-item-texto { flex: 1; }
 .alerta-item-mensaje { font-size: 14px; margin: 0 0 4px; line-height: 1.4; }
