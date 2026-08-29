@@ -16,6 +16,7 @@ const badgeAlertas = document.getElementById('badge-alertas')
 const modalCritica = document.getElementById('modal-alerta-critica')
 const modalCriticaMensaje = document.getElementById('modal-alerta-critica-mensaje')
 const btnCerrarAlertaCritica = document.getElementById('btn-cerrar-alerta-critica')
+const tarjetaClima = document.getElementById('tarjeta-clima')
 const modalListaAlertas = document.getElementById('modal-lista-alertas')
 const listaAlertasContenido = document.getElementById('lista-alertas-contenido')
 const btnCerrarListaAlertas = document.getElementById('btn-cerrar-lista-alertas')
@@ -286,8 +287,15 @@ function formatoFechaAlerta(iso) {
     ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
 
+const ICONOS_CLIMA = {
+  helada: '🌨️',
+  lluvia_excesiva: '🌧️',
+  sequia: '☀️',
+  error_consulta: '⚠️'
+}
+
 async function cargarAlertas() {
-  const { data, error } = await supabase
+  const { data: todas, error } = await supabase
     .from('alertas')
     .select('*')
     .eq('vista', false)
@@ -297,6 +305,12 @@ async function cargarAlertas() {
     console.error(error)
     return
   }
+
+  // Las alertas de clima viven en su propia tarjeta destacada, no en la campanita/lista/popup
+  const clima = todas.filter(a => a.tipo === 'clima')
+  const data = todas.filter(a => a.tipo !== 'clima')
+
+  dibujarTarjetaClima(clima)
 
   btnCampana.classList.remove('oculto')
 
@@ -322,6 +336,32 @@ async function cargarAlertas() {
   if (!modalListaAlertas.classList.contains('oculto')) {
     dibujarListaAlertas(data)
   }
+}
+
+function dibujarTarjetaClima(clima) {
+  if (clima.length === 0) {
+    tarjetaClima.classList.add('oculto')
+    tarjetaClima.innerHTML = ''
+    return
+  }
+  tarjetaClima.classList.remove('oculto')
+  tarjetaClima.innerHTML = clima.map(a => `
+    <div class="tarjeta-clima-item">
+      <span class="tarjeta-clima-icono">${ICONOS_CLIMA[a.contexto?.evento] || '🌡️'}</span>
+      <div class="tarjeta-clima-texto">
+        ${a.mensaje}
+        <br>
+        <button class="tarjeta-clima-cerrar" data-id="${a.id}">Entendido</button>
+      </div>
+    </div>
+  `).join('')
+
+  tarjetaClima.querySelectorAll('.tarjeta-clima-cerrar').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await supabase.from('alertas').update({ vista: true }).eq('id', btn.dataset.id)
+      cargarAlertas()
+    })
+  })
 }
 
 function dibujarListaAlertas(data) {
