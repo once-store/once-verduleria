@@ -10,6 +10,7 @@ const vistaPanel = document.getElementById('vista-panel')
 const formLogin = document.getElementById('form-login')
 const loginError = document.getElementById('login-error')
 const listaPendientes = document.getElementById('lista-pendientes')
+const badgePorArmar = document.getElementById('badge-por-armar')
 const resumenHoy = document.getElementById('resumen-hoy')
 const btnCampana = document.getElementById('btn-campana')
 const badgeAlertas = document.getElementById('badge-alertas')
@@ -65,13 +66,36 @@ function mostrarPanel() {
   vistaLogin.classList.add('oculto')
   vistaPanel.classList.remove('oculto')
   cargarPendientes()
+  cargarContadorPorArmar()
   cargarResumenHoy()
   cargarAlertas()
   refrescoInterval = setInterval(() => {
     cargarPendientes()
+    cargarContadorPorArmar()
     cargarResumenHoy()
     cargarAlertas()
   }, 5000)
+}
+
+// --- Contador de pedidos de WhatsApp por armar (solo el número, para el botón) ---
+async function cargarContadorPorArmar() {
+  const { count, error } = await supabase
+    .from('pedidos')
+    .select('id', { count: 'exact', head: true })
+    .eq('origen', 'whatsapp')
+    .eq('armado_estado', 'pendiente')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  if (!count) {
+    badgePorArmar.classList.add('oculto')
+  } else {
+    badgePorArmar.textContent = count
+    badgePorArmar.classList.remove('oculto')
+  }
 }
 
 // --- Pendientes de confirmar ---
