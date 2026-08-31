@@ -77,6 +77,30 @@ function mostrarPanel() {
   }, 5000)
 }
 
+let ultimoConteoPorArmar = null // null = todavía no cargamos el primer valor (no sonar al abrir la página)
+
+function reproducirAlertaSonora() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const tocarBeep = (frecuencia, inicio, duracion) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = frecuencia
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      gain.gain.setValueAtTime(0.35, ctx.currentTime + inicio)
+      osc.start(ctx.currentTime + inicio)
+      osc.stop(ctx.currentTime + inicio + duracion)
+    }
+    // Dos beeps cortos, como un aviso de "entró algo nuevo"
+    tocarBeep(880, 0, 0.15)
+    tocarBeep(880, 0.2, 0.15)
+  } catch (error) {
+    console.error('No se pudo reproducir la alerta sonora:', error)
+  }
+}
+
 // --- Contador de pedidos de WhatsApp por armar (solo el número, para el botón) ---
 async function cargarContadorPorArmar() {
   const { count, error } = await supabase
@@ -89,6 +113,11 @@ async function cargarContadorPorArmar() {
     console.error(error)
     return
   }
+
+  if (ultimoConteoPorArmar !== null && count > ultimoConteoPorArmar) {
+    reproducirAlertaSonora()
+  }
+  ultimoConteoPorArmar = count
 
   if (!count) {
     badgePorArmar.classList.add('oculto')
