@@ -539,6 +539,17 @@ body {
   text-decoration: none;
 }
 
+.btn-con-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-con-badge .badge-alertas {
+  position: static;
+}
+
 /* --- Selector de madurez (3 opciones tipo segmented control) --- */
 
 .grupo-opciones {
