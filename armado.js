@@ -53,6 +53,20 @@ async function cargarPorArmar() {
     Array.from(listaPorArmar.querySelectorAll('details[open]')).map(d => d.dataset.id)
   )
 
+  // Tampoco borramos lo que ya se escribió en los inputs de peso mientras esperábamos el refresco
+  const valoresPrevios = new Map(
+    Array.from(listaPorArmar.querySelectorAll('.item-armado')).map(el => [
+      el.dataset.itemId,
+      el.querySelector('.input-peso-real')?.value || '',
+    ])
+  )
+
+  // Y si estabas escribiendo justo en ese momento, mantenemos el cursor ahí
+  const elementoConFoco = document.activeElement
+  const itemIdConFoco = elementoConFoco?.classList.contains('input-peso-real')
+    ? elementoConFoco.closest('.item-armado')?.dataset.itemId
+    : null
+
   listaPorArmar.innerHTML = ''
   pedidosConItems.forEach(pedido => {
     const itemsPeso = pedido.items.filter(it => it.productos?.tipo === 'peso')
@@ -61,7 +75,7 @@ async function cargarPorArmar() {
     const filaItemsPeso = itemsPeso.map(it => `
       <div class="item-detalle item-armado" data-item-id="${it.id}" data-precio="${it.precio_unitario}">
         <label>${it.productos?.nombre || '?'} · pedido ${it.cantidad}kg
-          <input type="number" class="input-peso-real" min="0.01" step="0.01" inputmode="decimal" placeholder="peso real en kg">
+          <input type="number" class="input-peso-real" min="0.01" step="0.01" inputmode="decimal" placeholder="peso real en kg" value="${valoresPrevios.get(it.id) || ''}">
         </label>
       </div>
     `).join('')
@@ -89,6 +103,15 @@ async function cargarPorArmar() {
     `
     listaPorArmar.appendChild(fila)
   })
+
+  if (itemIdConFoco) {
+    const inputARefocar = listaPorArmar.querySelector(`.item-armado[data-item-id="${itemIdConFoco}"] .input-peso-real`)
+    if (inputARefocar) {
+      inputARefocar.focus()
+      const posicion = inputARefocar.value.length
+      inputARefocar.setSelectionRange(posicion, posicion)
+    }
+  }
 }
 
 listaPorArmar.addEventListener('click', async (e) => {
