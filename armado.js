@@ -19,6 +19,29 @@ if (!session) {
   setInterval(cargarPorArmar, 5000)
 }
 
+let ultimaCantidadPedidos = null // null = primera carga, no sonar todavía
+
+function reproducirAlertaSonora() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const tocarBeep = (frecuencia, inicio, duracion) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = frecuencia
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      gain.gain.setValueAtTime(0.35, ctx.currentTime + inicio)
+      osc.start(ctx.currentTime + inicio)
+      osc.stop(ctx.currentTime + inicio + duracion)
+    }
+    tocarBeep(880, 0, 0.15)
+    tocarBeep(880, 0.2, 0.15)
+  } catch (error) {
+    console.error('No se pudo reproducir la alerta sonora:', error)
+  }
+}
+
 // --- Pedidos de WhatsApp por armar (peso real pendiente) ---
 async function cargarPorArmar() {
   const { data, error } = await supabase
@@ -34,9 +57,18 @@ async function cargarPorArmar() {
   }
 
   if (data.length === 0) {
+    if (ultimaCantidadPedidos !== null && ultimaCantidadPedidos > 0) {
+      // no hace falta sonar acá, ya bajó a 0
+    }
+    ultimaCantidadPedidos = 0
     listaPorArmar.innerHTML = '<p class="muted">No hay pedidos de WhatsApp esperando armado.</p>'
     return
   }
+
+  if (ultimaCantidadPedidos !== null && data.length > ultimaCantidadPedidos) {
+    reproducirAlertaSonora()
+  }
+  ultimaCantidadPedidos = data.length
 
   const pedidosConItems = await Promise.all(
     data.map(async (pedido) => {
