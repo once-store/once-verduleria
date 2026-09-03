@@ -1062,6 +1062,24 @@ body {
 }
 .meta-falta { margin: 0; font-size: 13px; }
 
+.tarjeta-margen {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 6px 16px;
+}
+.margen-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde);
+}
+.margen-fila:last-of-type { border-bottom: none; }
+.margen-categoria { font-size: 14px; }
+.margen-valor { font-weight: 700; font-size: 15px; }
+.margen-nota { padding: 10px 0 6px; font-size: 12px; }
+
 .tarjeta-clima {
   display: flex;
   flex-direction: column;
