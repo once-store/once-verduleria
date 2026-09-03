@@ -1023,6 +1023,45 @@ body {
 .alerta-item.prioridad-atencion { border-left-color: #E0A62C; }
 .alerta-item.prioridad-informacion { border-left-color: var(--verde); }
 
+.tarjeta-meta {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.meta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.meta-total { font-size: 22px; font-weight: 700; }
+.meta-nivel { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+.meta-nivel-tomate { background: #FBE6DE; color: var(--tomate); }
+.meta-nivel-naranja { background: #FCEFD8; color: var(--naranja); }
+.meta-nivel-verde { background: var(--verde-suave, #E8F3EA); color: var(--verde); }
+.meta-nivel-verde-oscuro { background: var(--verde-suave, #E8F3EA); color: var(--verde-oscuro); }
+.meta-barra {
+  width: 100%;
+  height: 10px;
+  background: var(--crema-2, var(--crema));
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.meta-barra-relleno { height: 100%; border-radius: 999px; transition: width 0.3s ease; }
+.meta-barra-tomate { background: var(--tomate); }
+.meta-barra-naranja { background: var(--naranja); }
+.meta-barra-verde, .meta-barra-verde-oscuro { background: var(--verde); }
+.meta-niveles {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--texto-suave);
+  margin-bottom: 4px;
+}
+.meta-falta { margin: 0; font-size: 13px; }
+
 .tarjeta-clima {
   display: flex;
   flex-direction: column;
