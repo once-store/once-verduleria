@@ -12,6 +12,7 @@ const loginError = document.getElementById('login-error')
 const listaPendientes = document.getElementById('lista-pendientes')
 const badgePorArmar = document.getElementById('badge-por-armar')
 const resumenHoy = document.getElementById('resumen-hoy')
+const tarjetaMeta = document.getElementById('tarjeta-meta')
 const btnCampana = document.getElementById('btn-campana')
 const badgeAlertas = document.getElementById('badge-alertas')
 const modalCritica = document.getElementById('modal-alerta-critica')
@@ -68,11 +69,13 @@ function mostrarPanel() {
   cargarPendientes()
   cargarContadorPorArmar()
   cargarResumenHoy()
+  cargarMetaHoy()
   cargarAlertas()
   refrescoInterval = setInterval(() => {
     cargarPendientes()
     cargarContadorPorArmar()
     cargarResumenHoy()
+    cargarMetaHoy()
     cargarAlertas()
   }, 5000)
 }
@@ -330,6 +333,47 @@ async function cargarResumenHoy() {
     <div class="resumen-item"><span class="muted">Pedidos</span><strong>${data.length}</strong></div>
     <div class="resumen-item"><span class="muted">Digital</span><strong>${formatoMoneda(totalDigital)}</strong></div>
     <div class="resumen-item"><span class="muted">Efectivo</span><strong>${formatoMoneda(totalEfectivo)}</strong></div>
+  `
+}
+
+// --- Meta de venta del día (3 niveles: supervivencia/objetivo/excelente) ---
+const NIVEL_META_INFO = {
+  bajo_supervivencia: { color: 'tomate', texto: 'Por debajo del mínimo' },
+  supervivencia: { color: 'naranja', texto: 'Cubriendo lo mínimo' },
+  objetivo: { color: 'verde', texto: 'En objetivo' },
+  excelente: { color: 'verde-oscuro', texto: '¡Excelente! 🌟' },
+}
+
+async function cargarMetaHoy() {
+  const { data, error } = await supabase.rpc('obtener_meta_venta_hoy')
+  if (error) {
+    console.error(error)
+    return
+  }
+  dibujarMeta(data)
+}
+
+function dibujarMeta(meta) {
+  const info = NIVEL_META_INFO[meta.nivel_alcanzado] || NIVEL_META_INFO.bajo_supervivencia
+  const porcentaje = Math.max(0, Math.min(100, meta.porcentaje_objetivo || 0))
+  const faltaTexto = meta.falta_para_proximo_nivel > 0
+    ? `Faltan ${formatoMoneda(meta.falta_para_proximo_nivel)} para el próximo nivel`
+    : '¡Ya alcanzaste el nivel excelente!'
+
+  tarjetaMeta.innerHTML = `
+    <div class="meta-header">
+      <span class="meta-total">${formatoMoneda(meta.total_hoy)}</span>
+      <span class="meta-nivel meta-nivel-${info.color}">${info.texto}</span>
+    </div>
+    <div class="meta-barra">
+      <div class="meta-barra-relleno meta-barra-${info.color}" style="width:${porcentaje}%"></div>
+    </div>
+    <div class="meta-niveles">
+      <span>🔴 ${formatoMoneda(meta.supervivencia)}</span>
+      <span>🟡 ${formatoMoneda(meta.objetivo)}</span>
+      <span>🟢 ${formatoMoneda(meta.excelente)}</span>
+    </div>
+    <p class="meta-falta muted">${faltaTexto}</p>
   `
 }
 
