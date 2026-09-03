@@ -13,6 +13,7 @@ const listaPendientes = document.getElementById('lista-pendientes')
 const badgePorArmar = document.getElementById('badge-por-armar')
 const resumenHoy = document.getElementById('resumen-hoy')
 const tarjetaMeta = document.getElementById('tarjeta-meta')
+const tarjetaMargen = document.getElementById('tarjeta-margen')
 const btnCampana = document.getElementById('btn-campana')
 const badgeAlertas = document.getElementById('badge-alertas')
 const modalCritica = document.getElementById('modal-alerta-critica')
@@ -70,6 +71,7 @@ function mostrarPanel() {
   cargarContadorPorArmar()
   cargarResumenHoy()
   cargarMetaHoy()
+  cargarMargenCategoria()
   cargarAlertas()
   refrescoInterval = setInterval(() => {
     cargarPendientes()
@@ -375,6 +377,39 @@ function dibujarMeta(meta) {
     </div>
     <p class="meta-falta muted">${faltaTexto}</p>
   `
+}
+
+// --- Margen real por categoría (solo ventas con costo real registrado) ---
+async function cargarMargenCategoria() {
+  const { data, error } = await supabase.rpc('obtener_margen_por_categoria', { p_dias: 30 })
+  if (error) {
+    console.error(error)
+    return
+  }
+  dibujarMargen(data)
+}
+
+function dibujarMargen(datos) {
+  if (!datos.categorias || datos.categorias.length === 0) {
+    const nota = datos.items_sin_costo_registrado > 0
+      ? `Todavía no hay ventas con costo real registrado en este período (${datos.items_sin_costo_registrado} venta(s) son anteriores a este cambio y no se pueden reconstruir). Se va a ir completando con las ventas nuevas.`
+      : 'Todavía no hay ventas pagadas en este período.'
+    tarjetaMargen.innerHTML = `<p class="muted">${nota}</p>`
+    return
+  }
+
+  const filas = datos.categorias.map(c => `
+    <div class="margen-fila">
+      <span class="margen-categoria">${c.categoria}</span>
+      <span class="margen-valor">${c.margen_real_pct !== null ? c.margen_real_pct + '%' : '—'}</span>
+    </div>
+  `).join('')
+
+  const notaParcial = datos.items_sin_costo_registrado > 0
+    ? `<p class="muted margen-nota">${datos.items_sin_costo_registrado} venta(s) del período todavía no tienen costo real registrado (son de antes de este cambio) y no entran en este cálculo.</p>`
+    : ''
+
+  tarjetaMargen.innerHTML = filas + notaParcial
 }
 
 // --- Alertas ---
