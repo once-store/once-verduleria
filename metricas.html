@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · números</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="admin.html" class="btn-volver">‹</a>
+  <span class="brand-sub">cómo van los números</span>
+</header>
+
+<main id="vista-metricas" class="admin-contenido oculto">
+
+  <section class="bloque">
+    <h2>Meta de hoy</h2>
+    <div id="tarjeta-meta" class="tarjeta-meta"><p class="muted">Cargando…</p></div>
+  </section>
+
+  <section class="bloque">
+    <h2>Resultado bruto de hoy</h2>
+    <div id="tarjeta-resultado" class="tarjeta-resultado"><p class="muted">Cargando…</p></div>
+  </section>
+
+  <section class="bloque">
+    <h2>Margen real por categoría (30 días)</h2>
+    <div id="tarjeta-margen" class="tarjeta-margen"><p class="muted">Cargando…</p></div>
+  </section>
+
+</main>
+
+<script type="module" src="metricas.js"></script>
+</body>
+</html>
