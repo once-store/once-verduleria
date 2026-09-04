@@ -1062,6 +1062,23 @@ body {
 }
 .meta-falta { margin: 0; font-size: 13px; }
 
+.tarjeta-resultado {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 6px 16px;
+}
+.resultado-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borde);
+  font-size: 14px;
+}
+.resultado-total { font-weight: 700; font-size: 16px; border-bottom: none; padding-top: 10px; }
+.resultado-aviso { font-size: 12px; padding: 4px 0 8px; margin: 0; }
+.resultado-nota { font-size: 12px; padding: 0 0 8px; margin: 0; }
+
 .tarjeta-margen {
   background: var(--blanco);
   border: 1px solid var(--borde);
