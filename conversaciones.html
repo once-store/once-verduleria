@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · conversaciones</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="admin.html" class="btn-volver">‹</a>
+  <span class="brand-sub">conversaciones</span>
+</header>
+
+<main id="vista-conversaciones" class="admin-contenido oculto">
+
+  <section id="pantalla-lista">
+    <div id="conv-lista"><p class="muted">Cargando…</p></div>
+  </section>
+
+  <section id="pantalla-hilo" class="oculto">
+    <button id="btn-volver-lista" class="btn-texto btn-enlace-chico" style="margin-bottom:12px;">‹ Conversaciones</button>
+
+    <div id="conv-contacto-card" class="conv-contacto-card"></div>
+
+    <div id="conv-mensajes" class="conv-mensajes"></div>
+  </section>
+
+</main>
+
+<script type="module" src="conversaciones.js"></script>
+</body>
+</html>
