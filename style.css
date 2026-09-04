@@ -502,6 +502,45 @@ body {
 
 /* --- Página de compras y mermas: volver + pestañas --- */
 
+.conv-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--borde);
+  cursor: pointer;
+}
+.conv-fila:active { background: var(--crema-2, var(--crema)); }
+.conv-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--verde-suave, #E8F3EA); color: var(--verde-oscuro);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+.conv-info { flex: 1; min-width: 0; }
+.conv-nombre { font-weight: 700; font-size: 15px; margin: 0; }
+.conv-preview {
+  margin: 2px 0 0; font-size: 13px; color: var(--texto-suave);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.conv-fecha { font-size: 11px; color: var(--texto-suave); flex-shrink: 0; }
+
+.conv-contacto-card {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+.conv-contacto-card .conv-nombre { font-size: 16px; }
+.conv-contacto-card p { margin: 2px 0 0; font-size: 12px; color: var(--texto-suave); }
+
+.conv-mensajes { display: flex; flex-direction: column; gap: 10px; }
+.conv-burbuja { max-width: 82%; padding: 10px 13px; border-radius: 14px; font-size: 14px; line-height: 1.4; }
+.conv-burbuja-cliente { align-self: flex-start; background: var(--crema-2, var(--crema)); border-bottom-left-radius: 4px; }
+.conv-burbuja-bot { align-self: flex-end; background: var(--verde-suave, #E8F3EA); color: var(--verde-oscuro); border-bottom-right-radius: 4px; }
+.conv-burbuja-hora { display: block; font-size: 10px; color: var(--texto-suave); margin-top: 4px; }
+
 .btn-volver {
   text-decoration: none;
   color: var(--verde-oscuro);
