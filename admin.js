@@ -13,6 +13,7 @@ const listaPendientes = document.getElementById('lista-pendientes')
 const badgePorArmar = document.getElementById('badge-por-armar')
 const resumenHoy = document.getElementById('resumen-hoy')
 const tarjetaMeta = document.getElementById('tarjeta-meta')
+const tarjetaResultado = document.getElementById('tarjeta-resultado')
 const tarjetaMargen = document.getElementById('tarjeta-margen')
 const btnCampana = document.getElementById('btn-campana')
 const badgeAlertas = document.getElementById('badge-alertas')
@@ -71,6 +72,7 @@ function mostrarPanel() {
   cargarContadorPorArmar()
   cargarResumenHoy()
   cargarMetaHoy()
+  cargarResultadoBruto()
   cargarMargenCategoria()
   cargarAlertas()
   refrescoInterval = setInterval(() => {
@@ -78,6 +80,7 @@ function mostrarPanel() {
     cargarContadorPorArmar()
     cargarResumenHoy()
     cargarMetaHoy()
+    cargarResultadoBruto()
     cargarAlertas()
   }, 5000)
 }
@@ -376,6 +379,44 @@ function dibujarMeta(meta) {
       <span>🟢 ${formatoMoneda(meta.excelente)}</span>
     </div>
     <p class="meta-falta muted">${faltaTexto}</p>
+  `
+}
+
+// --- Resultado bruto del día (venta - costo de mercadería, solo con costo real conocido) ---
+async function cargarResultadoBruto() {
+  const { data, error } = await supabase.rpc('obtener_resultado_bruto_hoy')
+  if (error) {
+    console.error(error)
+    return
+  }
+  dibujarResultado(data)
+}
+
+function dibujarResultado(r) {
+  if (r.ventas_totales === 0) {
+    tarjetaResultado.innerHTML = '<p class="muted">Todavía no hay ventas hoy.</p>'
+    return
+  }
+
+  const notaParcial = r.items_sin_costo_registrado > 0
+    ? `<p class="muted resultado-nota">${r.items_sin_costo_registrado} venta(s) de hoy sin costo real registrado, no entran en este cálculo.</p>`
+    : ''
+
+  tarjetaResultado.innerHTML = `
+    <div class="resultado-fila">
+      <span class="muted">Ventas (con costo conocido)</span>
+      <span>${formatoMoneda(r.ventas_con_costo_conocido)}</span>
+    </div>
+    <div class="resultado-fila">
+      <span class="muted">Costo de mercadería</span>
+      <span>${formatoMoneda(r.costo_mercaderia)}</span>
+    </div>
+    <div class="resultado-fila resultado-total">
+      <span>Resultado bruto</span>
+      <span>${formatoMoneda(r.resultado_bruto)}</span>
+    </div>
+    <p class="muted resultado-aviso">No resta gastos fijos (todavía no están cargados).</p>
+    ${notaParcial}
   `
 }
 
