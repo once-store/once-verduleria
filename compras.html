@@ -44,6 +44,17 @@
         <label>Precio inicial <span class="muted">(lo vas a poder ajustar en la compra)</span>
           <input type="number" id="nuevo-producto-precio" min="0" step="1">
         </label>
+        <label>Perfil de maduración <span class="muted">(cuánto aguanta antes de necesitar oferta)</span>
+          <select id="nuevo-producto-perfil">
+            <option value="">Sin definir (no le van a caer ofertas automáticas)</option>
+            <option value="A">A — rápido (~6 días)</option>
+            <option value="B">B — muy rápido (~2-3 días)</option>
+            <option value="C">C — medio (~20 días)</option>
+            <option value="D">D — medio-largo (~40 días)</option>
+            <option value="E1">E1 — largo (~20 días, ej. cítricos)</option>
+            <option value="E2">E2 — muy largo (~60 días, ej. ajo/huevo)</option>
+          </select>
+        </label>
         <div class="acciones-pedido">
           <button type="button" id="btn-crear-producto" class="btn-confirmar">Crear producto</button>
           <button type="button" id="btn-cancelar-nuevo-producto" class="btn-cancelar">Cancelar</button>
