@@ -169,6 +169,7 @@ document.getElementById('btn-cancelar-nuevo-producto').addEventListener('click',
   document.getElementById('nuevo-producto-nombre').value = ''
   document.getElementById('nuevo-producto-precio').value = ''
   document.getElementById('nuevo-producto-tipo').checked = false
+  document.getElementById('nuevo-producto-perfil').value = ''
 })
 
 document.getElementById('btn-crear-producto').addEventListener('click', async () => {
@@ -177,6 +178,7 @@ document.getElementById('btn-crear-producto').addEventListener('click', async ()
   const nombre = document.getElementById('nuevo-producto-nombre').value.trim()
   const precio = Number(document.getElementById('nuevo-producto-precio').value)
   const tipo = document.getElementById('nuevo-producto-tipo').checked ? 'unidad' : 'peso'
+  const perfilMaduracion = document.getElementById('nuevo-producto-perfil').value || null
 
   if (!nombre) {
     elNuevoProductoError.textContent = 'Ponele un nombre al producto.'
@@ -194,7 +196,7 @@ document.getElementById('btn-crear-producto').addEventListener('click', async ()
 
   const { data, error } = await supabase
     .from('productos')
-    .insert({ nombre, tipo, precio, disponible: true })
+    .insert({ nombre, tipo, precio, disponible: true, perfil_maduracion: perfilMaduracion })
     .select('id')
     .single()
 
