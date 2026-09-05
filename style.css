@@ -1118,6 +1118,34 @@ body {
 .resultado-aviso { font-size: 12px; padding: 4px 0 8px; margin: 0; }
 .resultado-nota { font-size: 12px; padding: 0 0 8px; margin: 0; }
 
+.resultado-negativo { color: var(--tomate); }
+
+.tarjeta-gastos-fijos {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 6px 16px;
+}
+.gasto-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde);
+  gap: 10px;
+}
+.gasto-fila:last-of-type { border-bottom: none; }
+.gasto-concepto { font-size: 14px; }
+.gasto-input {
+  width: 110px;
+  text-align: right;
+  padding: 6px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.gasto-total { font-weight: 700; font-size: 15px; }
+
 .tarjeta-margen {
   background: var(--blanco);
   border: 1px solid var(--borde);
