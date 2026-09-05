@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · panel (prototipo)</title>
+<link rel="preload" href="adminlte.min.css" as="style">
+<link rel="stylesheet" href="adminlte.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="once-adminlte-overrides.css">
+</head>
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
+
+<!-- ============ LOGIN ============ -->
+<section id="vista-login" class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <b>once</b> · panel
+    </div>
+    <div class="card">
+      <div class="card-body login-card-body">
+        <p class="login-box-msg">Ingresá para administrar el local</p>
+        <form id="form-login">
+          <div class="mb-3">
+            <label class="form-label" for="login-email">Email</label>
+            <input type="email" id="login-email" class="form-control" required autocomplete="username">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="login-password">Contraseña</label>
+            <input type="password" id="login-password" class="form-control" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary d-block w-100">Entrar</button>
+          <p id="login-error" class="error oculto mt-2"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PANEL ============ -->
+<div id="vista-panel" class="app-wrapper oculto">
+
+  <!--begin::Header-->
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Mostrar/ocultar menú">
+            <i class="bi bi-list"></i>
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <button id="btn-campana" class="nav-link btn btn-link oculto" aria-label="Alertas" style="border:none;">
+            <i class="bi bi-bell-fill"></i>
+            <span id="badge-alertas" class="navbar-badge badge text-bg-danger oculto">0</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <!--end::Header-->
+
+  <!--begin::Sidebar-->
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="admin-v2.html" class="brand-link">
+        <span class="brand-text fw-bold">once · panel</span>
+      </a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2" aria-label="Navegación principal">
+        <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false">
+          <li class="nav-item">
+            <a href="admin-v2.html" class="nav-link active">
+              <i class="nav-icon bi bi-speedometer"></i>
+              <p>Panel</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="armado.html" class="nav-link">
+              <i class="nav-icon bi bi-basket"></i>
+              <p>Pedidos por armar</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="compras.html" class="nav-link">
+              <i class="nav-icon bi bi-box-seam"></i>
+              <p>Compras y mermas</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="promociones.html" class="nav-link">
+              <i class="nav-icon bi bi-tags"></i>
+              <p>Promociones</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="clientes.html" class="nav-link">
+              <i class="nav-icon bi bi-people"></i>
+              <p>Clientes y cuenta corriente</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="conversaciones.html" class="nav-link">
+              <i class="nav-icon bi bi-whatsapp"></i>
+              <p>Conversaciones del bot</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="metricas.html" class="nav-link">
+              <i class="nav-icon bi bi-graph-up"></i>
+              <p>Cómo van los números</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="horario.html" class="nav-link">
+              <i class="nav-icon bi bi-clock"></i>
+              <p>Editar horario</p>
+            </a>
+          </li>
+          <li class="nav-item mt-3">
+            <button id="btn-salir" class="nav-link btn btn-link text-start w-100">
+              <i class="nav-icon bi bi-box-arrow-left"></i>
+              <p>Cerrar sesión</p>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+  <!--end::Sidebar-->
+
+  <!--begin::Main-->
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <h3 class="mb-0">Panel</h3>
+      </div>
+    </div>
+
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div id="tarjeta-clima" class="tarjeta-clima oculto mb-3"></div>
+
+        <div class="row">
+          <div class="col-lg-6 mb-4">
+            <div class="card card-primary card-outline h-100">
+              <div class="card-header"><h3 class="card-title">Caja de hoy</h3></div>
+              <div class="card-body" id="tarjeta-caja"><p class="muted">Cargando…</p></div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-4">
+            <div class="card card-outline h-100">
+              <div class="card-header"><h3 class="card-title">Hoy</h3></div>
+              <div class="card-body">
+                <div id="resumen-hoy" class="resumen-grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-4">
+            <div class="card card-outline h-100">
+              <div class="card-header"><h3 class="card-title">Pendientes de confirmar</h3></div>
+              <div class="card-body" id="lista-pendientes"><p class="muted">Cargando…</p></div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-4">
+            <div class="card card-outline h-100">
+              <div class="card-header"><h3 class="card-title">Accesos rápidos</h3></div>
+              <div class="card-body d-grid gap-2">
+                <a href="armado.html" class="btn btn-outline-primary btn-con-badge">Pedidos por armar <span id="badge-por-armar" class="badge text-bg-danger oculto">0</span></a>
+                <a href="compras.html" class="btn btn-outline-secondary">Cargar compras y mermas</a>
+                <a href="promociones.html" class="btn btn-outline-secondary">Gestionar promociones</a>
+                <a href="clientes.html" class="btn btn-outline-secondary">Clientes y cuenta corriente</a>
+                <a href="conversaciones.html" class="btn btn-outline-secondary">Conversaciones del bot</a>
+                <a href="metricas.html" class="btn btn-outline-secondary">📊 Cómo van los números</a>
+                <a href="horario.html" class="btn btn-link text-center">Editar horario habitual</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <!--end::Main-->
+</div>
+
+<!-- Modales: se mantienen igual que en admin.html, mismo CSS (style.css) -->
+<div id="modal-alerta-critica" class="modal-alerta oculto">
+  <div class="modal-alerta-caja modal-alerta-critica-caja">
+    <span class="modal-alerta-icono">⚠️</span>
+    <h3>Atención</h3>
+    <p id="modal-alerta-critica-mensaje"></p>
+    <button id="btn-cerrar-alerta-critica" class="btn-primario btn-ancho">Entendido</button>
+  </div>
+</div>
+
+<div id="modal-cuenta-corriente" class="modal-alerta oculto">
+  <div class="modal-alerta-caja modal-lista-caja">
+    <div class="panel-header">
+      <h2>Cargar a cuenta</h2>
+      <button id="btn-cerrar-modal-cc" class="btn-texto">Cerrar</button>
+    </div>
+    <p class="muted" style="margin-top:-4px;">Se recalcula el pedido a precio de lista, sin promociones.</p>
+    <label>Cliente
+      <select id="cc-select-cliente"></select>
+    </label>
+    <button id="btn-confirmar-cc" class="btn-primario btn-ancho" style="margin-top:12px;">Confirmar cargo</button>
+    <p id="cc-error" class="error oculto"></p>
+  </div>
+</div>
+
+<div id="modal-lista-alertas" class="modal-alerta oculto">
+  <div class="modal-alerta-caja modal-lista-caja">
+    <div class="panel-header">
+      <h2>Alertas</h2>
+      <button id="btn-cerrar-lista-alertas" class="btn-texto">Cerrar</button>
+    </div>
+    <div id="lista-alertas-contenido"><p class="muted">Cargando…</p></div>
+  </div>
+</div>
+
+<script src="adminlte.min.js"></script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>

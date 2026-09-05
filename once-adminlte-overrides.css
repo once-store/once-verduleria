@@ -1,0 +1,48 @@
+/* Reaplica la paleta de once (verde/crema/tomate) sobre el tema por defecto
+   de AdminLTE, sin editar adminlte.min.css. Si en algún momento se decide no
+   seguir con este prototipo, alcanza con no subir este archivo (ni admin-v2.html). */
+
+[data-bs-theme="light"] {
+  --bs-primary: #2E7D52;
+  --bs-primary-rgb: 46, 125, 82;
+  --bs-body-bg: #FBF8F1;
+  --bs-body-color: #26342B;
+}
+
+.btn-primary {
+  --bs-btn-bg: #2E7D52;
+  --bs-btn-border-color: #2E7D52;
+  --bs-btn-hover-bg: #1D5B3B;
+  --bs-btn-hover-border-color: #1D5B3B;
+  --bs-btn-active-bg: #1D5B3B;
+  --bs-btn-active-border-color: #1D5B3B;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #2E7D52;
+  --bs-btn-border-color: #2E7D52;
+  --bs-btn-hover-bg: #2E7D52;
+  --bs-btn-hover-border-color: #2E7D52;
+  --bs-btn-active-bg: #1D5B3B;
+}
+
+.card-primary.card-outline {
+  border-top: 3px solid #2E7D52;
+}
+
+.app-sidebar {
+  --lte-sidebar-menu-active-bg: rgba(46, 125, 82, 0.2);
+  --lte-sidebar-menu-active-color: #6FCF97;
+}
+
+.brand-link .brand-text {
+  color: #6FCF97;
+}
+
+.text-bg-danger {
+  background-color: #E3643A !important;
+}
+
+/* El resto de las tarjetas viejas (clima, modales) siguen con su CSS propio
+   de style.css sin tocar — conviven bien porque los nombres de clase no
+   chocan con los de Bootstrap. */
