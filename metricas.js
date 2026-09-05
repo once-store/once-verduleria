@@ -9,6 +9,7 @@ const vistaMetricas = document.getElementById('vista-metricas')
 const tarjetaMeta = document.getElementById('tarjeta-meta')
 const tarjetaResultado = document.getElementById('tarjeta-resultado')
 const tarjetaMargen = document.getElementById('tarjeta-margen')
+const tarjetaGastos = document.getElementById('tarjeta-gastos-fijos')
 
 function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
@@ -23,6 +24,7 @@ if (!session) {
   cargarMetaHoy()
   cargarResultadoBruto()
   cargarMargenCategoria()
+  cargarGastosFijos()
 }
 
 // --- Meta de venta del día (3 niveles: supervivencia/objetivo/excelente) ---
@@ -77,14 +79,11 @@ async function cargarResultadoBruto() {
 }
 
 function dibujarResultado(r) {
-  if (r.ventas_totales === 0) {
-    tarjetaResultado.innerHTML = '<p class="muted">Todavía no hay ventas hoy.</p>'
-    return
-  }
-
   const notaParcial = r.items_sin_costo_registrado > 0
     ? `<p class="muted resultado-nota">${r.items_sin_costo_registrado} venta(s) de hoy sin costo real registrado, no entran en este cálculo.</p>`
     : ''
+
+  const claseNeto = r.resultado_neto_estimado >= 0 ? '' : 'resultado-negativo'
 
   tarjetaResultado.innerHTML = `
     <div class="resultado-fila">
@@ -95,14 +94,65 @@ function dibujarResultado(r) {
       <span class="muted">Costo de mercadería</span>
       <span>${formatoMoneda(r.costo_mercaderia)}</span>
     </div>
-    <div class="resultado-fila resultado-total">
+    <div class="resultado-fila">
       <span>Resultado bruto</span>
       <span>${formatoMoneda(r.resultado_bruto)}</span>
     </div>
-    <p class="muted resultado-aviso">No resta gastos fijos (todavía no están cargados).</p>
+    <div class="resultado-fila">
+      <span class="muted">Cuota diaria de gastos fijos</span>
+      <span>-${formatoMoneda(r.reserva_diaria_gastos_fijos)}</span>
+    </div>
+    <div class="resultado-fila resultado-total ${claseNeto}">
+      <span>Resultado neto estimado</span>
+      <span>${formatoMoneda(r.resultado_neto_estimado)}</span>
+    </div>
+    <p class="muted resultado-aviso">Estimado: los gastos fijos son montos aproximados cargados a mano, no gastos reales del día.</p>
     ${notaParcial}
   `
 }
+
+// --- Gastos fijos (montos estimados, editables) ---
+async function cargarGastosFijos() {
+  const { data, error } = await supabase.rpc('obtener_gastos_fijos')
+  if (error) {
+    console.error(error)
+    return
+  }
+  dibujarGastosFijos(data)
+}
+
+function dibujarGastosFijos(gastos) {
+  const total = gastos.reduce((acc, g) => acc + Number(g.monto_mensual), 0)
+
+  tarjetaGastos.innerHTML = gastos.map(g => `
+    <div class="gasto-fila">
+      <span class="gasto-concepto">${g.concepto}</span>
+      <input type="number" class="gasto-input" data-id="${g.id}" value="${g.monto_mensual}" min="0" step="1000">
+    </div>
+  `).join('') + `
+    <div class="gasto-fila gasto-total">
+      <span>Total mensual</span>
+      <span>${formatoMoneda(total)}</span>
+    </div>
+  `
+}
+
+tarjetaGastos.addEventListener('change', async (e) => {
+  const input = e.target.closest('.gasto-input')
+  if (!input) return
+
+  const { error } = await supabase.rpc('actualizar_gasto_fijo', {
+    p_id: input.dataset.id,
+    p_monto: Number(input.value),
+  })
+  if (error) {
+    console.error(error)
+    alert('No se pudo guardar: ' + error.message)
+    return
+  }
+  cargarGastosFijos()
+  cargarResultadoBruto()
+})
 
 // --- Margen real por categoría (solo ventas con costo real registrado) ---
 async function cargarMargenCategoria() {
