@@ -15,10 +15,15 @@ function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
 }
 
+document.getElementById('btn-salir').addEventListener('click', async () => {
+  await supabase.auth.signOut()
+  window.location.href = 'admin-v2.html'
+})
+
 // --- Sesión: esta pantalla requiere estar logueado, igual que el resto del panel ---
 const { data: { session } } = await supabase.auth.getSession()
 if (!session) {
-  window.location.href = 'admin.html'
+  window.location.href = 'admin-v2.html'
 } else {
   vistaMetricas.classList.remove('oculto')
   cargarMetaHoy()
