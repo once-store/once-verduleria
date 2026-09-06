@@ -6,21 +6,25 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const vistaConversaciones = document.getElementById('vista-conversaciones')
-const pantallaLista = document.getElementById('pantalla-lista')
-const pantallaHilo = document.getElementById('pantalla-hilo')
 const elConvLista = document.getElementById('conv-lista')
+const elConvVacio = document.getElementById('conv-vacio')
+const elConvDetalle = document.getElementById('conv-detalle')
 const elContactoCard = document.getElementById('conv-contacto-card')
 const elMensajes = document.getElementById('conv-mensajes')
-const btnVolverLista = document.getElementById('btn-volver-lista')
 
 // --- Sesión: esta pantalla requiere estar logueado, igual que el resto del panel ---
 const { data: { session } } = await supabase.auth.getSession()
 if (!session) {
-  window.location.href = 'admin.html'
+  window.location.href = 'admin-v2.html'
 } else {
   vistaConversaciones.classList.remove('oculto')
   cargarLista()
 }
+
+document.getElementById('btn-salir').addEventListener('click', async () => {
+  await supabase.auth.signOut()
+  window.location.href = 'admin-v2.html'
+})
 
 function iniciales(nombre) {
   if (!nombre) return '?'
@@ -67,15 +71,20 @@ async function cargarLista() {
   `).join('')
 }
 
+let numeroSeleccionado = null
+
 elConvLista.addEventListener('click', (e) => {
   const fila = e.target.closest('.conv-fila')
   if (!fila) return
+  numeroSeleccionado = fila.dataset.numero
+  elConvLista.querySelectorAll('.conv-fila').forEach(f => f.classList.remove('conv-fila-activa'))
+  fila.classList.add('conv-fila-activa')
   abrirHilo(fila.dataset.numero)
 })
 
 async function abrirHilo(numeroCliente) {
-  pantallaLista.classList.add('oculto')
-  pantallaHilo.classList.remove('oculto')
+  elConvVacio.classList.add('oculto')
+  elConvDetalle.classList.remove('oculto')
   elContactoCard.innerHTML = '<p class="muted">Cargando…</p>'
   elMensajes.innerHTML = ''
 
@@ -107,10 +116,5 @@ async function abrirHilo(numeroCliente) {
     ` : ''}
   `).join('')
 
-  elMensajes.scrollIntoView({ block: 'end' })
+  elMensajes.scrollTop = elMensajes.scrollHeight
 }
-
-btnVolverLista.addEventListener('click', () => {
-  pantallaHilo.classList.add('oculto')
-  pantallaLista.classList.remove('oculto')
-})
