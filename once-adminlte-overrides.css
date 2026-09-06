@@ -127,6 +127,21 @@
 
 .card > .card-body > .form-carga { margin-top: 14px; }
 
+.conv-split {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 560px;
+}
+.conv-lista-col {
+  border-right: 1px solid #E6E0D3;
+  overflow-y: auto;
+  max-height: 640px;
+}
+.conv-fila-activa { background: var(--verde-suave, #E8F3EA); }
+.conv-hilo-col { display: flex; flex-direction: column; padding: 18px; }
+.conv-vacio { display: flex; align-items: center; justify-content: center; height: 100%; }
+.conv-mensajes { flex: 1; overflow-y: auto; max-height: 500px; }
+
 .btn { border-radius: 8px; font-weight: 500; }
 .btn-outline-secondary {
   --bs-btn-color: #26342B;
