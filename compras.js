@@ -7,11 +7,11 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const vistaCompras = document.getElementById('vista-compras')
 
-// Esta página vive protegida por la sesión que ya abriste en admin.html.
+// Esta página vive protegida por la sesión que ya abriste en admin-v2.html.
 // Si entrás acá directo sin haber iniciado sesión, te manda de vuelta.
 const { data: { session } } = await supabase.auth.getSession()
 if (!session) {
-  window.location.href = 'admin.html'
+  window.location.href = 'admin-v2.html'
 } else {
   vistaCompras.classList.remove('oculto')
   cargarProductosParaCompraYMerma()
@@ -20,6 +20,11 @@ if (!session) {
 function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
 }
+
+document.getElementById('btn-salir').addEventListener('click', async () => {
+  await supabase.auth.signOut()
+  window.location.href = 'admin-v2.html'
+})
 
 // --- Pestañas ---
 document.querySelectorAll('.tab').forEach(btn => {
