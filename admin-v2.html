@@ -109,6 +109,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="caja.html" class="nav-link">
+              <i class="nav-icon bi bi-cash-coin"></i>
+              <p>Caja</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="metricas.html" class="nav-link">
               <i class="nav-icon bi bi-graph-up"></i>
               <p>Números</p>
@@ -147,17 +153,11 @@
 
         <div class="row">
           <div class="col-lg-6 mb-4">
-            <div class="card card-primary card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Caja de hoy</h3></div>
-              <div class="card-body" id="tarjeta-caja"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
-
-          <div class="col-lg-6 mb-4">
             <div class="card card-outline h-100">
               <div class="card-header"><h3 class="card-title">Hoy</h3></div>
               <div class="card-body">
                 <div id="resumen-hoy" class="resumen-grid"></div>
+                <a href="caja.html" class="btn btn-outline-secondary w-100 mt-3">Caja: <span id="badge-estado-caja">cargando…</span></a>
               </div>
             </div>
           </div>
