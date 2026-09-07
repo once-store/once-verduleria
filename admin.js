@@ -18,7 +18,6 @@ const modalCritica = document.getElementById('modal-alerta-critica')
 const modalCriticaMensaje = document.getElementById('modal-alerta-critica-mensaje')
 const btnCerrarAlertaCritica = document.getElementById('btn-cerrar-alerta-critica')
 const tarjetaClima = document.getElementById('tarjeta-clima')
-const tarjetaCaja = document.getElementById('tarjeta-caja')
 const modalListaAlertas = document.getElementById('modal-lista-alertas')
 const listaAlertasContenido = document.getElementById('lista-alertas-contenido')
 const btnCerrarListaAlertas = document.getElementById('btn-cerrar-lista-alertas')
@@ -335,78 +334,18 @@ async function cargarResumenHoy() {
   `
 }
 
-// --- Caja diaria (apertura/cierre, simplificado: no contempla retiros durante el día) ---
+// --- Estado de caja (solo texto, sin montos — el detalle vive en caja.html) ---
 async function cargarEstadoCaja() {
   const { data, error } = await supabase.rpc('obtener_estado_caja_hoy')
+  const badge = document.getElementById('badge-estado-caja')
+  if (!badge) return
   if (error) {
     console.error(error)
-    tarjetaCaja.innerHTML = `<p class="error">No se pudo cargar la caja: ${error.message}</p>`
+    badge.textContent = 'error al cargar'
     return
   }
-  dibujarCaja(data)
-}
-
-function dibujarCaja(estado) {
-  if (estado.estado === 'sin_abrir') {
-    tarjetaCaja.innerHTML = `
-      <p class="muted" style="margin-top:0;">Todavía no abriste la caja hoy.</p>
-      <label>Fondo inicial (efectivo con el que arrancás)
-        <input type="number" id="caja-fondo-inicial" min="0" step="100">
-      </label>
-      <button type="button" id="btn-abrir-caja" class="btn-confirmar" style="margin-top:8px;">Abrir caja</button>
-      <p id="caja-error" class="error oculto"></p>
-    `
-    document.getElementById('btn-abrir-caja').addEventListener('click', async () => {
-      const fondo = Number(document.getElementById('caja-fondo-inicial').value)
-      const elError = document.getElementById('caja-error')
-      const { error } = await supabase.rpc('abrir_caja', { p_fondo_inicial: fondo })
-      if (error) {
-        elError.textContent = error.message
-        elError.classList.remove('oculto')
-        return
-      }
-      cargarEstadoCaja()
-    })
-    return
-  }
-
-  if (estado.estado === 'abierta') {
-    tarjetaCaja.innerHTML = `
-      <p style="margin-top:0;">Caja abierta — fondo inicial ${formatoMoneda(estado.fondo_inicial)}.</p>
-      <label>Efectivo contado al cerrar
-        <input type="number" id="caja-efectivo-contado" min="0" step="100">
-      </label>
-      <button type="button" id="btn-cerrar-caja" class="btn-confirmar" style="margin-top:8px;">Cerrar caja</button>
-      <p id="caja-error" class="error oculto"></p>
-    `
-    document.getElementById('btn-cerrar-caja').addEventListener('click', async () => {
-      const contado = Number(document.getElementById('caja-efectivo-contado').value)
-      const elError = document.getElementById('caja-error')
-      const { error } = await supabase.rpc('cerrar_caja', { p_efectivo_contado: contado })
-      if (error) {
-        elError.textContent = error.message
-        elError.classList.remove('oculto')
-        return
-      }
-      cargarEstadoCaja()
-    })
-    return
-  }
-
-  // cerrada
-  const diferencia = estado.diferencia
-  const textoDif = diferencia === 0
-    ? 'Cuadró justo.'
-    : diferencia > 0
-      ? `Sobran ${formatoMoneda(diferencia)}.`
-      : `Faltan ${formatoMoneda(Math.abs(diferencia))}.`
-
-  tarjetaCaja.innerHTML = `
-    <p style="margin-top:0;">Caja cerrada por hoy.</p>
-    <div class="resultado-fila"><span class="muted">Esperado</span><span>${formatoMoneda(estado.efectivo_esperado_cierre)}</span></div>
-    <div class="resultado-fila"><span class="muted">Contado</span><span>${formatoMoneda(estado.efectivo_contado_cierre)}</span></div>
-    <p class="${diferencia === 0 ? 'muted' : 'resultado-negativo'}" style="font-weight:700;">${textoDif}</p>
-  `
+  const textos = { sin_abrir: 'sin abrir ⚠️', abierta: 'abierta ✅', cerrada: 'cerrada' }
+  badge.textContent = textos[data.estado] || data.estado
 }
 
 // --- Alertas ---
