@@ -69,6 +69,7 @@ function mostrarPanel() {
   cargarContadorPorArmar()
   cargarResumenHoy()
   cargarEstadoCaja()
+  cargarConversacionesRecientes()
   cargarAlertas()
   refrescoInterval = setInterval(() => {
     cargarPendientes()
@@ -346,6 +347,31 @@ async function cargarEstadoCaja() {
   }
   const textos = { sin_abrir: 'sin abrir ⚠️', abierta: 'abierta ✅', cerrada: 'cerrada' }
   badge.textContent = textos[data.estado] || data.estado
+}
+
+// --- Conversaciones recientes (mismo dato que la pantalla completa, solo top 3) ---
+async function cargarConversacionesRecientes() {
+  const el = document.getElementById('tarjeta-conversaciones-recientes')
+  if (!el) return
+
+  const { data, error } = await supabase.rpc('obtener_conversaciones_bot')
+  if (error) {
+    console.error(error)
+    el.innerHTML = '<p class="muted">No se pudieron cargar.</p>'
+    return
+  }
+
+  if (data.length === 0) {
+    el.innerHTML = '<p class="muted">Todavía no hay conversaciones registradas.</p>'
+    return
+  }
+
+  el.innerHTML = data.slice(0, 3).map(c => `
+    <div style="padding:8px 0; border-bottom:1px solid var(--borde);">
+      <strong style="font-size:14px;">${c.nombre || c.numero_cliente}</strong>
+      <p class="muted" style="margin:2px 0 0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.ultimo_mensaje || ''}</p>
+    </div>
+  `).join('')
 }
 
 // --- Alertas ---
