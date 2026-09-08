@@ -15,11 +15,16 @@ const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Vier
 // Si no hay sesión, no tiene sentido mostrar esto — volvemos al login del admin
 const { data: { session } } = await supabase.auth.getSession()
 if (!session) {
-  window.location.href = 'admin.html'
+  window.location.href = 'admin-v2.html'
 } else {
   vistaHorario.classList.remove('oculto')
   cargarHorario()
 }
+
+document.getElementById('btn-salir').addEventListener('click', async () => {
+  await supabase.auth.signOut()
+  window.location.href = 'admin-v2.html'
+})
 
 function formatoHora(t) {
   return (t || '').slice(0, 5)
