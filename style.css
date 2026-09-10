@@ -1291,3 +1291,52 @@ body {
   border-radius: 10px;
   background: var(--crema);
 }
+
+/* --- Cajones: repartir una compra en cajones físicos con su propio peso --- */
+
+.stepper-cajones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 10px;
+}
+
+.stepper-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--blanco);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stepper-valor {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.fila-cajon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fila-cajon span {
+  font-size: 13px;
+  color: var(--texto-suave);
+  min-width: 60px;
+}
+
+.codigo-cajon {
+  font-family: monospace;
+  font-size: 13px;
+  background: #f4f4f0;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
