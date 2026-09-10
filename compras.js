@@ -468,7 +468,10 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   } else {
     const codigosOrdenados = [...cajonesCreados].sort((a, b) => a.numero_guia - b.numero_guia)
     document.getElementById('lista-codigos-cajon').innerHTML = codigosOrdenados.map(c => `
-      <div class="codigo-cajon">L${c.numero_guia} · ${loteNuevo?.codigo ?? ''} (${c.peso_inicial} ${unidadConfirm})</div>
+      <div class="codigo-cajon">
+        L${c.numero_guia} · ${loteNuevo?.codigo ?? ''} (${c.peso_inicial} ${unidadConfirm})<br>
+        <span class="muted" style="font-size:12px;">QR: once-store.github.io/once-verduleria/cajon.html?n=${c.numero_guia}</span>
+      </div>
     `).join('')
     document.getElementById('cajones-resultado').classList.remove('oculto')
   }
