@@ -42,7 +42,7 @@ async function buscarCajon() {
     .from('cajones')
     .select(`
       numero_guia, peso_inicial, creado_en,
-      lotes ( codigo, ubicacion, cantidad_restante, fecha_ingreso,
+      lotes ( codigo, ubicacion, fecha_ingreso,
         productos ( nombre, tipo ) )
     `)
     .eq('numero_guia', numeroGuia)
@@ -64,7 +64,6 @@ async function buscarCajon() {
   document.getElementById('cajon-peso').textContent = `${cajon.peso_inicial} ${unidad}`
   document.getElementById('cajon-fecha').textContent = formatoFecha(lote.fecha_ingreso)
   document.getElementById('cajon-ubicacion').textContent = lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'
-  document.getElementById('cajon-restante').textContent = `${lote.cantidad_restante} ${unidad}`
 
   elCargando.classList.add('oculto')
   elFicha.classList.remove('oculto')
