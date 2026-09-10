@@ -5,10 +5,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-function formatoMoneda(n) {
-  return '$' + Math.round(n).toLocaleString('es-AR')
-}
-
 function formatoFecha(f) {
   const [anio, mes, dia] = f.split('-')
   return `${dia}/${mes}/${anio}`
@@ -46,7 +42,7 @@ async function buscarCajon() {
     .from('cajones')
     .select(`
       numero_guia, peso_inicial, creado_en,
-      lotes ( codigo, ubicacion, cantidad_restante, costo_unitario, precio, fecha_ingreso,
+      lotes ( codigo, ubicacion, cantidad_restante, fecha_ingreso,
         productos ( nombre, tipo ) )
     `)
     .eq('numero_guia', numeroGuia)
@@ -69,8 +65,6 @@ async function buscarCajon() {
   document.getElementById('cajon-fecha').textContent = formatoFecha(lote.fecha_ingreso)
   document.getElementById('cajon-ubicacion').textContent = lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'
   document.getElementById('cajon-restante').textContent = `${lote.cantidad_restante} ${unidad}`
-  document.getElementById('cajon-costo').textContent = formatoMoneda(lote.costo_unitario)
-  document.getElementById('cajon-precio').textContent = formatoMoneda(lote.precio)
 
   elCargando.classList.add('oculto')
   elFicha.classList.remove('oculto')
