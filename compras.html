@@ -168,6 +168,15 @@
                   </label>
                 </div>
 
+                <label>¿En cuántos cajones vino?
+                  <div class="stepper-cajones">
+                    <button type="button" class="stepper-btn" id="btn-menos-cajones">−</button>
+                    <span class="stepper-valor" id="cant-cajones">1</span>
+                    <button type="button" class="stepper-btn" id="btn-mas-cajones">+</button>
+                  </div>
+                </label>
+                <div id="pesos-cajones"></div>
+
                 <label>Proveedor <span class="muted">(opcional)</span>
                   <select id="compra-proveedor"></select>
                 </label>
@@ -220,6 +229,11 @@
                   <button id="btn-usar-sugerido" class="btn-confirmar">Guardar este precio</button>
                   <button id="btn-mantener-precio" class="btn-cancelar">Cerrar</button>
                 </div>
+              </div>
+
+              <div id="cajones-resultado" class="bloque oculto" style="margin-top:16px;">
+                <p class="subtitulo">Código para imprimir en cada cajón</p>
+                <div id="lista-codigos-cajon"></div>
               </div>
 
               <div id="resumen-sesion-compra" class="bloque oculto" style="margin-top:20px;">
