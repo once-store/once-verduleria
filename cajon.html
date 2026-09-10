@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · cajón</title>
+<link rel="preload" href="adminlte.min.css" as="style">
+<link rel="stylesheet" href="adminlte.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="once-adminlte-overrides.css">
+</head>
+<body class="layout-fixed bg-body-tertiary" data-bs-theme="light">
+
+<div id="vista-cajon" class="login-page">
+  <div class="login-box" style="max-width:420px;">
+    <div class="login-logo">
+      <b>once</b> · cajón
+    </div>
+    <div class="card">
+      <div class="card-body">
+
+        <div id="cajon-cargando"><p class="muted">Buscando el cajón…</p></div>
+        <p id="cajon-error" class="error oculto"></p>
+
+        <div id="cajon-ficha" class="oculto">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+            <p class="subtitulo" id="cajon-producto" style="margin:0;"></p>
+            <span class="muted" id="cajon-numero"></span>
+          </div>
+          <p class="muted" id="cajon-codigo" style="font-family:monospace; margin:0 0 16px;"></p>
+          <table style="width:100%; font-size:14px; border-collapse:collapse;">
+            <tr><td class="muted" style="padding:6px 0;">Peso de este cajón</td><td style="text-align:right;" id="cajon-peso"></td></tr>
+            <tr><td class="muted" style="padding:6px 0;">Ingresó</td><td style="text-align:right;" id="cajon-fecha"></td></tr>
+            <tr><td class="muted" style="padding:6px 0;">Ubicación del lote</td><td style="text-align:right;" id="cajon-ubicacion"></td></tr>
+            <tr><td class="muted" style="padding:6px 0;">Restante en el lote</td><td style="text-align:right;" id="cajon-restante"></td></tr>
+            <tr><td class="muted" style="padding:6px 0;">Costo por kilo</td><td style="text-align:right;" id="cajon-costo"></td></tr>
+            <tr><td class="muted" style="padding:6px 0;">Precio actual</td><td style="text-align:right;" id="cajon-precio"></td></tr>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="cajon.js"></script>
+</body>
+</html>
