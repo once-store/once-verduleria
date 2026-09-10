@@ -61,6 +61,63 @@ function resetearMadurez() {
 
 const elSwitchUbicacion = document.getElementById('compra-ubicacion')
 
+// --- Cajones: una compra puede venir repartida en más de un cajón físico.
+// Con 1 solo cajón (el caso más común) no pedimos nada extra: el peso de
+// ese cajón es directamente el campo "Cantidad". Con más de uno, cada
+// cajón tiene su propio peso y "Cantidad" pasa a ser de solo lectura,
+// mostrando la suma. ---
+let pesosCajones = [null]
+const elCantCajones = document.getElementById('cant-cajones')
+const elPesosCajones = document.getElementById('pesos-cajones')
+const elCompraCantidad = document.getElementById('compra-cantidad')
+
+function actualizarTotalCajones() {
+  const total = pesosCajones.reduce((acc, p) => acc + (Number(p) || 0), 0)
+  elCompraCantidad.value = total > 0 ? total : ''
+}
+
+function renderPesosCajones() {
+  elCantCajones.textContent = pesosCajones.length
+
+  if (pesosCajones.length === 1) {
+    elPesosCajones.innerHTML = ''
+    elCompraCantidad.readOnly = false
+    return
+  }
+
+  elCompraCantidad.readOnly = true
+  elPesosCajones.innerHTML = pesosCajones.map((p, i) => `
+    <div class="fila-cajon">
+      <span>Cajón ${i + 1}</span>
+      <input type="number" min="0" step="0.01" inputmode="decimal" class="input-peso-cajon" data-i="${i}" value="${p ?? ''}">
+    </div>
+  `).join('')
+
+  elPesosCajones.querySelectorAll('.input-peso-cajon').forEach(inp => {
+    inp.addEventListener('input', () => {
+      pesosCajones[Number(inp.dataset.i)] = inp.value === '' ? null : Number(inp.value)
+      actualizarTotalCajones()
+    })
+  })
+  actualizarTotalCajones()
+}
+
+document.getElementById('btn-mas-cajones').addEventListener('click', () => {
+  if (pesosCajones.length >= 12) return
+  pesosCajones.push(null)
+  renderPesosCajones()
+})
+document.getElementById('btn-menos-cajones').addEventListener('click', () => {
+  if (pesosCajones.length <= 1) return
+  pesosCajones.pop()
+  renderPesosCajones()
+})
+
+function resetearCajones() {
+  pesosCajones = [null]
+  renderPesosCajones()
+}
+
 // --- Resumen de lo cargado en esta compra/boleta (se pierde al recargar la
 // página o al tocar "Finalizar esta compra"; es para no perder el hilo
 // mientras cargás muchos productos seguidos de un mismo remito) ---
@@ -327,6 +384,12 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   const proveedorId = selectCompraProveedor.value || null
   const ubicacion = elSwitchUbicacion.checked ? 'salon' : 'deposito'
 
+  if (pesosCajones.length > 1 && pesosCajones.some(p => !p || p <= 0)) {
+    elCompraError.textContent = 'Completá el peso de todos los cajones.'
+    elCompraError.classList.remove('oculto')
+    return
+  }
+
   const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
   const costoUnitarioPreview = cantidad > 0 ? costoTotal / cantidad : 0
   const yaCargado = comprasSesion.find(c => c.productoId === producto.id)
@@ -387,9 +450,30 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   // aunque no haya margen configurado (en ese caso usó el precio actual del producto).
   const { data: loteNuevo } = await supabase
     .from('lotes')
-    .select('precio')
+    .select('precio, codigo')
     .eq('id', resultado.lote_id)
     .single()
+
+  // --- Crear los cajones físicos de este lote y mostrar el código de cada
+  // uno, listo para tipear en la impresora. ---
+  const pesosFinales = pesosCajones.length === 1 ? [cantidad] : pesosCajones.map(Number)
+
+  const { data: cajonesCreados, error: errorCajones } = await supabase
+    .from('cajones')
+    .insert(pesosFinales.map(peso => ({ lote_id: resultado.lote_id, peso_inicial: peso })))
+    .select('numero_guia, peso_inicial')
+
+  if (errorCajones) {
+    console.error(errorCajones)
+  } else {
+    const codigosOrdenados = [...cajonesCreados].sort((a, b) => a.numero_guia - b.numero_guia)
+    document.getElementById('lista-codigos-cajon').innerHTML = codigosOrdenados.map(c => `
+      <div class="codigo-cajon">L${c.numero_guia} · ${loteNuevo?.codigo ?? ''} (${c.peso_inicial} ${unidadConfirm})</div>
+    `).join('')
+    document.getElementById('cajones-resultado').classList.remove('oculto')
+  }
+
+  resetearCajones()
 
   document.getElementById('sug-precio-actual').textContent = formatoMoneda(loteNuevo?.precio ?? 0)
   document.getElementById('sug-precio-manual').value = loteNuevo?.precio ?? ''
