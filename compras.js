@@ -216,6 +216,7 @@ function actualizarSelectorPresentacion(productoId) {
   if (opciones.length === 0) {
     elLabelPresentacion.classList.add('oculto')
     elSelectPresentacion.innerHTML = ''
+    actualizarLabelCantidad()
     return
   }
 
@@ -501,14 +502,16 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   }
 
   const resultado = data[0]
-  comprasSesion.push({
+  const itemSesion = {
     productoId: producto.id,
     nombre: producto.nombre,
     cantidad: cantidadBase,
     unidad: unidadConfirm,
     costoTotal,
-    costoUnitario: resultado.costo_unitario
-  })
+    costoUnitario: resultado.costo_unitario,
+    codigos: null
+  }
+  comprasSesion.push(itemSesion)
   renderComprasSesion()
   bloquearProveedor()
 
@@ -527,8 +530,9 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
     .eq('id', resultado.lote_id)
     .single()
 
-  // --- Crear los cajones físicos de este lote y mostrar el código de cada
-  // uno, listo para tipear en la impresora. ---
+  // --- Crear los cajones físicos de este lote y sumar el código de cada
+  // uno a este mismo ítem de la lista, para no perder los códigos previos
+  // cada vez que se carga un producto nuevo. ---
   const pesosFinales = pres ? [cantidadBase] : (pesosCajones.length === 1 ? [cantidad] : pesosCajones.map(Number))
 
   const { data: cajonesCreados, error: errorCajones } = await supabase
@@ -539,14 +543,10 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   if (errorCajones) {
     console.error(errorCajones)
   } else {
-    const codigosOrdenados = [...cajonesCreados].sort((a, b) => a.numero_guia - b.numero_guia)
-    document.getElementById('lista-codigos-cajon').innerHTML = codigosOrdenados.map(c => `
-      <div class="codigo-cajon">
-        L${c.numero_guia} · ${loteNuevo?.codigo ?? ''} (${c.peso_inicial} ${unidadConfirm})<br>
-        <span class="muted" style="font-size:12px;">QR: once-store.github.io/once-verduleria/cajon.html?n=${c.numero_guia}</span>
-      </div>
-    `).join('')
-    document.getElementById('cajones-resultado').classList.remove('oculto')
+    itemSesion.codigos = [...cajonesCreados]
+      .sort((a, b) => a.numero_guia - b.numero_guia)
+      .map(c => ({ numeroGuia: c.numero_guia, peso: c.peso_inicial, codigoLote: loteNuevo?.codigo ?? '' }))
+    renderComprasSesion()
   }
 
   resetearCajones()
@@ -789,19 +789,43 @@ async function cargarLotesParaPrecio() {
         <div class="fila-titulo">${lote.cantidad_restante} ${unidad} · ${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</div>
         <p class="muted">Precio original: ${formatoMoneda(lote.precio_original)}</p>
         <label>Costo de este lote <span class="muted">(lo que te costó a vos)</span>
-          <input type="number" min="0" step="1" class="input-costo-lote" value="${lote.costo_unitario}" data-lote-id="${lote.id}">
+          <input type="number" min="0" step="1" class="input-costo-lote" value="${lote.costo_unitario}" data-original="${lote.costo_unitario}" data-lote-id="${lote.id}">
         </label>
         <label>Precio actual de este lote <span class="muted">(lo que le cobrás al cliente)</span>
-          <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-lote-id="${lote.id}">
+          <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-original="${lote.precio}" data-lote-id="${lote.id}">
         </label>
+        <p class="muted margen-lote" data-lote-id="${lote.id}"></p>
         <div class="acciones-pedido">
-          <button class="btn-confirmar btn-guardar-precio-lote" data-lote-id="${lote.id}">Guardar</button>
+          <button class="btn-confirmar btn-guardar-precio-lote" data-lote-id="${lote.id}" disabled>Guardar</button>
         </div>
       </div>
     `
     elListaPrecioLotes.appendChild(fila)
+    actualizarMargenLote(lote.id)
   })
 }
+
+function actualizarMargenLote(loteId) {
+  const inputCosto = elListaPrecioLotes.querySelector(`.input-costo-lote[data-lote-id="${loteId}"]`)
+  const inputPrecio = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${loteId}"]`)
+  const elMargen = elListaPrecioLotes.querySelector(`.margen-lote[data-lote-id="${loteId}"]`)
+  const btn = elListaPrecioLotes.querySelector(`.btn-guardar-precio-lote[data-lote-id="${loteId}"]`)
+
+  const costo = Number(inputCosto.value)
+  const precio = Number(inputPrecio.value)
+  elMargen.textContent = costo > 0
+    ? `Margen con estos números: ${(((precio - costo) / costo) * 100).toFixed(1)}%`
+    : 'Margen: —'
+
+  const cambioAlgo = inputCosto.value !== inputCosto.dataset.original || inputPrecio.value !== inputPrecio.dataset.original
+  btn.disabled = !cambioAlgo
+}
+
+elListaPrecioLotes.addEventListener('input', (e) => {
+  const loteId = e.target.dataset.loteId
+  if (!loteId || !e.target.matches('.input-costo-lote, .input-precio-lote')) return
+  actualizarMargenLote(loteId)
+})
 
 elListaPrecioLotes.addEventListener('click', async (e) => {
   const btn = e.target.closest('.btn-guardar-precio-lote')
@@ -843,6 +867,9 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
     console.error(error)
     return
   }
+  inputCosto.dataset.original = inputCosto.value
+  inputPrecio.dataset.original = inputPrecio.value
+  btn.disabled = true
   btn.textContent = 'Guardado ✓'
   setTimeout(() => { btn.textContent = 'Guardar' }, 1500)
 })
