@@ -156,6 +156,7 @@ btnFinalizarCarga.addEventListener('click', () => {
 
 // --- Productos (compartido entre compra y merma) ---
 let productosCompraMerma = []
+let presentacionesCompra = []
 
 const selectCompraProducto = document.getElementById('compra-producto')
 const selectMermaProducto = document.getElementById('merma-producto')
@@ -164,6 +165,9 @@ const elCompraMargen = document.getElementById('compra-margen')
 const elCompraError = document.getElementById('compra-error')
 const elMermaError = document.getElementById('merma-error')
 const elCompraSugerencia = document.getElementById('compra-sugerencia')
+const elLabelPresentacion = document.getElementById('label-compra-presentacion')
+const elSelectPresentacion = document.getElementById('compra-presentacion')
+const elLabelCantidad = document.getElementById('label-compra-cantidad')
 
 async function cargarProductosParaCompraYMerma() {
   const { data, error } = await supabase
@@ -182,12 +186,70 @@ async function cargarProductosParaCompraYMerma() {
   selectMermaProducto.innerHTML = opciones
   document.getElementById('precio-producto').innerHTML = opciones
 
+  const { data: presentaciones, error: errorPresentaciones } = await supabase
+    .from('presentaciones')
+    .select('id, producto_id, nombre, cantidad_unidades')
+    .eq('usar_en_compra', true)
+    .eq('activa', true)
+    .order('orden')
+
+  if (errorPresentaciones) {
+    console.error(errorPresentaciones)
+  } else {
+    presentacionesCompra = presentaciones
+  }
+
   actualizarInfoProductoCompra()
 }
 
 function productoSeleccionado(id) {
   return productosCompraMerma.find(p => p.id === id)
 }
+
+// Si el producto elegido tiene presentaciones de compra (ej. Huevo por Maple
+// o Cajón), muestra el selector "Comprás en". El tamaño de cada presentación
+// es fijo y conocido, así que más abajo no hace falta pedir el peso de cada
+// cajón a mano cuando se compra por presentación.
+function actualizarSelectorPresentacion(productoId) {
+  const opciones = presentacionesCompra.filter(pr => pr.producto_id === productoId)
+
+  if (opciones.length === 0) {
+    elLabelPresentacion.classList.add('oculto')
+    elSelectPresentacion.innerHTML = ''
+    return
+  }
+
+  elSelectPresentacion.innerHTML = ['<option value="">Unidad suelta</option>']
+    .concat(opciones.map(pr => `<option value="${pr.id}" data-cantidad="${pr.cantidad_unidades}">${pr.nombre} (${pr.cantidad_unidades})</option>`))
+    .join('')
+  elLabelPresentacion.classList.remove('oculto')
+  actualizarLabelCantidad()
+}
+
+function presentacionSeleccionada() {
+  return presentacionesCompra.find(pr => pr.id === elSelectPresentacion.value)
+}
+
+function actualizarLabelCantidad() {
+  const p = productoSeleccionado(selectCompraProducto.value)
+  const pres = presentacionSeleccionada()
+  const unidad = p?.tipo === 'peso' ? 'kg' : 'unidades'
+  const plural = pres ? (pres.nombre.endsWith('ón') ? pres.nombre.slice(0, -2) + 'ones' : pres.nombre + 's') : ''
+  elLabelCantidad.firstChild.textContent = pres ? `Cantidad de ${plural.toLowerCase()} ` : `Cantidad (${unidad}) `
+
+  // Comprando por presentación (ej. Cajón de huevo), el tamaño de cada
+  // cajón físico ya lo define la presentación — no tiene sentido pedir
+  // también el desglose de "en cuántos cajones vino" a mano.
+  const elBloqueCajones = document.getElementById('bloque-cajones')
+  if (pres) {
+    elBloqueCajones.classList.add('oculto')
+    resetearCajones()
+  } else {
+    elBloqueCajones.classList.remove('oculto')
+  }
+}
+
+elSelectPresentacion.addEventListener('change', actualizarLabelCantidad)
 
 // Stock vendible actual del producto elegido (suma de sus lotes en salón)
 async function actualizarInfoProductoCompra() {
@@ -196,6 +258,7 @@ async function actualizarInfoProductoCompra() {
 
   elCompraMargen.value = p.margen_objetivo_pct ?? ''
   elCompraSugerencia.classList.add('oculto')
+  actualizarSelectorPresentacion(p.id)
 
   const { data, error } = await supabase
     .from('lotes')
@@ -383,22 +446,31 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   const costoTotal = Number(document.getElementById('compra-costo').value)
   const proveedorId = selectCompraProveedor.value || null
   const ubicacion = elSwitchUbicacion.checked ? 'salon' : 'deposito'
+  const pres = presentacionSeleccionada()
+  const cantidadBase = pres ? cantidad * Number(pres.cantidad_unidades) : cantidad
 
-  if (pesosCajones.length > 1 && pesosCajones.some(p => !p || p <= 0)) {
+  if (comprasSesion.length === 0 && !proveedorId) {
+    if (!confirm('No elegiste un proveedor para esta compra. ¿Registrarla igual, sin proveedor?')) return
+  }
+
+  if (!pres && pesosCajones.length > 1 && pesosCajones.some(p => !p || p <= 0)) {
     elCompraError.textContent = 'Completá el peso de todos los cajones.'
     elCompraError.classList.remove('oculto')
     return
   }
 
   const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
-  const costoUnitarioPreview = cantidad > 0 ? costoTotal / cantidad : 0
+  const costoUnitarioPreview = cantidadBase > 0 ? costoTotal / cantidadBase : 0
   const yaCargado = comprasSesion.find(c => c.productoId === producto.id)
   const avisoRepetido = yaCargado
     ? `\n⚠ Ya cargaste ${producto?.nombre} en esta sesión (${yaCargado.cantidad} ${yaCargado.unidad}). ¿Es otra compra distinta?\n`
     : ''
+  const detalleCantidad = pres
+    ? `${cantidad} ${pres.nombre}(s) de ${producto?.nombre ?? ''} (${cantidadBase} ${unidadConfirm})`
+    : `${cantidad} ${unidadConfirm} de ${producto?.nombre ?? ''}`
   const confirmado = confirm(
     `Vas a cargar:\n\n` +
-    `${cantidad} ${unidadConfirm} de ${producto?.nombre ?? ''}\n` +
+    `${detalleCantidad}\n` +
     `Costo total: ${formatoMoneda(costoTotal)}\n` +
     `Costo por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'}: ${formatoMoneda(costoUnitarioPreview)}\n` +
     avisoRepetido +
@@ -415,7 +487,8 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
     p_costo_total: costoTotal,
     p_proveedor_id: proveedorId,
     p_avance_madurez_pct: madurezSeleccionada,
-    p_ubicacion: ubicacion
+    p_ubicacion: ubicacion,
+    p_presentacion_id: pres ? pres.id : null
   })
 
   boton.disabled = false
@@ -431,7 +504,7 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   comprasSesion.push({
     productoId: producto.id,
     nombre: producto.nombre,
-    cantidad,
+    cantidad: cantidadBase,
     unidad: unidadConfirm,
     costoTotal,
     costoUnitario: resultado.costo_unitario
@@ -456,7 +529,7 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
 
   // --- Crear los cajones físicos de este lote y mostrar el código de cada
   // uno, listo para tipear en la impresora. ---
-  const pesosFinales = pesosCajones.length === 1 ? [cantidad] : pesosCajones.map(Number)
+  const pesosFinales = pres ? [cantidadBase] : (pesosCajones.length === 1 ? [cantidad] : pesosCajones.map(Number))
 
   const { data: cajonesCreados, error: errorCajones } = await supabase
     .from('cajones')
