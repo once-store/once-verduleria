@@ -115,127 +115,96 @@
           <div class="card-body">
 
             <div id="panel-compra" class="tab-panel">
-              <form id="form-compra" class="form-carga">
-                <label>Producto
-                  <select id="compra-producto" required></select>
-                </label>
-                <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
 
-                <div id="form-nuevo-producto" class="form-carga oculto">
-                  <label>Nombre
-                    <input type="text" id="nuevo-producto-nombre" placeholder="ej: Naranja de ombligo">
-                  </label>
-                  <div class="switch-fila">
-                    <span class="switch-etiqueta">Por peso (kg)</span>
-                    <label class="switch">
-                      <input type="checkbox" id="nuevo-producto-tipo">
-                    </label>
-                    <span class="switch-etiqueta">Por unidad</span>
-                  </div>
-                  <label>Precio inicial <span class="muted">(lo vas a poder ajustar en la compra)</span>
-                    <input type="number" id="nuevo-producto-precio" min="0" step="1">
-                  </label>
-                  <label>Perfil de maduración <span class="muted">(cuánto aguanta antes de necesitar oferta)</span>
-                    <select id="nuevo-producto-perfil">
-                      <option value="">Sin definir (no le van a caer ofertas automáticas)</option>
-                      <option value="A">A — rápido (~6 días)</option>
-                      <option value="B">B — muy rápido (~2-3 días)</option>
-                      <option value="C">C — medio (~20 días)</option>
-                      <option value="D">D — medio-largo (~40 días)</option>
-                      <option value="E1">E1 — largo (~20 días, ej. cítricos)</option>
-                      <option value="E2">E2 — muy largo (~60 días, ej. ajo/huevo)</option>
-                    </select>
-                  </label>
-                  <div class="acciones-pedido">
-                    <button type="button" id="btn-crear-producto" class="btn-confirmar">Crear producto</button>
-                    <button type="button" id="btn-cancelar-nuevo-producto" class="btn-cancelar">Cancelar</button>
-                  </div>
-                  <p id="nuevo-producto-error" class="error oculto"></p>
-                </div>
-
-                <p id="compra-stock-actual" class="muted oculto"></p>
-
-                <label id="label-compra-presentacion" class="oculto">Comprás en
-                  <select id="compra-presentacion"></select>
-                </label>
-
-                <div class="fila-2">
-                  <label id="label-compra-cantidad">Cantidad
-                    <input type="number" id="compra-cantidad" min="0.01" step="0.01" inputmode="decimal" required>
-                  </label>
-                  <label>Costo total
-                    <input type="number" id="compra-costo" min="0" step="1" inputmode="decimal" required>
-                  </label>
-                </div>
-
-                <div id="bloque-cajones">
-                  <label>¿En cuántos cajones vino?
-                    <div class="stepper-cajones">
-                      <button type="button" class="stepper-btn" id="btn-menos-cajones">−</button>
-                      <span class="stepper-valor" id="cant-cajones">1</span>
-                      <button type="button" class="stepper-btn" id="btn-mas-cajones">+</button>
-                    </div>
-                  </label>
-                  <div id="pesos-cajones"></div>
-                </div>
-
+              <div class="cabecera-boleta">
                 <label>Proveedor <span class="muted">(opcional)</span>
                   <select id="compra-proveedor"></select>
                 </label>
                 <button type="button" id="btn-mostrar-nuevo-proveedor" class="btn-texto btn-enlace-chico">+ Nuevo proveedor</button>
-
-                <div id="form-nuevo-proveedor" class="form-carga oculto">
-                  <label>Nombre del proveedor
-                    <input type="text" id="nuevo-proveedor-nombre" placeholder="ej: Distribuidora El Sol">
-                  </label>
-                  <div class="acciones-pedido">
-                    <button type="button" id="btn-crear-proveedor" class="btn-confirmar">Crear proveedor</button>
-                    <button type="button" id="btn-cancelar-nuevo-proveedor" class="btn-cancelar">Cancelar</button>
-                  </div>
-                  <p id="nuevo-proveedor-error" class="error oculto"></p>
-                </div>
-
-                <label>Margen objetivo %
-                  <input type="number" id="compra-margen" min="0" step="1" placeholder="ej: 30">
-                </label>
-
-                <label>Estado del producto al llegar
-                  <div class="grupo-opciones" id="grupo-madurez">
-                    <button type="button" class="opcion-btn activa" data-valor="0">Recién llega</button>
-                    <button type="button" class="opcion-btn" data-valor="50">A mitad</button>
-                    <button type="button" class="opcion-btn" data-valor="90">Para vender ya</button>
-                  </div>
-                </label>
-
-                <div class="switch-fila">
-                  <span class="switch-etiqueta">Depósito</span>
-                  <label class="switch">
-                    <input type="checkbox" id="compra-ubicacion" checked>
-                    <span class="switch-slider"></span>
-                  </label>
-                  <span class="switch-etiqueta">Salón</span>
-                </div>
-
-                <button type="submit" class="btn-primario">Registrar compra</button>
-                <p id="compra-error" class="error oculto"></p>
-              </form>
-
-              <div id="compra-sugerencia" class="sugerencia-precio oculto">
-                <p class="sugerencia-linea">Costo unitario: <strong id="sug-costo"></strong></p>
-                <p class="sugerencia-linea">Precio sugerido para este lote: <strong id="sug-precio"></strong></p>
-                <p class="muted sugerencia-linea">Precio con el que quedó cargado: <span id="sug-precio-actual"></span></p>
-                <label>O poné el precio que quieras para este lote
-                  <input type="number" id="sug-precio-manual" min="0" step="1">
-                </label>
-                <div class="acciones-pedido">
-                  <button id="btn-usar-sugerido" class="btn-confirmar">Guardar este precio</button>
-                  <button id="btn-mantener-precio" class="btn-cancelar">Cerrar</button>
-                </div>
+                <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
               </div>
 
-              <div id="cajones-resultado" class="bloque oculto" style="margin-top:16px;">
-                <p class="subtitulo">Código para imprimir en cada cajón</p>
-                <div id="lista-codigos-cajon"></div>
+              <div id="form-nuevo-proveedor" class="form-carga oculto">
+                <label>Nombre del proveedor
+                  <input type="text" id="nuevo-proveedor-nombre" placeholder="ej: Distribuidora El Sol">
+                </label>
+                <div class="acciones-pedido">
+                  <button type="button" id="btn-crear-proveedor" class="btn-confirmar">Crear proveedor</button>
+                  <button type="button" id="btn-cancelar-nuevo-proveedor" class="btn-cancelar">Cancelar</button>
+                </div>
+                <p id="nuevo-proveedor-error" class="error oculto"></p>
+              </div>
+
+              <div id="form-nuevo-producto" class="form-carga oculto">
+                <label>Nombre
+                  <input type="text" id="nuevo-producto-nombre" placeholder="ej: Naranja de ombligo">
+                </label>
+                <div class="switch-fila">
+                  <span class="switch-etiqueta">Por peso (kg)</span>
+                  <label class="switch">
+                    <input type="checkbox" id="nuevo-producto-tipo">
+                  </label>
+                  <span class="switch-etiqueta">Por unidad</span>
+                </div>
+                <label>Precio inicial <span class="muted">(lo vas a poder ajustar en la compra)</span>
+                  <input type="number" id="nuevo-producto-precio" min="0" step="1">
+                </label>
+                <label>Perfil de maduración <span class="muted">(cuánto aguanta antes de necesitar oferta)</span>
+                  <select id="nuevo-producto-perfil">
+                    <option value="">Sin definir (no le van a caer ofertas automáticas)</option>
+                    <option value="A">A — rápido (~6 días)</option>
+                    <option value="B">B — muy rápido (~2-3 días)</option>
+                    <option value="C">C — medio (~20 días)</option>
+                    <option value="D">D — medio-largo (~40 días)</option>
+                    <option value="E1">E1 — largo (~20 días, ej. cítricos)</option>
+                    <option value="E2">E2 — muy largo (~60 días, ej. ajo/huevo)</option>
+                  </select>
+                </label>
+                <div class="acciones-pedido">
+                  <button type="button" id="btn-crear-producto" class="btn-confirmar">Crear producto</button>
+                  <button type="button" id="btn-cancelar-nuevo-producto" class="btn-cancelar">Cancelar</button>
+                </div>
+                <p id="nuevo-producto-error" class="error oculto"></p>
+              </div>
+
+              <p id="compra-stock-actual" class="muted oculto"></p>
+
+              <div class="grilla-compra-wrap">
+                <div class="grilla-compra-header">
+                  <span>codbar</span><span>producto</span><span>cant.</span><span>PCU</span><span>PCT</span>
+                  <span>iva</span><span>marg. %</span><span>PVU</span><span>estado</span><span>ubic.</span><span>cajones</span>
+                </div>
+                <div class="grilla-compra-fila" id="fila-compra">
+                  <input class="celda" id="compra-codbar" disabled placeholder="—">
+                  <select class="celda" id="compra-producto" required></select>
+                  <div class="celda-texto" id="compra-cantidad-out">—</div>
+                  <input class="celda" id="compra-pcu" type="number" min="0" step="0.01" inputmode="decimal">
+                  <input class="celda" id="compra-pct" type="number" min="0" step="1" inputmode="decimal">
+                  <div class="celda-texto muted">N/A</div>
+                  <input class="celda" id="compra-margen" type="number" min="0" step="1" placeholder="30">
+                  <div class="celda-texto" id="compra-pvu-out">—</div>
+                  <select class="celda" id="compra-estado">
+                    <option value="0">Recién llega</option>
+                    <option value="50">A mitad</option>
+                    <option value="90">Para vender ya</option>
+                  </select>
+                  <select class="celda" id="compra-ubicacion">
+                    <option value="deposito">Depósito</option>
+                    <option value="salon">Salón</option>
+                  </select>
+                  <button type="button" class="celda" id="btn-toggle-cajones"><span id="cant-cajones">1</span> <i class="bi bi-chevron-down"></i></button>
+                </div>
+                <p id="compra-error" class="error oculto"></p>
+
+                <label id="label-compra-presentacion" class="oculto">Comprás en
+                  <select id="compra-presentacion"></select>
+                  <span class="muted">Cantidad de </span><input type="number" id="compra-cantidad-presentacion" min="1" step="1" style="width:70px;">
+                </label>
+
+                <div id="bloque-cajones" class="oculto">
+                  <div id="pesos-cajones"></div>
+                  <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar cajón</button>
+                </div>
               </div>
 
               <div id="resumen-sesion-compra" class="bloque oculto" style="margin-top:20px;">
