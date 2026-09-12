@@ -1379,6 +1379,11 @@ body {
   width: 100%;
   font-size: 13px;
   padding: 8px 6px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--crema-2, var(--crema));
+  color: var(--texto);
+  font-family: inherit;
 }
 
 /* Saca las flechitas nativas de los inputs numéricos de la grilla: le
@@ -1470,6 +1475,35 @@ body {
   gap: 8px;
   margin-bottom: 8px;
   width: max-content;
+}
+
+/* Mismo problema que tenía "producto" antes de fijarle un ancho: sin un
+   width propio, el input toma su ancho intrínseco del navegador (~170-190px),
+   más ancho que la columna de la grilla, y se desborda tapando "Neto". */
+.input-bruto-cajon,
+.input-tara-cajon {
+  width: 100%;
+  font-size: 13px;
+  padding: 8px 6px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--crema-2, var(--crema));
+  color: var(--texto);
+  font-family: inherit;
+}
+
+.input-bruto-cajon::-webkit-outer-spin-button,
+.input-bruto-cajon::-webkit-inner-spin-button,
+.input-tara-cajon::-webkit-outer-spin-button,
+.input-tara-cajon::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-bruto-cajon,
+.input-tara-cajon {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .btn-quitar-cajon {
