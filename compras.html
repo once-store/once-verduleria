@@ -143,6 +143,7 @@
                   <span class="switch-etiqueta">Por peso (kg)</span>
                   <label class="switch">
                     <input type="checkbox" id="nuevo-producto-tipo">
+                    <span class="switch-slider"></span>
                   </label>
                   <span class="switch-etiqueta">Por unidad</span>
                 </div>
@@ -180,18 +181,22 @@
                   <div class="celda-texto" id="compra-cantidad-out">—</div>
                   <input class="celda" id="compra-pcu" type="number" min="0" step="0.01" inputmode="decimal">
                   <input class="celda" id="compra-pct" type="number" min="0" step="1" inputmode="decimal">
-                  <div class="celda-texto muted">N/A</div>
+                  <input class="celda" id="compra-iva" disabled value="N/A">
                   <input class="celda" id="compra-margen" type="number" min="0" step="1" placeholder="30">
                   <div class="celda-texto" id="compra-pvu-out">—</div>
-                  <select class="celda" id="compra-estado">
-                    <option value="0">Recién llega</option>
-                    <option value="50">A mitad</option>
-                    <option value="90">Para vender ya</option>
-                  </select>
-                  <select class="celda" id="compra-ubicacion">
-                    <option value="deposito">Depósito</option>
-                    <option value="salon">Salón</option>
-                  </select>
+                  <div class="switch3 celda" id="compra-estado" data-valor="0" tabindex="0" title="Avance de madurez">
+                    <button type="button" class="switch3-opcion activo" data-valor="0" tabindex="-1">Nueva</button>
+                    <button type="button" class="switch3-opcion" data-valor="50" tabindex="-1">Media</button>
+                    <button type="button" class="switch3-opcion" data-valor="90" tabindex="-1">Ya</button>
+                  </div>
+                  <div class="celda switch-ubicacion" title="Depósito / Salón">
+                    <span class="switch-mini-etiqueta">D</span>
+                    <label class="switch">
+                      <input type="checkbox" id="compra-ubicacion">
+                      <span class="switch-slider"></span>
+                    </label>
+                    <span class="switch-mini-etiqueta">S</span>
+                  </div>
                   <button type="button" class="celda" id="btn-toggle-cajones"><span id="cant-cajones">1</span> <i class="bi bi-chevron-down"></i></button>
                 </div>
                 <p id="compra-error" class="error oculto"></p>
