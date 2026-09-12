@@ -1465,10 +1465,11 @@ body {
 
 .fila-cajon-detalle {
   display: grid;
-  grid-template-columns: 60px 1fr 1fr 1fr 30px;
+  grid-template-columns: 60px 150px 150px 90px 30px;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  width: max-content;
 }
 
 .btn-quitar-cajon {
