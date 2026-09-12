@@ -1340,3 +1340,72 @@ body {
   padding: 8px 10px;
   margin-bottom: 6px;
 }
+
+.cabecera-boleta {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.grilla-compra-wrap {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.grilla-compra-header,
+.grilla-compra-fila {
+  display: grid;
+  grid-template-columns: 60px 1.3fr 60px 70px 80px 50px 60px 75px 100px 90px 70px;
+  gap: 6px;
+  align-items: center;
+  min-width: 780px;
+}
+
+.grilla-compra-header span {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.grilla-compra-fila {
+  margin-top: 4px;
+}
+
+.celda {
+  width: 100%;
+  font-size: 13px;
+  padding: 8px 6px;
+}
+
+.celda-texto {
+  font-size: 13px;
+  padding: 8px 0;
+  color: var(--texto-suave);
+}
+
+#label-compra-presentacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fila-cajon-detalle {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fila-cajon-detalle span {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.fila-cajon-detalle label {
+  font-size: 11px;
+  color: var(--texto-suave);
+  display: block;
+}
