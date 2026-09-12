@@ -1354,13 +1354,16 @@ body {
   padding-bottom: 4px;
 }
 
+/* Columnas en px fijos (no fr): así la fila mide lo que necesita y no se
+   estira a lo ancho de la pantalla robándole espacio a "producto". En una
+   pantalla angosta, .grilla-compra-wrap resuelve con scroll horizontal. */
 .grilla-compra-header,
 .grilla-compra-fila {
   display: grid;
-  grid-template-columns: 60px 1.3fr 60px 70px 80px 50px 60px 75px 100px 90px 70px;
+  grid-template-columns: 55px 150px 55px 85px 90px 55px 55px 80px 140px 70px 70px;
   gap: 6px;
   align-items: center;
-  min-width: 780px;
+  width: max-content;
 }
 
 .grilla-compra-header span {
@@ -1378,9 +1381,78 @@ body {
   padding: 8px 6px;
 }
 
+/* Saca las flechitas nativas de los inputs numéricos de la grilla: le
+   comían espacio útil a montos como 20000 sin aportar nada acá. */
+.celda[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.celda[type="number"]::-webkit-outer-spin-button,
+.celda[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .celda-texto {
   font-size: 13px;
   padding: 8px 0;
+  color: var(--texto-suave);
+}
+
+/* Nombres largos de producto no empujan el resto de la fila: se recortan
+   con puntos suspensivos (el dropdown abierto sigue mostrando el nombre
+   completo). */
+#compra-producto {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Switch de 3 posiciones (estado/madurez al comprar) --- */
+
+.switch3 {
+  display: flex;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 36px;
+  padding: 0;
+  cursor: default;
+}
+
+.switch3-opcion {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 11px;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.switch3-opcion + .switch3-opcion {
+  border-left: 1px solid var(--borde);
+}
+
+.switch3-opcion.activo {
+  background: var(--verde);
+  color: white;
+  font-weight: 700;
+}
+
+/* --- Switch mini Depósito/Salón (misma pieza .switch de nuevo-producto) --- */
+
+.switch-ubicacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+}
+
+.switch-mini-etiqueta {
+  font-size: 10px;
   color: var(--texto-suave);
 }
 
@@ -1393,10 +1465,27 @@ body {
 
 .fila-cajon-detalle {
   display: grid;
-  grid-template-columns: 60px 1fr 1fr 1fr;
+  grid-template-columns: 60px 1fr 1fr 1fr 30px;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.btn-quitar-cajon {
+  border: 1px solid var(--borde);
+  background: transparent;
+  color: var(--texto-suave);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn-quitar-cajon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .fila-cajon-detalle span {
