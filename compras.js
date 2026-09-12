@@ -42,80 +42,99 @@ document.querySelectorAll('.tab').forEach(btn => {
   })
 })
 
-// --- Selector de madurez inicial (Recién llega / A mitad / Para vender ya) ---
-let madurezSeleccionada = 0
-const grupoMadurez = document.getElementById('grupo-madurez')
-grupoMadurez.addEventListener('click', (e) => {
-  const btn = e.target.closest('.opcion-btn')
-  if (!btn) return
-  grupoMadurez.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('activa'))
-  btn.classList.add('activa')
-  madurezSeleccionada = Number(btn.dataset.valor)
-})
+// --- Estado del producto al llegar (select, dentro de la fila) ---
+const elEstado = document.getElementById('compra-estado')
 
 function resetearMadurez() {
-  madurezSeleccionada = 0
-  grupoMadurez.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('activa'))
-  grupoMadurez.querySelector('.opcion-btn[data-valor="0"]').classList.add('activa')
+  elEstado.value = '0'
 }
 
-const elSwitchUbicacion = document.getElementById('compra-ubicacion')
+const elUbicacion = document.getElementById('compra-ubicacion')
 
 // --- Cajones: una compra puede venir repartida en más de un cajón físico.
-// Con 1 solo cajón (el caso más común) no pedimos nada extra: el peso de
-// ese cajón es directamente el campo "Cantidad". Con más de uno, cada
-// cajón tiene su propio peso y "Cantidad" pasa a ser de solo lectura,
-// mostrando la suma. ---
-let pesosCajones = [null]
+// Cada cajón tiene su propio peso bruto (lo que lees en la balanza) y una
+// tara (el peso del cajón vacío, 3kg por defecto para uno de madera) — el
+// neto se calcula solo y es lo que se usa como cantidad real del lote.
+// Para productos por unidad (no por peso) no hay tara: cantidad = bruto. ---
+let cajones = [{ bruto: null, tara: 3 }]
 const elCantCajones = document.getElementById('cant-cajones')
 const elPesosCajones = document.getElementById('pesos-cajones')
-const elCompraCantidad = document.getElementById('compra-cantidad')
+const elBloqueCajones = document.getElementById('bloque-cajones')
+const elCompraCantidadOut = document.getElementById('compra-cantidad-out')
 
-function actualizarTotalCajones() {
-  const total = pesosCajones.reduce((acc, p) => acc + (Number(p) || 0), 0)
-  elCompraCantidad.value = total > 0 ? total : ''
+function esPorPeso() {
+  const p = productoSeleccionado(selectCompraProducto.value)
+  return p?.tipo === 'peso'
 }
 
-function renderPesosCajones() {
-  elCantCajones.textContent = pesosCajones.length
-
-  if (pesosCajones.length === 1) {
-    elPesosCajones.innerHTML = ''
-    elCompraCantidad.readOnly = false
-    return
+function cantidadNeta() {
+  const pres = presentacionSeleccionada()
+  if (pres) {
+    const cant = Number(document.getElementById('compra-cantidad-presentacion').value) || 0
+    return cant * Number(pres.cantidad_unidades)
   }
+  return cajones.reduce((acc, c) => {
+    const bruto = Number(c.bruto) || 0
+    const tara = esPorPeso() ? (Number(c.tara) || 0) : 0
+    return acc + Math.max(0, bruto - tara)
+  }, 0)
+}
 
-  elCompraCantidad.readOnly = true
-  elPesosCajones.innerHTML = pesosCajones.map((p, i) => `
-    <div class="fila-cajon">
+function renderCajones() {
+  elCantCajones.textContent = cajones.length
+  const porPeso = esPorPeso()
+
+  elPesosCajones.innerHTML = cajones.map((c, i) => `
+    <div class="fila-cajon-detalle">
       <span>Cajón ${i + 1}</span>
-      <input type="number" min="0" step="0.01" inputmode="decimal" class="input-peso-cajon" data-i="${i}" value="${p ?? ''}">
+      <div>
+        <label>${porPeso ? 'Bruto (kg)' : 'Cantidad'}</label>
+        <input type="number" min="0" step="0.01" inputmode="decimal" class="input-bruto-cajon" data-i="${i}" value="${c.bruto ?? ''}">
+      </div>
+      ${porPeso ? `
+      <div>
+        <label>Tara (kg)</label>
+        <input type="number" min="0" step="0.1" inputmode="decimal" class="input-tara-cajon" data-i="${i}" value="${c.tara ?? 0}">
+      </div>
+      <div>
+        <label>Neto</label>
+        <div style="font-weight:700; padding:8px 0;">${Math.max(0, (Number(c.bruto) || 0) - (Number(c.tara) || 0))} kg</div>
+      </div>` : '<div></div><div></div>'}
     </div>
   `).join('')
 
-  elPesosCajones.querySelectorAll('.input-peso-cajon').forEach(inp => {
+  elPesosCajones.querySelectorAll('.input-bruto-cajon').forEach(inp => {
     inp.addEventListener('input', () => {
-      pesosCajones[Number(inp.dataset.i)] = inp.value === '' ? null : Number(inp.value)
-      actualizarTotalCajones()
+      cajones[Number(inp.dataset.i)].bruto = inp.value === '' ? null : Number(inp.value)
+      renderCajones()
+      actualizarCantidadYPvu()
     })
   })
-  actualizarTotalCajones()
+  elPesosCajones.querySelectorAll('.input-tara-cajon').forEach(inp => {
+    inp.addEventListener('input', () => {
+      cajones[Number(inp.dataset.i)].tara = inp.value === '' ? 0 : Number(inp.value)
+      renderCajones()
+      actualizarCantidadYPvu()
+    })
+  })
+
+  elCompraCantidadOut.textContent = `${cantidadNeta()} ${porPeso ? 'kg' : 'u'}`
 }
 
-document.getElementById('btn-mas-cajones').addEventListener('click', () => {
-  if (pesosCajones.length >= 12) return
-  pesosCajones.push(null)
-  renderPesosCajones()
+document.getElementById('btn-agregar-cajon').addEventListener('click', () => {
+  if (cajones.length >= 12) return
+  cajones.push({ bruto: null, tara: esPorPeso() ? 3 : 0 })
+  renderCajones()
 })
-document.getElementById('btn-menos-cajones').addEventListener('click', () => {
-  if (pesosCajones.length <= 1) return
-  pesosCajones.pop()
-  renderPesosCajones()
+
+document.getElementById('btn-toggle-cajones').addEventListener('click', () => {
+  elBloqueCajones.classList.toggle('oculto')
 })
 
 function resetearCajones() {
-  pesosCajones = [null]
-  renderPesosCajones()
+  cajones = [{ bruto: null, tara: esPorPeso() ? 3 : 0 }]
+  elBloqueCajones.classList.add('oculto')
+  renderCajones()
 }
 
 // --- Resumen de lo cargado en esta compra/boleta (se pierde al recargar la
@@ -138,6 +157,7 @@ function renderComprasSesion() {
       <span>
         <strong>${i + 1}.</strong> ${c.nombre} — ${c.cantidad} ${c.unidad}
         <br><span class="muted" style="font-size:13px;">${formatoMoneda(c.costoUnitario)} por ${c.unidad === 'kg' ? 'kilo' : 'unidad'}</span>
+        ${c.codigos ? c.codigos.map(cod => `<div class="codigo-cajon">L${cod.numeroGuia} · ${cod.codigoLote} (${cod.peso} ${c.unidad})</div>`).join('') : ''}
       </span>
       <span style="font-weight:700;">${formatoMoneda(c.costoTotal)}</span>
     </div>
@@ -164,10 +184,9 @@ const elCompraStockActual = document.getElementById('compra-stock-actual')
 const elCompraMargen = document.getElementById('compra-margen')
 const elCompraError = document.getElementById('compra-error')
 const elMermaError = document.getElementById('merma-error')
-const elCompraSugerencia = document.getElementById('compra-sugerencia')
 const elLabelPresentacion = document.getElementById('label-compra-presentacion')
 const elSelectPresentacion = document.getElementById('compra-presentacion')
-const elLabelCantidad = document.getElementById('label-compra-cantidad')
+const elCantidadPresentacion = document.getElementById('compra-cantidad-presentacion')
 
 async function cargarProductosParaCompraYMerma() {
   const { data, error } = await supabase
@@ -207,16 +226,15 @@ function productoSeleccionado(id) {
 }
 
 // Si el producto elegido tiene presentaciones de compra (ej. Huevo por Maple
-// o Cajón), muestra el selector "Comprás en". El tamaño de cada presentación
-// es fijo y conocido, así que más abajo no hace falta pedir el peso de cada
-// cajón a mano cuando se compra por presentación.
+// o Cajón), muestra el selector "Comprás en" con su propio campo de cantidad,
+// y esconde el desglose de cajones (bruto/tara no aplica: el tamaño de la
+// presentación ya es un dato fijo y conocido).
 function actualizarSelectorPresentacion(productoId) {
   const opciones = presentacionesCompra.filter(pr => pr.producto_id === productoId)
 
   if (opciones.length === 0) {
     elLabelPresentacion.classList.add('oculto')
     elSelectPresentacion.innerHTML = ''
-    actualizarLabelCantidad()
     return
   }
 
@@ -224,33 +242,22 @@ function actualizarSelectorPresentacion(productoId) {
     .concat(opciones.map(pr => `<option value="${pr.id}" data-cantidad="${pr.cantidad_unidades}">${pr.nombre} (${pr.cantidad_unidades})</option>`))
     .join('')
   elLabelPresentacion.classList.remove('oculto')
-  actualizarLabelCantidad()
+  actualizarModoPresentacion()
 }
 
 function presentacionSeleccionada() {
   return presentacionesCompra.find(pr => pr.id === elSelectPresentacion.value)
 }
 
-function actualizarLabelCantidad() {
-  const p = productoSeleccionado(selectCompraProducto.value)
+function actualizarModoPresentacion() {
   const pres = presentacionSeleccionada()
-  const unidad = p?.tipo === 'peso' ? 'kg' : 'unidades'
-  const plural = pres ? (pres.nombre.endsWith('ón') ? pres.nombre.slice(0, -2) + 'ones' : pres.nombre + 's') : ''
-  elLabelCantidad.firstChild.textContent = pres ? `Cantidad de ${plural.toLowerCase()} ` : `Cantidad (${unidad}) `
-
-  // Comprando por presentación (ej. Cajón de huevo), el tamaño de cada
-  // cajón físico ya lo define la presentación — no tiene sentido pedir
-  // también el desglose de "en cuántos cajones vino" a mano.
-  const elBloqueCajones = document.getElementById('bloque-cajones')
-  if (pres) {
-    elBloqueCajones.classList.add('oculto')
-    resetearCajones()
-  } else {
-    elBloqueCajones.classList.remove('oculto')
-  }
+  if (pres) elBloqueCajones.classList.add('oculto')
+  resetearCajones()
+  actualizarCantidadYPvu()
 }
 
-elSelectPresentacion.addEventListener('change', actualizarLabelCantidad)
+elSelectPresentacion.addEventListener('change', actualizarModoPresentacion)
+elCantidadPresentacion.addEventListener('input', actualizarCantidadYPvu)
 
 // Stock vendible actual del producto elegido (suma de sus lotes en salón)
 async function actualizarInfoProductoCompra() {
@@ -258,8 +265,9 @@ async function actualizarInfoProductoCompra() {
   if (!p) return
 
   elCompraMargen.value = p.margen_objetivo_pct ?? ''
-  elCompraSugerencia.classList.add('oculto')
   actualizarSelectorPresentacion(p.id)
+  resetearCajones()
+  actualizarCantidadYPvu()
 
   const { data, error } = await supabase
     .from('lotes')
@@ -419,6 +427,36 @@ function desbloquearProveedor() {
 }
 
 
+const elCompraPcu = document.getElementById('compra-pcu')
+const elCompraPct = document.getElementById('compra-pct')
+const elCompraPvuOut = document.getElementById('compra-pvu-out')
+
+// PCU y PCT se recalculan uno al otro según cuál hayas tocado último, contra
+// la cantidad neta (después de descontar la tara de los cajones, o contra la
+// presentación elegida). El PVU sale solo de PCU + margen — no es un campo
+// que se tipee directo, y es el precio que se le termina fijando al lote.
+let editandoCosto = 'pcu'
+
+function actualizarCantidadYPvu() {
+  const cantidad = cantidadNeta()
+
+  if (cantidad > 0) {
+    if (editandoCosto === 'pcu') {
+      if (elCompraPcu.value !== '') elCompraPct.value = Math.round(Number(elCompraPcu.value) * cantidad)
+    } else {
+      if (elCompraPct.value !== '') elCompraPcu.value = (Number(elCompraPct.value) / cantidad).toFixed(2)
+    }
+  }
+
+  const pcu = Number(elCompraPcu.value) || 0
+  const margen = Number(elCompraMargen.value) || 0
+  elCompraPvuOut.textContent = pcu > 0 ? formatoMoneda(pcu * (1 + margen / 100)) : '—'
+}
+
+elCompraPcu.addEventListener('input', () => { editandoCosto = 'pcu'; actualizarCantidadYPvu() })
+elCompraPct.addEventListener('input', () => { editandoCosto = 'pct'; actualizarCantidadYPvu() })
+elCompraMargen.addEventListener('input', actualizarCantidadYPvu)
+
 elCompraMargen.addEventListener('change', async () => {
   const p = productoSeleccionado(selectCompraProducto.value)
   if (!p) return
@@ -436,63 +474,59 @@ elCompraMargen.addEventListener('change', async () => {
   p.margen_objetivo_pct = valor
 })
 
-// --- Registrar compra (crea un lote nuevo) ---
-document.getElementById('form-compra').addEventListener('submit', async (e) => {
-  e.preventDefault()
+// --- Registrar la fila actual (crea un lote nuevo) y dejarla lista para
+// la siguiente, sin cortar el ritmo de carga: sin cartel de confirmación
+// y sin pantalla intermedia de "precio sugerido" — el PVU que ya se ve en
+// la fila es el precio con el que queda el lote. ---
+async function registrarFila() {
   elCompraError.classList.add('oculto')
-  elCompraSugerencia.classList.add('oculto')
 
   const producto = productoSeleccionado(selectCompraProducto.value)
-  const cantidad = Number(document.getElementById('compra-cantidad').value)
-  const costoTotal = Number(document.getElementById('compra-costo').value)
-  const proveedorId = selectCompraProveedor.value || null
-  const ubicacion = elSwitchUbicacion.checked ? 'salon' : 'deposito'
   const pres = presentacionSeleccionada()
-  const cantidadBase = pres ? cantidad * Number(pres.cantidad_unidades) : cantidad
+  const cantidad = pres ? Number(elCantidadPresentacion.value) : null
+  const cantidadBase = cantidadNeta()
+  const costoTotal = Number(elCompraPct.value) || 0
+  const proveedorId = selectCompraProveedor.value || null
+  const ubicacion = elUbicacion.value
+  const estado = Number(elEstado.value)
+  const margen = Number(elCompraMargen.value) || 0
+  const pcu = Number(elCompraPcu.value) || 0
+  const pvu = pcu * (1 + margen / 100)
+
+  if (!producto) {
+    elCompraError.textContent = 'Elegí un producto.'
+    elCompraError.classList.remove('oculto')
+    return
+  }
+  if (!cantidadBase || cantidadBase <= 0) {
+    elCompraError.textContent = pres ? 'Completá la cantidad de la presentación.' : 'Completá el peso (bruto) de al menos un cajón.'
+    elCompraError.classList.remove('oculto')
+    return
+  }
+  if (!costoTotal || costoTotal <= 0) {
+    elCompraError.textContent = 'Completá el costo (PCU o PCT).'
+    elCompraError.classList.remove('oculto')
+    return
+  }
+  if (!pres && cajones.some(c => c.bruto != null && (Number(c.tara) || 0) >= Number(c.bruto))) {
+    elCompraError.textContent = 'La tara no puede ser mayor o igual al peso bruto de un cajón.'
+    elCompraError.classList.remove('oculto')
+    return
+  }
 
   if (comprasSesion.length === 0 && !proveedorId) {
     if (!confirm('No elegiste un proveedor para esta compra. ¿Registrarla igual, sin proveedor?')) return
   }
 
-  if (!pres && pesosCajones.length > 1 && pesosCajones.some(p => !p || p <= 0)) {
-    elCompraError.textContent = 'Completá el peso de todos los cajones.'
-    elCompraError.classList.remove('oculto')
-    return
-  }
-
-  const unidadConfirm = producto?.tipo === 'peso' ? 'kg' : 'unidades'
-  const costoUnitarioPreview = cantidadBase > 0 ? costoTotal / cantidadBase : 0
-  const yaCargado = comprasSesion.find(c => c.productoId === producto.id)
-  const avisoRepetido = yaCargado
-    ? `\n⚠ Ya cargaste ${producto?.nombre} en esta sesión (${yaCargado.cantidad} ${yaCargado.unidad}). ¿Es otra compra distinta?\n`
-    : ''
-  const detalleCantidad = pres
-    ? `${cantidad} ${pres.nombre}(s) de ${producto?.nombre ?? ''} (${cantidadBase} ${unidadConfirm})`
-    : `${cantidad} ${unidadConfirm} de ${producto?.nombre ?? ''}`
-  const confirmado = confirm(
-    `Vas a cargar:\n\n` +
-    `${detalleCantidad}\n` +
-    `Costo total: ${formatoMoneda(costoTotal)}\n` +
-    `Costo por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'}: ${formatoMoneda(costoUnitarioPreview)}\n` +
-    avisoRepetido +
-    `\n¿Está bien este costo? Si el número por ${unidadConfirm === 'kg' ? 'kilo' : 'unidad'} te parece raro, cancelá y revisá el costo total que pusiste.`
-  )
-  if (!confirmado) return
-
-  const boton = e.target.querySelector('button[type="submit"]')
-  boton.disabled = true
-
   const { data, error } = await supabase.rpc('registrar_compra', {
     p_producto_id: producto.id,
-    p_cantidad: cantidad,
+    p_cantidad: pres ? cantidad : cantidadBase,
     p_costo_total: costoTotal,
     p_proveedor_id: proveedorId,
-    p_avance_madurez_pct: madurezSeleccionada,
+    p_avance_madurez_pct: estado,
     p_ubicacion: ubicacion,
     p_presentacion_id: pres ? pres.id : null
   })
-
-  boton.disabled = false
 
   if (error) {
     elCompraError.textContent = error.message || 'No se pudo registrar la compra.'
@@ -502,6 +536,38 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
   }
 
   const resultado = data[0]
+  const unidadConfirm = producto.tipo === 'peso' ? 'kg' : 'unidades'
+
+  // El PVU que ya se ve en la fila (calculado con la tara descontada) es el
+  // precio real con el que queremos que quede este lote — lo fijamos directo,
+  // sin pasar por una pantalla aparte a confirmarlo.
+  if (pvu > 0) {
+    const { error: errorPrecio } = await supabase
+      .from('lotes')
+      .update({ precio: pvu })
+      .eq('id', resultado.lote_id)
+    if (errorPrecio) console.error(errorPrecio)
+  }
+
+  const { data: loteNuevo } = await supabase
+    .from('lotes')
+    .select('codigo')
+    .eq('id', resultado.lote_id)
+    .single()
+
+  // --- Crear los cajones físicos de este lote (ya en neto, sin la tara) y
+  // sumar el código de cada uno a este ítem de la lista. ---
+  const pesosFinales = pres ? [cantidadBase] : cajones.map(c => {
+    const bruto = Number(c.bruto) || 0
+    const tara = esPorPeso() ? (Number(c.tara) || 0) : 0
+    return Math.max(0, bruto - tara)
+  })
+
+  const { data: cajonesCreados, error: errorCajones } = await supabase
+    .from('cajones')
+    .insert(pesosFinales.map(peso => ({ lote_id: resultado.lote_id, peso_inicial: peso })))
+    .select('numero_guia, peso_inicial')
+
   const itemSesion = {
     productoId: producto.id,
     nombre: producto.nombre,
@@ -509,90 +575,46 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
     unidad: unidadConfirm,
     costoTotal,
     costoUnitario: resultado.costo_unitario,
-    codigos: null
+    codigos: errorCajones ? null : [...cajonesCreados]
+      .sort((a, b) => a.numero_guia - b.numero_guia)
+      .map(c => ({ numeroGuia: c.numero_guia, peso: c.peso_inicial, codigoLote: loteNuevo?.codigo ?? '' }))
   }
+  if (errorCajones) console.error(errorCajones)
+
   comprasSesion.push(itemSesion)
   renderComprasSesion()
   bloquearProveedor()
 
-  document.getElementById('compra-cantidad').value = ''
-  document.getElementById('compra-costo').value = ''
+  // Dejamos la fila lista para el próximo producto, sin frenar la carga.
+  elCompraPcu.value = ''
+  elCompraPct.value = ''
+  elCantidadPresentacion.value = ''
   resetearMadurez()
-  elSwitchUbicacion.checked = true
-
+  elUbicacion.value = 'deposito'
   await actualizarInfoProductoCompra()
+  selectCompraProducto.focus()
+}
 
-  // Buscamos el precio con el que quedó el lote recién creado, para mostrarlo
-  // aunque no haya margen configurado (en ese caso usó el precio actual del producto).
-  const { data: loteNuevo } = await supabase
-    .from('lotes')
-    .select('precio, codigo')
-    .eq('id', resultado.lote_id)
-    .single()
+// Enter va avanzando de celda en celda de izquierda a derecha; en la
+// última (ubicación) registra la fila entera y arranca una nueva. Si la
+// fila está incompleta o vacía, registrarFila() no guarda nada — solo
+// muestra el error y te deja seguir corrigiendo esa misma fila.
+const ordenCeldasCompra = ['compra-producto', 'compra-pcu', 'compra-pct', 'compra-margen', 'compra-estado', 'compra-ubicacion']
 
-  // --- Crear los cajones físicos de este lote y sumar el código de cada
-  // uno a este mismo ítem de la lista, para no perder los códigos previos
-  // cada vez que se carga un producto nuevo. ---
-  const pesosFinales = pres ? [cantidadBase] : (pesosCajones.length === 1 ? [cantidad] : pesosCajones.map(Number))
-
-  const { data: cajonesCreados, error: errorCajones } = await supabase
-    .from('cajones')
-    .insert(pesosFinales.map(peso => ({ lote_id: resultado.lote_id, peso_inicial: peso })))
-    .select('numero_guia, peso_inicial')
-
-  if (errorCajones) {
-    console.error(errorCajones)
+document.querySelector('.grilla-compra-wrap').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return
+  e.preventDefault()
+  if (e.target.id === 'compra-cantidad-presentacion') {
+    elCompraPcu.focus()
+    return
+  }
+  const idx = ordenCeldasCompra.indexOf(e.target.id)
+  if (idx === -1) return
+  if (idx === ordenCeldasCompra.length - 1) {
+    registrarFila()
   } else {
-    itemSesion.codigos = [...cajonesCreados]
-      .sort((a, b) => a.numero_guia - b.numero_guia)
-      .map(c => ({ numeroGuia: c.numero_guia, peso: c.peso_inicial, codigoLote: loteNuevo?.codigo ?? '' }))
-    renderComprasSesion()
+    document.getElementById(ordenCeldasCompra[idx + 1]).focus()
   }
-
-  resetearCajones()
-
-  document.getElementById('sug-precio-actual').textContent = formatoMoneda(loteNuevo?.precio ?? 0)
-  document.getElementById('sug-precio-manual').value = loteNuevo?.precio ?? ''
-  elCompraSugerencia.dataset.loteId = resultado.lote_id
-
-  if (resultado.precio_sugerido == null) {
-    // No hay margen objetivo configurado: no hay sugerencia para mostrar,
-    // pero igual dejamos el campo abierto por si quiere poner un precio a mano.
-    document.getElementById('sug-costo').textContent = formatoMoneda(resultado.costo_unitario)
-    document.getElementById('sug-precio').textContent = '(sin margen configurado)'
-    elCompraSugerencia.classList.remove('oculto')
-    return
-  }
-
-  document.getElementById('sug-costo').textContent = formatoMoneda(resultado.costo_unitario)
-  document.getElementById('sug-precio').textContent = formatoMoneda(resultado.precio_sugerido)
-  elCompraSugerencia.classList.remove('oculto')
-})
-
-document.getElementById('btn-usar-sugerido').addEventListener('click', async () => {
-  const loteId = elCompraSugerencia.dataset.loteId
-  const precio = Number(document.getElementById('sug-precio-manual').value)
-
-  if (!precio || precio <= 0) {
-    alert('Poné un precio válido.')
-    return
-  }
-
-  const { error } = await supabase
-    .from('lotes')
-    .update({ precio })
-    .eq('id', loteId)
-
-  if (error) {
-    alert('No se pudo actualizar el precio del lote. Probá de nuevo.')
-    console.error(error)
-    return
-  }
-  elCompraSugerencia.classList.add('oculto')
-})
-
-document.getElementById('btn-mantener-precio').addEventListener('click', () => {
-  elCompraSugerencia.classList.add('oculto')
 })
 
 // --- Registrar merma ---
