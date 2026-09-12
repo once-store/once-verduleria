@@ -42,13 +42,37 @@ document.querySelectorAll('.tab').forEach(btn => {
   })
 })
 
-// --- Estado del producto al llegar (select, dentro de la fila) ---
+// --- Estado del producto al llegar (switch de 3 posiciones, dentro de la
+// fila): el valor real vive en data-valor del contenedor, no en un <select>.
+// Las flechas izq/der también lo cambian sin soltar el teclado. ---
 const elEstado = document.getElementById('compra-estado')
+const valoresEstado = ['0', '50', '90']
 
-function resetearMadurez() {
-  elEstado.value = '0'
+function fijarEstado(valor) {
+  elEstado.dataset.valor = valor
+  elEstado.querySelectorAll('.switch3-opcion').forEach(btn => {
+    btn.classList.toggle('activo', btn.dataset.valor === valor)
+  })
 }
 
+elEstado.querySelectorAll('.switch3-opcion').forEach(btn => {
+  btn.addEventListener('click', () => fijarEstado(btn.dataset.valor))
+})
+
+elEstado.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+  e.preventDefault()
+  const i = valoresEstado.indexOf(elEstado.dataset.valor)
+  const siguiente = e.key === 'ArrowRight' ? i + 1 : i - 1
+  fijarEstado(valoresEstado[(siguiente + valoresEstado.length) % valoresEstado.length])
+})
+
+function resetearMadurez() {
+  fijarEstado('0')
+}
+
+// --- Ubicación (switch Depósito/Salón, dentro de la fila): sin marcar =
+// Depósito, marcado = Salón. ---
 const elUbicacion = document.getElementById('compra-ubicacion')
 
 // --- Cajones: una compra puede venir repartida en más de un cajón físico.
@@ -80,6 +104,23 @@ function cantidadNeta() {
   }, 0)
 }
 
+// Actualiza solo los números que dependen de bruto/tara (el "Neto" de cada
+// cajón y el total de la fila), sin tocar los <input> — así no se pierde
+// el foco ni el cursor mientras estás tipeando un peso. Antes esto llamaba
+// a renderCajones() en cada tecla, que reconstruía todos los inputs de
+// cero y sacaba el foco a mitad de escribir un número.
+function actualizarNetosCajones() {
+  const porPeso = esPorPeso()
+  cajones.forEach((c, i) => {
+    const el = document.getElementById(`neto-cajon-${i}`)
+    if (el) el.textContent = `${Math.max(0, (Number(c.bruto) || 0) - (Number(c.tara) || 0))} kg`
+  })
+  elCompraCantidadOut.textContent = `${cantidadNeta()} ${porPeso ? 'kg' : 'u'}`
+}
+
+// Reconstruye toda la lista de cajones (con sus inputs). Solo se llama al
+// agregar, quitar, resetear o cambiar de tipo de producto — nunca en cada
+// tecla que tipeás en bruto/tara (para eso está actualizarNetosCajones).
 function renderCajones() {
   elCantCajones.textContent = cajones.length
   const porPeso = esPorPeso()
@@ -98,27 +139,38 @@ function renderCajones() {
       </div>
       <div>
         <label>Neto</label>
-        <div style="font-weight:700; padding:8px 0;">${Math.max(0, (Number(c.bruto) || 0) - (Number(c.tara) || 0))} kg</div>
+        <div id="neto-cajon-${i}" style="font-weight:700; padding:8px 0;">${Math.max(0, (Number(c.bruto) || 0) - (Number(c.tara) || 0))} kg</div>
       </div>` : '<div></div><div></div>'}
+      <button type="button" class="btn-quitar-cajon" data-i="${i}" title="Quitar este cajón" ${cajones.length <= 1 ? 'disabled' : ''}>×</button>
     </div>
   `).join('')
 
   elPesosCajones.querySelectorAll('.input-bruto-cajon').forEach(inp => {
     inp.addEventListener('input', () => {
       cajones[Number(inp.dataset.i)].bruto = inp.value === '' ? null : Number(inp.value)
-      renderCajones()
+      actualizarNetosCajones()
       actualizarCantidadYPvu()
     })
   })
   elPesosCajones.querySelectorAll('.input-tara-cajon').forEach(inp => {
     inp.addEventListener('input', () => {
       cajones[Number(inp.dataset.i)].tara = inp.value === '' ? 0 : Number(inp.value)
+      actualizarNetosCajones()
+      actualizarCantidadYPvu()
+    })
+  })
+  // Saca ese cajón puntual de la lista (no solo el último) — para el caso
+  // de agregar uno de más por error a la mitad de la carga.
+  elPesosCajones.querySelectorAll('.btn-quitar-cajon').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (cajones.length <= 1) return
+      cajones.splice(Number(btn.dataset.i), 1)
       renderCajones()
       actualizarCantidadYPvu()
     })
   })
 
-  elCompraCantidadOut.textContent = `${cantidadNeta()} ${porPeso ? 'kg' : 'u'}`
+  actualizarNetosCajones()
 }
 
 document.getElementById('btn-agregar-cajon').addEventListener('click', () => {
@@ -487,8 +539,8 @@ async function registrarFila() {
   const cantidadBase = cantidadNeta()
   const costoTotal = Number(elCompraPct.value) || 0
   const proveedorId = selectCompraProveedor.value || null
-  const ubicacion = elUbicacion.value
-  const estado = Number(elEstado.value)
+  const ubicacion = elUbicacion.checked ? 'salon' : 'deposito'
+  const estado = Number(elEstado.dataset.valor)
   const margen = Number(elCompraMargen.value) || 0
   const pcu = Number(elCompraPcu.value) || 0
   const pvu = pcu * (1 + margen / 100)
@@ -590,7 +642,7 @@ async function registrarFila() {
   elCompraPct.value = ''
   elCantidadPresentacion.value = ''
   resetearMadurez()
-  elUbicacion.value = 'deposito'
+  elUbicacion.checked = false
   await actualizarInfoProductoCompra()
   selectCompraProducto.focus()
 }
