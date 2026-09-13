@@ -211,11 +211,41 @@ function renderComprasSesion() {
         <br><span class="muted" style="font-size:13px;">${formatoMoneda(c.costoUnitario)} por ${c.unidad === 'kg' ? 'kilo' : 'unidad'}</span>
         ${c.codigos ? c.codigos.map(cod => `<div class="codigo-cajon">L${cod.numeroGuia} · ${cod.codigoLote} (${cod.peso} ${c.unidad})</div>`).join('') : ''}
       </span>
-      <span style="font-weight:700;">${formatoMoneda(c.costoTotal)}</span>
+      <span style="display:flex; align-items:center; gap:10px;">
+        <span style="font-weight:700;">${formatoMoneda(c.costoTotal)}</span>
+        <button type="button" class="btn-quitar-item-sesion" data-i="${i}" title="Quitar este ítem (borra el lote real)">×</button>
+      </span>
     </div>
   `).join('')
+  elListaSesion.querySelectorAll('.btn-quitar-item-sesion').forEach(btn => {
+    btn.addEventListener('click', () => quitarItemSesion(Number(btn.dataset.i)))
+  })
   const total = comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0)
   elTotalSesion.textContent = formatoMoneda(total)
+}
+
+// Sacar un ítem ya registrado no es solo un cambio visual: ese Enter ya
+// creó una compra + un lote + sus cajones de verdad en la base. Así que
+// "quitar" acá borra esos 3 registros (en ese orden, por las FK) y recién
+// después saca el ítem de la lista de esta sesión.
+async function quitarItemSesion(i) {
+  const item = comprasSesion[i]
+  if (!item) return
+  if (!confirm(`¿Quitar "${item.nombre} — ${item.cantidad} ${item.unidad}"? Esto borra el lote y sus cajones de la base, no se puede deshacer.`)) return
+
+  const { error: errorCajones } = await supabase.from('cajones').delete().eq('lote_id', item.loteId)
+  if (errorCajones) { console.error(errorCajones); alert('No se pudo borrar del todo (cajones). Revisá la consola.'); return }
+
+  const { error: errorLote } = await supabase.from('lotes').delete().eq('id', item.loteId)
+  if (errorLote) { console.error(errorLote); alert('No se pudo borrar del todo (lote). Revisá la consola.'); return }
+
+  if (item.compraId) {
+    const { error: errorCompra } = await supabase.from('compras').delete().eq('id', item.compraId)
+    if (errorCompra) console.error(errorCompra)
+  }
+
+  comprasSesion.splice(i, 1)
+  renderComprasSesion()
 }
 
 btnFinalizarCarga.addEventListener('click', () => {
@@ -530,121 +560,135 @@ elCompraMargen.addEventListener('change', async () => {
 // la siguiente, sin cortar el ritmo de carga: sin cartel de confirmación
 // y sin pantalla intermedia de "precio sugerido" — el PVU que ya se ve en
 // la fila es el precio con el que queda el lote. ---
+// Guarda contra doble ejecución: si el Enter se dispara dos veces mientras
+// la primera llamada todavía está viajando a Supabase (antes de que se
+// limpien los campos), la segunda ya no entra — así no se puede duplicar
+// una compra real por apretar Enter de más.
+let registrandoFila = false
+
 async function registrarFila() {
-  elCompraError.classList.add('oculto')
+  if (registrandoFila) return
+  registrandoFila = true
+  try {
+    elCompraError.classList.add('oculto')
 
-  const producto = productoSeleccionado(selectCompraProducto.value)
-  const pres = presentacionSeleccionada()
-  const cantidad = pres ? Number(elCantidadPresentacion.value) : null
-  const cantidadBase = cantidadNeta()
-  const costoTotal = Number(elCompraPct.value) || 0
-  const proveedorId = selectCompraProveedor.value || null
-  const ubicacion = elUbicacion.checked ? 'salon' : 'deposito'
-  const estado = Number(elEstado.dataset.valor)
-  const margen = Number(elCompraMargen.value) || 0
-  const pcu = Number(elCompraPcu.value) || 0
-  const pvu = pcu * (1 + margen / 100)
+    const producto = productoSeleccionado(selectCompraProducto.value)
+    const pres = presentacionSeleccionada()
+    const cantidad = pres ? Number(elCantidadPresentacion.value) : null
+    const cantidadBase = cantidadNeta()
+    const costoTotal = Number(elCompraPct.value) || 0
+    const proveedorId = selectCompraProveedor.value || null
+    const ubicacion = elUbicacion.checked ? 'salon' : 'deposito'
+    const estado = Number(elEstado.dataset.valor)
+    const margen = Number(elCompraMargen.value) || 0
+    const pcu = Number(elCompraPcu.value) || 0
+    const pvu = pcu * (1 + margen / 100)
 
-  if (!producto) {
-    elCompraError.textContent = 'Elegí un producto.'
-    elCompraError.classList.remove('oculto')
-    return
-  }
-  if (!cantidadBase || cantidadBase <= 0) {
-    elCompraError.textContent = pres ? 'Completá la cantidad de la presentación.' : 'Completá el peso (bruto) de al menos un cajón.'
-    elCompraError.classList.remove('oculto')
-    return
-  }
-  if (!costoTotal || costoTotal <= 0) {
-    elCompraError.textContent = 'Completá el costo (PCU o PCT).'
-    elCompraError.classList.remove('oculto')
-    return
-  }
-  if (!pres && cajones.some(c => c.bruto != null && (Number(c.tara) || 0) >= Number(c.bruto))) {
-    elCompraError.textContent = 'La tara no puede ser mayor o igual al peso bruto de un cajón.'
-    elCompraError.classList.remove('oculto')
-    return
-  }
+    if (!producto) {
+      elCompraError.textContent = 'Elegí un producto.'
+      elCompraError.classList.remove('oculto')
+      return
+    }
+    if (!cantidadBase || cantidadBase <= 0) {
+      elCompraError.textContent = pres ? 'Completá la cantidad de la presentación.' : 'Completá el peso (bruto) de al menos un cajón.'
+      elCompraError.classList.remove('oculto')
+      return
+    }
+    if (!costoTotal || costoTotal <= 0) {
+      elCompraError.textContent = 'Completá el costo (PCU o PCT).'
+      elCompraError.classList.remove('oculto')
+      return
+    }
+    if (!pres && cajones.some(c => c.bruto != null && (Number(c.tara) || 0) >= Number(c.bruto))) {
+      elCompraError.textContent = 'La tara no puede ser mayor o igual al peso bruto de un cajón.'
+      elCompraError.classList.remove('oculto')
+      return
+    }
 
-  if (comprasSesion.length === 0 && !proveedorId) {
-    if (!confirm('No elegiste un proveedor para esta compra. ¿Registrarla igual, sin proveedor?')) return
-  }
+    if (comprasSesion.length === 0 && !proveedorId) {
+      if (!confirm('No elegiste un proveedor para esta compra. ¿Registrarla igual, sin proveedor?')) return
+    }
 
-  const { data, error } = await supabase.rpc('registrar_compra', {
-    p_producto_id: producto.id,
-    p_cantidad: pres ? cantidad : cantidadBase,
-    p_costo_total: costoTotal,
-    p_proveedor_id: proveedorId,
-    p_avance_madurez_pct: estado,
-    p_ubicacion: ubicacion,
-    p_presentacion_id: pres ? pres.id : null
-  })
+    const { data, error } = await supabase.rpc('registrar_compra', {
+      p_producto_id: producto.id,
+      p_cantidad: pres ? cantidad : cantidadBase,
+      p_costo_total: costoTotal,
+      p_proveedor_id: proveedorId,
+      p_avance_madurez_pct: estado,
+      p_ubicacion: ubicacion,
+      p_presentacion_id: pres ? pres.id : null
+    })
 
-  if (error) {
-    elCompraError.textContent = error.message || 'No se pudo registrar la compra.'
-    elCompraError.classList.remove('oculto')
-    console.error(error)
-    return
-  }
+    if (error) {
+      elCompraError.textContent = error.message || 'No se pudo registrar la compra.'
+      elCompraError.classList.remove('oculto')
+      console.error(error)
+      return
+    }
 
-  const resultado = data[0]
-  const unidadConfirm = producto.tipo === 'peso' ? 'kg' : 'unidades'
+    const resultado = data[0]
+    const unidadConfirm = producto.tipo === 'peso' ? 'kg' : 'unidades'
 
-  // El PVU que ya se ve en la fila (calculado con la tara descontada) es el
-  // precio real con el que queremos que quede este lote — lo fijamos directo,
-  // sin pasar por una pantalla aparte a confirmarlo.
-  if (pvu > 0) {
-    const { error: errorPrecio } = await supabase
+    // El PVU que ya se ve en la fila (calculado con la tara descontada) es el
+    // precio real con el que queremos que quede este lote — lo fijamos directo,
+    // sin pasar por una pantalla aparte a confirmarlo.
+    if (pvu > 0) {
+      const { error: errorPrecio } = await supabase
+        .from('lotes')
+        .update({ precio: pvu })
+        .eq('id', resultado.lote_id)
+      if (errorPrecio) console.error(errorPrecio)
+    }
+
+    const { data: loteNuevo } = await supabase
       .from('lotes')
-      .update({ precio: pvu })
+      .select('codigo, compra_id')
       .eq('id', resultado.lote_id)
-    if (errorPrecio) console.error(errorPrecio)
+      .single()
+
+    // --- Crear los cajones físicos de este lote (ya en neto, sin la tara) y
+    // sumar el código de cada uno a este ítem de la lista. ---
+    const pesosFinales = pres ? [cantidadBase] : cajones.map(c => {
+      const bruto = Number(c.bruto) || 0
+      const tara = esPorPeso() ? (Number(c.tara) || 0) : 0
+      return Math.max(0, bruto - tara)
+    })
+
+    const { data: cajonesCreados, error: errorCajones } = await supabase
+      .from('cajones')
+      .insert(pesosFinales.map(peso => ({ lote_id: resultado.lote_id, peso_inicial: peso })))
+      .select('numero_guia, peso_inicial')
+
+    const itemSesion = {
+      loteId: resultado.lote_id,
+      compraId: loteNuevo?.compra_id ?? null,
+      productoId: producto.id,
+      nombre: producto.nombre,
+      cantidad: cantidadBase,
+      unidad: unidadConfirm,
+      costoTotal,
+      costoUnitario: resultado.costo_unitario,
+      codigos: errorCajones ? null : [...cajonesCreados]
+        .sort((a, b) => a.numero_guia - b.numero_guia)
+        .map(c => ({ numeroGuia: c.numero_guia, peso: c.peso_inicial, codigoLote: loteNuevo?.codigo ?? '' }))
+    }
+    if (errorCajones) console.error(errorCajones)
+
+    comprasSesion.push(itemSesion)
+    renderComprasSesion()
+    bloquearProveedor()
+
+    // Dejamos la fila lista para el próximo producto, sin frenar la carga.
+    elCompraPcu.value = ''
+    elCompraPct.value = ''
+    elCantidadPresentacion.value = ''
+    resetearMadurez()
+    elUbicacion.checked = false
+    await actualizarInfoProductoCompra()
+    selectCompraProducto.focus()
+  } finally {
+    registrandoFila = false
   }
-
-  const { data: loteNuevo } = await supabase
-    .from('lotes')
-    .select('codigo')
-    .eq('id', resultado.lote_id)
-    .single()
-
-  // --- Crear los cajones físicos de este lote (ya en neto, sin la tara) y
-  // sumar el código de cada uno a este ítem de la lista. ---
-  const pesosFinales = pres ? [cantidadBase] : cajones.map(c => {
-    const bruto = Number(c.bruto) || 0
-    const tara = esPorPeso() ? (Number(c.tara) || 0) : 0
-    return Math.max(0, bruto - tara)
-  })
-
-  const { data: cajonesCreados, error: errorCajones } = await supabase
-    .from('cajones')
-    .insert(pesosFinales.map(peso => ({ lote_id: resultado.lote_id, peso_inicial: peso })))
-    .select('numero_guia, peso_inicial')
-
-  const itemSesion = {
-    productoId: producto.id,
-    nombre: producto.nombre,
-    cantidad: cantidadBase,
-    unidad: unidadConfirm,
-    costoTotal,
-    costoUnitario: resultado.costo_unitario,
-    codigos: errorCajones ? null : [...cajonesCreados]
-      .sort((a, b) => a.numero_guia - b.numero_guia)
-      .map(c => ({ numeroGuia: c.numero_guia, peso: c.peso_inicial, codigoLote: loteNuevo?.codigo ?? '' }))
-  }
-  if (errorCajones) console.error(errorCajones)
-
-  comprasSesion.push(itemSesion)
-  renderComprasSesion()
-  bloquearProveedor()
-
-  // Dejamos la fila lista para el próximo producto, sin frenar la carga.
-  elCompraPcu.value = ''
-  elCompraPct.value = ''
-  elCantidadPresentacion.value = ''
-  resetearMadurez()
-  elUbicacion.checked = false
-  await actualizarInfoProductoCompra()
-  selectCompraProducto.focus()
 }
 
 // Enter va avanzando de celda en celda de izquierda a derecha; en la
