@@ -1349,6 +1349,23 @@ body {
   margin-bottom: 16px;
 }
 
+.aviso-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--crema-2, var(--crema));
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.aviso-info .btn-texto {
+  flex-shrink: 0;
+}
+
 .grilla-compra-wrap {
   overflow-x: auto;
   padding-bottom: 4px;
