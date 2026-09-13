@@ -1360,7 +1360,7 @@ body {
 .grilla-compra-header,
 .grilla-compra-fila {
   display: grid;
-  grid-template-columns: 55px 150px 55px 85px 90px 55px 55px 80px 140px 70px 70px;
+  grid-template-columns: 55px 150px 55px 85px 90px 55px 55px 80px 140px 70px 85px;
   gap: 6px;
   align-items: center;
   width: max-content;
@@ -1521,6 +1521,19 @@ body {
 .btn-quitar-cajon:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+.btn-quitar-item-sesion {
+  border: 1px solid var(--borde);
+  background: transparent;
+  color: var(--texto-suave);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .fila-cajon-detalle span {
