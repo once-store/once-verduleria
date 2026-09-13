@@ -283,7 +283,10 @@ async function cargarProductosParaCompraYMerma() {
 
   productosCompraMerma = data
   const opciones = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('')
-  selectCompraProducto.innerHTML = opciones
+  // El de compra arranca en blanco a propósito: después de cada Enter
+  // vuelve acá, para forzar a elegir el producto de nuevo en vez de dejar
+  // pegado el anterior (que fue justo lo que generó las compras duplicadas).
+  selectCompraProducto.innerHTML = '<option value="">— Elegí producto —</option>' + opciones
   selectMermaProducto.innerHTML = opciones
   document.getElementById('precio-producto').innerHTML = opciones
 
@@ -344,7 +347,14 @@ elCantidadPresentacion.addEventListener('input', actualizarCantidadYPvu)
 // Stock vendible actual del producto elegido (suma de sus lotes en salón)
 async function actualizarInfoProductoCompra() {
   const p = productoSeleccionado(selectCompraProducto.value)
-  if (!p) return
+  if (!p) {
+    elCompraMargen.value = ''
+    actualizarSelectorPresentacion(null)
+    resetearCajones()
+    actualizarCantidadYPvu()
+    elCompraStockActual.classList.add('oculto')
+    return
+  }
 
   elCompraMargen.value = p.margen_objetivo_pct ?? ''
   actualizarSelectorPresentacion(p.id)
@@ -679,11 +689,14 @@ async function registrarFila() {
     bloquearProveedor()
 
     // Dejamos la fila lista para el próximo producto, sin frenar la carga.
+    // El producto se limpia (vuelve al placeholder) en vez de quedar en el
+    // mismo — así hay que elegirlo de nuevo a propósito para el siguiente.
     elCompraPcu.value = ''
     elCompraPct.value = ''
     elCantidadPresentacion.value = ''
     resetearMadurez()
     elUbicacion.checked = false
+    selectCompraProducto.value = ''
     await actualizarInfoProductoCompra()
     selectCompraProducto.focus()
   } finally {
@@ -692,10 +705,13 @@ async function registrarFila() {
 }
 
 // Enter va avanzando de celda en celda de izquierda a derecha; en la
-// última (ubicación) registra la fila entera y arranca una nueva. Si la
+// última (margen) registra la fila entera y arranca una nueva. Si la
 // fila está incompleta o vacía, registrarFila() no guarda nada — solo
 // muestra el error y te deja seguir corrigiendo esa misma fila.
-const ordenCeldasCompra = ['compra-producto', 'compra-pcu', 'compra-pct', 'compra-margen', 'compra-estado', 'compra-ubicacion']
+// Estado y ubicación quedan fuera de esta cadena a propósito: son casos
+// excepcionales (casi siempre es "Nueva" / "Depósito"), se tocan con el
+// mouse solo cuando hace falta.
+const ordenCeldasCompra = ['compra-producto', 'compra-pcu', 'compra-pct', 'compra-margen']
 
 document.querySelector('.grilla-compra-wrap').addEventListener('keydown', (e) => {
   if (e.key !== 'Enter') return
