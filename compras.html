@@ -120,9 +120,27 @@
                 <label>Proveedor <span class="muted">(opcional)</span>
                   <select id="compra-proveedor"></select>
                 </label>
+                <label>Comprobante
+                  <select id="compra-tipo-comprobante">
+                    <option>Sin comprobante</option>
+                    <option>Factura A</option>
+                    <option>Factura B</option>
+                    <option>Factura C</option>
+                    <option>Remito</option>
+                    <option>Nota de crédito</option>
+                  </select>
+                </label>
+                <label>Número <span class="muted">(opcional)</span>
+                  <input type="text" id="compra-numero-comprobante" placeholder="0001-00001234">
+                </label>
+                <label>Fecha
+                  <input type="date" id="compra-fecha-comprobante">
+                </label>
                 <button type="button" id="btn-mostrar-nuevo-proveedor" class="btn-texto btn-enlace-chico">+ Nuevo proveedor</button>
                 <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
               </div>
+
+              <p id="factura-existente-aviso" class="aviso-info oculto"></p>
 
               <div id="form-nuevo-proveedor" class="form-carga oculto">
                 <label>Nombre del proveedor
