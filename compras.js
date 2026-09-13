@@ -246,12 +246,28 @@ async function quitarItemSesion(i) {
 
   comprasSesion.splice(i, 1)
   renderComprasSesion()
+
+  // Si esa era la última línea de la factura, no tiene sentido dejar la
+  // factura vacía en la base -- la borramos y liberamos todo para arrancar
+  // de cero (proveedor y comprobante vuelven a ser editables).
+  if (comprasSesion.length === 0 && facturaActualId) {
+    const idBorrada = facturaActualId
+    facturaActualId = null
+    const { error: errorFactura } = await supabase.from('facturas').delete().eq('id', idBorrada)
+    if (errorFactura) console.error(errorFactura)
+    desbloquearProveedor()
+  }
 }
 
 btnFinalizarCarga.addEventListener('click', () => {
   if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?`)) return
   comprasSesion = []
   selectCompraProveedor.value = ''
+  facturaActualId = null
+  elCompraTipoComprobante.value = 'Sin comprobante'
+  elCompraNumeroComprobante.value = ''
+  elCompraFechaComprobante.value = new Date().toISOString().slice(0, 10)
+  elFacturaAviso.classList.add('oculto')
   desbloquearProveedor()
   renderComprasSesion()
 })
@@ -506,16 +522,149 @@ document.getElementById('btn-crear-proveedor').addEventListener('click', async (
   document.getElementById('btn-cancelar-nuevo-proveedor').click()
 })
 
-// Una vez cargado el primer producto de la boleta, el proveedor queda fijo
-// (bloqueado) hasta "Finalizar esta compra" -- así no cambia sin querer
-// a mitad de una boleta con varios productos.
+// Una vez cargado el primer producto de la boleta, el proveedor Y los
+// datos del comprobante quedan fijos (bloqueados) hasta "Finalizar esta
+// compra" -- así no cambian sin querer a mitad de una boleta con varios
+// productos, y todos los productos quedan colgados de la misma factura.
 function bloquearProveedor() {
   selectCompraProveedor.disabled = true
   document.getElementById('btn-mostrar-nuevo-proveedor').disabled = true
+  elCompraTipoComprobante.disabled = true
+  elCompraNumeroComprobante.disabled = true
+  elCompraFechaComprobante.disabled = true
 }
 function desbloquearProveedor() {
   selectCompraProveedor.disabled = false
   document.getElementById('btn-mostrar-nuevo-proveedor').disabled = false
+  elCompraTipoComprobante.disabled = false
+  elCompraNumeroComprobante.disabled = false
+  elCompraFechaComprobante.disabled = false
+}
+
+// --- Factura (comprobante de la boleta que estás cargando) ---
+const elCompraTipoComprobante = document.getElementById('compra-tipo-comprobante')
+const elCompraNumeroComprobante = document.getElementById('compra-numero-comprobante')
+const elCompraFechaComprobante = document.getElementById('compra-fecha-comprobante')
+const elFacturaAviso = document.getElementById('factura-existente-aviso')
+elCompraFechaComprobante.value = new Date().toISOString().slice(0, 10)
+
+// null = todavía no se creó ninguna factura para esta sesión; se crea sola
+// con el primer producto que registrás. Si "Ver/Editar" carga una ya
+// existente, apunta a esa en vez de crear una nueva.
+let facturaActualId = null
+
+// Busca si ya existe una factura con este proveedor + número (la relación
+// que la base tiene como UNIQUE). Se dispara al salir del campo número, o
+// al cambiar de proveedor si ya había un número tipeado -- así avisa antes
+// de llegar a cargar productos, no recién cuando el Enter choca.
+async function revisarFacturaExistente() {
+  const proveedorId = selectCompraProveedor.value || null
+  const numero = elCompraNumeroComprobante.value.trim() || null
+  elFacturaAviso.classList.add('oculto')
+  elFacturaAviso.innerHTML = ''
+  if (facturaActualId || !numero) return
+
+  const { data, error } = await supabase
+    .from('facturas')
+    .select('id, tipo_comprobante, numero_comprobante, fecha_comprobante')
+    .filter('proveedor_id', proveedorId === null ? 'is' : 'eq', proveedorId)
+    .eq('numero_comprobante', numero)
+    .maybeSingle()
+  if (error) { console.error(error); return }
+  if (!data) return
+
+  const { count } = await supabase
+    .from('compras')
+    .select('id', { count: 'exact', head: true })
+    .eq('factura_id', data.id)
+
+  elFacturaAviso.innerHTML = `
+    Ya cargaste "${data.tipo_comprobante} ${data.numero_comprobante}" de este proveedor
+    el ${new Date(data.fecha_comprobante + 'T00:00:00').toLocaleDateString('es-AR')}
+    (${count ?? 0} producto${count === 1 ? '' : 's'}).
+    <button type="button" id="btn-ver-editar-factura" class="btn-texto">Ver / editar esa factura</button>
+  `
+  elFacturaAviso.classList.remove('oculto')
+  document.getElementById('btn-ver-editar-factura').addEventListener('click', () => cargarFacturaExistente(data.id))
+}
+elCompraNumeroComprobante.addEventListener('blur', revisarFacturaExistente)
+selectCompraProveedor.addEventListener('change', revisarFacturaExistente)
+
+// "Ver/editar": trae todos los productos ya cargados en esa factura a la
+// lista de esta sesión (con sus loteId/compraId reales), para poder
+// sacarlos con la "×" de siempre o sumar productos nuevos a la MISMA
+// factura en vez de chocar contra el UNIQUE al intentar crear otra.
+async function cargarFacturaExistente(facturaId) {
+  const { data: factura, error: errorFactura } = await supabase
+    .from('facturas').select('*').eq('id', facturaId).single()
+  if (errorFactura || !factura) { console.error(errorFactura); return }
+
+  const { data: filas, error: errorFilas } = await supabase
+    .from('compras')
+    .select('id, cantidad, costo_total, productos(nombre, tipo), lotes(id, codigo, cajones(numero_guia, peso_inicial))')
+    .eq('factura_id', facturaId)
+  if (errorFilas) { console.error(errorFilas); return }
+
+  facturaActualId = factura.id
+  selectCompraProveedor.value = factura.proveedor_id || ''
+  elCompraTipoComprobante.value = factura.tipo_comprobante
+  elCompraNumeroComprobante.value = factura.numero_comprobante || ''
+  elCompraFechaComprobante.value = factura.fecha_comprobante
+
+  comprasSesion = filas.map(f => {
+    const unidad = f.productos.tipo === 'peso' ? 'kg' : 'unidades'
+    const lote = Array.isArray(f.lotes) ? f.lotes[0] : f.lotes
+    return {
+      loteId: lote?.id ?? null,
+      compraId: f.id,
+      nombre: f.productos.nombre,
+      cantidad: f.cantidad,
+      unidad,
+      costoTotal: f.costo_total,
+      costoUnitario: f.cantidad ? f.costo_total / f.cantidad : 0,
+      codigos: lote?.cajones?.length
+        ? [...lote.cajones].sort((a, b) => a.numero_guia - b.numero_guia)
+            .map(c => ({ numeroGuia: c.numero_guia, peso: c.peso_inicial, codigoLote: lote.codigo }))
+        : null
+    }
+  })
+  renderComprasSesion()
+  bloquearProveedor()
+  elFacturaAviso.classList.add('oculto')
+}
+
+// Crea la factura de esta sesión si todavía no existe (primer producto que
+// se registra). Si otra pestaña/persona cargó la misma en el medio, el
+// UNIQUE de la base lo frena igual -- acá lo agarramos y reusamos esa en
+// vez de fallar la compra.
+async function obtenerOCrearFactura(proveedorId) {
+  if (facturaActualId) return facturaActualId
+
+  const nueva = {
+    proveedor_id: proveedorId,
+    tipo_comprobante: elCompraTipoComprobante.value,
+    numero_comprobante: elCompraNumeroComprobante.value.trim() || null,
+    fecha_comprobante: elCompraFechaComprobante.value || new Date().toISOString().slice(0, 10)
+  }
+  const { data, error } = await supabase.from('facturas').insert(nueva).select('id').single()
+  if (!error) {
+    facturaActualId = data.id
+    return facturaActualId
+  }
+  if (error.code === '23505') {
+    // Alguien la cargó justo antes que nosotros: la usamos en vez de fallar.
+    const { data: existente } = await supabase
+      .from('facturas').select('id')
+      .filter('proveedor_id', proveedorId === null ? 'is' : 'eq', proveedorId)
+      .eq('numero_comprobante', nueva.numero_comprobante)
+      .single()
+    if (existente) {
+      facturaActualId = existente.id
+      return facturaActualId
+    }
+  }
+  console.error(error)
+  throw new Error('No se pudo crear la factura de esta compra.')
 }
 
 
@@ -619,6 +768,15 @@ async function registrarFila() {
       if (!confirm('No elegiste un proveedor para esta compra. ¿Registrarla igual, sin proveedor?')) return
     }
 
+    let facturaId
+    try {
+      facturaId = await obtenerOCrearFactura(proveedorId)
+    } catch (e) {
+      elCompraError.textContent = e.message
+      elCompraError.classList.remove('oculto')
+      return
+    }
+
     const { data, error } = await supabase.rpc('registrar_compra', {
       p_producto_id: producto.id,
       p_cantidad: pres ? cantidad : cantidadBase,
@@ -655,6 +813,14 @@ async function registrarFila() {
       .select('codigo, compra_id')
       .eq('id', resultado.lote_id)
       .single()
+
+    if (loteNuevo?.compra_id) {
+      const { error: errorFacturaId } = await supabase
+        .from('compras')
+        .update({ factura_id: facturaId })
+        .eq('id', loteNuevo.compra_id)
+      if (errorFacturaId) console.error(errorFacturaId)
+    }
 
     // --- Crear los cajones físicos de este lote (ya en neto, sin la tara) y
     // sumar el código de cada uno a este ítem de la lista. ---
