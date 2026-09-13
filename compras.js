@@ -587,7 +587,43 @@ async function revisarFacturaExistente() {
   elFacturaAviso.classList.remove('oculto')
   document.getElementById('btn-ver-editar-factura').addEventListener('click', () => cargarFacturaExistente(data.id))
 }
-elCompraNumeroComprobante.addEventListener('blur', revisarFacturaExistente)
+// Punto de venta + número, formato "0000-00001234". Si tipeás solo el
+// número del remito (ej: "1234"), se asume punto de venta "0000" y se
+// completa solo -- no hace falta escribir el guión ni los ceros.
+function formatearNumeroComprobante() {
+  const raw = elCompraNumeroComprobante.value.trim()
+  if (!raw) return
+  let puntoVenta = '0000'
+  let numero = raw
+  if (raw.includes('-')) {
+    const [pv, ...resto] = raw.split('-')
+    puntoVenta = pv.replace(/\D/g, '') || '0000'
+    numero = resto.join('').replace(/\D/g, '')
+  } else {
+    numero = raw.replace(/\D/g, '')
+  }
+  if (!numero) return
+  puntoVenta = puntoVenta.padStart(4, '0').slice(-4)
+  numero = numero.padStart(8, '0').slice(-8)
+  elCompraNumeroComprobante.value = `${puntoVenta}-${numero}`
+}
+
+elCompraNumeroComprobante.addEventListener('blur', () => {
+  formatearNumeroComprobante()
+  revisarFacturaExistente()
+})
+elCompraNumeroComprobante.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return
+  e.preventDefault()
+  formatearNumeroComprobante()
+  revisarFacturaExistente()
+  elCompraFechaComprobante.focus()
+})
+elCompraFechaComprobante.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return
+  e.preventDefault()
+  selectCompraProducto.focus()
+})
 selectCompraProveedor.addEventListener('change', revisarFacturaExistente)
 
 // "Ver/editar": trae todos los productos ya cargados en esa factura a la
