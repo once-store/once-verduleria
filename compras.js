@@ -1133,6 +1133,7 @@ async function cargarLotesParaPrecio() {
         <p class="muted margen-lote" data-lote-id="${lote.id}"></p>
         <div class="acciones-pedido">
           <button class="btn-confirmar btn-guardar-precio-lote" data-lote-id="${lote.id}" disabled>Guardar</button>
+          <span class="guardado-lote oculto" data-lote-id="${lote.id}">✓ Guardado</span>
         </div>
       </div>
     `
@@ -1146,6 +1147,7 @@ function actualizarMargenLote(loteId) {
   const inputPrecio = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${loteId}"]`)
   const elMargen = elListaPrecioLotes.querySelector(`.margen-lote[data-lote-id="${loteId}"]`)
   const btn = elListaPrecioLotes.querySelector(`.btn-guardar-precio-lote[data-lote-id="${loteId}"]`)
+  const elGuardado = elListaPrecioLotes.querySelector(`.guardado-lote[data-lote-id="${loteId}"]`)
 
   const costo = Number(inputCosto.value)
   const precio = Number(inputPrecio.value)
@@ -1155,6 +1157,9 @@ function actualizarMargenLote(loteId) {
 
   const cambioAlgo = inputCosto.value !== inputCosto.dataset.original || inputPrecio.value !== inputPrecio.dataset.original
   btn.disabled = !cambioAlgo
+  // Si volvés a tocar un campo, el "✓ Guardado" de antes ya no aplica a lo
+  // que se ve en pantalla -- lo escondemos hasta que guardes de nuevo.
+  if (cambioAlgo) elGuardado.classList.add('oculto')
 }
 
 elListaPrecioLotes.addEventListener('input', (e) => {
@@ -1206,8 +1211,10 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
   inputCosto.dataset.original = inputCosto.value
   inputPrecio.dataset.original = inputPrecio.value
   btn.disabled = true
-  btn.textContent = 'Guardado ✓'
-  setTimeout(() => { btn.textContent = 'Guardar' }, 1500)
+  const elGuardado = elListaPrecioLotes.querySelector(`.guardado-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const ahora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  elGuardado.textContent = `✓ Guardado a las ${ahora}`
+  elGuardado.classList.remove('oculto')
 })
 
 elListaMaduracion.addEventListener('click', async (e) => {
