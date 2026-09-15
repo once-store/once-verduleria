@@ -875,6 +875,7 @@ body {
 .tarjeta-producto .nombre { font-size:18px; font-weight:800; letter-spacing:-.2px; margin-top:2px; }
 .tarjeta-producto .precio { font-size:17px; font-weight:900; color:var(--verde-oscuro); }
 .tarjeta-producto .resumen-peso { font-size:12px; line-height:1.3; min-height:30px; }
+.tarjeta-producto .cinta-consumir-pronto { display:inline-block; font-size:11px; font-weight:700; color:white; background:var(--tomate); padding:2px 8px; border-radius:999px; }
 .btn-agregar { padding:13px 14px; border-radius:13px; background:var(--verde); font:800 14px 'Nunito',sans-serif; box-shadow:0 5px 10px rgba(46,125,82,.12); }
 .btn-agregar:active,.btn-primario:active { transform:scale(.98); }
 .fila-cantidad { padding:4px; background:var(--crema); border:1px solid var(--borde); border-radius:14px; }
