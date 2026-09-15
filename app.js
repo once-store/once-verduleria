@@ -94,7 +94,15 @@ function mejorPromoMarketing(p) {
   }
 
   if (candidatos.length === 0) return null
-  return candidatos.reduce((mejor, actual) => (actual.precio < mejor.precio ? actual : mejor))
+  const mejor = candidatos.reduce((mejor, actual) => (actual.precio < mejor.precio ? actual : mejor))
+
+  // Una promo nunca debería dejarte peor de lo que ya estabas: si el lote
+  // (por ejemplo, uno con precio propio más bajo que otros del mismo
+  // producto) ya cuesta menos que la promo, se ignora la promo acá y se
+  // cobra el precio del lote -- una "oferta" jamás puede terminar siendo
+  // un aumento.
+  if (mejor.precio >= Number(p.precio)) return null
+  return mejor
 }
 
 // "Precio de vidriera": el número que se muestra de entrada, ANTES de que
