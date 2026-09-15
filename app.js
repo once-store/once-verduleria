@@ -13,7 +13,7 @@ let categorias = []
 let promociones = []
 let presentaciones = [] // presentaciones de venta activas (ej. Docena/Maple de Huevo)
 let categoriaFiltroActiva = '' // '' = "Todo"
-let carrito = {} // { producto_id: cantidad } o { "producto_id::presentacion_id": cantidad_de_presentaciones }
+let carrito = {} // { lote_id: cantidad } o { "producto_id::presentacion_id": cantidad_de_presentaciones }
 let pedidoActualId = null
 let pedidoNumeroCorto = null
 let pollingInterval = null
@@ -80,7 +80,7 @@ function precioPorCantidad(p, cantidad) {
 function mejorPromoMarketing(p) {
   const candidatos = []
 
-  const promoOferta = promocionesDelProducto(p.id).find(promo => promo.tipo === 'oferta_producto')
+  const promoOferta = promocionesDelProducto(p.producto_id).find(promo => promo.tipo === 'oferta_producto')
   if (promoOferta) {
     candidatos.push({ precio: Number(promoOferta.precio_oferta), promo: promoOferta })
   }
@@ -199,7 +199,7 @@ function armarEscenasHero() {
   promosDestacadas.forEach(promo => {
     if (promo.tipo === 'oferta_producto') {
       const vinculo = promocionProductos.find(pp => pp.promocion_id === promo.id)
-      const productoReal = vinculo ? productos.find(p => p.id === vinculo.producto_id) : null
+      const productoReal = vinculo ? productos.find(p => p.producto_id === vinculo.producto_id) : null
 
       escenas.push({
         eyebrow: 'OFERTA DE LA SEMANA',
@@ -331,9 +331,26 @@ function renderProductos() {
     return
   }
 
+  // Un mismo producto puede tener más de un lote en salón con precios
+  // distintos (uno recién llegado, otro por vencer) -- cada uno es su
+  // propia tarjeta/lote, pero las presentaciones (Huevo · Maple, etc.) se
+  // muestran una sola vez por producto, no una vez por cada precio.
+  const productoIdsConPresentacionYaRenderizados = new Set()
+
+  // Para saber cuál de los precios de un mismo producto es "el normal" (el
+  // más alto) y marcar el resto como más barato por estar madurando.
+  const precioMaxPorProducto = {}
+  productos.forEach(p => {
+    if (!(p.producto_id in precioMaxPorProducto) || Number(p.precio) > precioMaxPorProducto[p.producto_id]) {
+      precioMaxPorProducto[p.producto_id] = Number(p.precio)
+    }
+  })
+
   productosFiltrados.forEach(p => {
-    const presentacionesProducto = presentaciones.filter(pr => pr.producto_id === p.id)
+    const presentacionesProducto = presentaciones.filter(pr => pr.producto_id === p.producto_id)
     if (presentacionesProducto.length > 0) {
+      if (productoIdsConPresentacionYaRenderizados.has(p.producto_id)) return
+      productoIdsConPresentacionYaRenderizados.add(p.producto_id)
       presentacionesProducto.forEach(pres => renderTarjetaPresentacion(p, pres))
       return
     }
@@ -364,6 +381,8 @@ function renderProductos() {
     const descuentoPct = vidriera.pctOff
     const precioMostrado = vidriera.precio
     const tieneAlgunDescuento = vidriera.pctOff > 0
+    const hayVariosPrecios = productos.filter(x => x.producto_id === p.producto_id).length > 1
+    const esElMasBarato = hayVariosPrecios && Number(p.precio) < precioMaxPorProducto[p.producto_id]
 
     card.innerHTML = `
       <div class="foto-wrap">
@@ -375,6 +394,7 @@ function renderProductos() {
         ${tieneAlgunDescuento ? `<span class="cinta-oferta">-${descuentoPct}%</span>` : ''}
       </div>
       <span class="nombre">${p.nombre}</span>
+      ${esElMasBarato ? '<span class="cinta-consumir-pronto">Para consumir pronto</span>' : ''}
       <span class="precio">${formatoMoneda(precioMostrado)}${unidad}</span>
       ${controles}
       ${(p.precio_original && Number(p.precio_original) > Number(p.precio) && esPeso) ? `<p class="ejemplo-oferta">Llevando 2kg: ${formatoMoneda(p.precio * 2)}</p>` : ''}
@@ -387,7 +407,7 @@ function renderProductos() {
 // vez de una sola tarjeta de "Huevo" con un selector escondido -- así el
 // cliente ve todos los precios de un vistazo, como pidió Martin.
 function renderTarjetaPresentacion(p, pres) {
-  const key = `${p.id}::${pres.id}`
+  const key = `${p.producto_id}::${pres.id}`
   const cantidad = carrito[key] || 0
   const card = document.createElement('div')
   card.className = 'tarjeta-producto'
@@ -505,7 +525,7 @@ document.getElementById('btn-agregar-pesaje').addEventListener('click', async ()
 function detalleLineaCarrito(key, cantidadEnCarrito) {
   if (key.includes('::')) {
     const [productoId, presentacionId] = key.split('::')
-    const p = productos.find(pr => pr.id === productoId)
+    const p = productos.find(pr => pr.producto_id === productoId)
     const pres = presentaciones.find(pr => pr.id === presentacionId)
     if (!p || !pres) return null
     return {
@@ -621,7 +641,11 @@ async function confirmarPedido(metodo, montoEfectivo) {
       : precioPorCantidad(d.producto, cant)
     return {
       pedido_id: pedidoActualId,
-      producto_id: d.producto.id,
+      producto_id: d.producto.producto_id,
+      // Las presentaciones (Huevo · Maple, etc.) todavía no vienen de un
+      // lote puntual en el carrito -- por ahora esa parte del stock sigue
+      // sin descontarse sola, igual que antes de este cambio.
+      lote_id: d.presentacion ? null : d.producto.id,
       cantidad: d.cantidadUnidadesBase,
       precio_unitario: precioUnitario,
       subtotal: d.totalLinea
@@ -682,7 +706,8 @@ async function pagarConMercadoPago() {
       : precioPorCantidad(d.producto, cant)
     return {
       pedido_id: pedidoActualId,
-      producto_id: d.producto.id,
+      producto_id: d.producto.producto_id,
+      lote_id: d.presentacion ? null : d.producto.id,
       cantidad: d.cantidadUnidadesBase,
       precio_unitario: precioUnitario,
       subtotal: d.totalLinea
