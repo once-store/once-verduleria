@@ -68,16 +68,21 @@ function precioPorCantidad(p, cantidad) {
   }
 
   // Sin rebaja por maduración activa: se evalúan las promos de marketing
-  // que apliquen (oferta directa y/o descuento por categoría) y se cobra
+  // que apliquen (oferta directa, nxm o descuento por categoría) y se cobra
   // la que resulte más beneficiosa para el cliente -- nunca se acumulan.
-  const mejor = mejorPromoMarketing(p)
+  const mejor = mejorPromoMarketing(p, cantidad)
   return mejor ? mejor.precio : Number(p.precio)
 }
 
 // Busca todas las promos de marketing vigentes que apliquen a este producto
-// (oferta_producto puntual, o descuento_porcentual de su categoría) y
+// (oferta_producto puntual, nxm, o descuento_porcentual de su categoría) y
 // devuelve la que le cobra menos al cliente.
-function mejorPromoMarketing(p) {
+//
+// cantidadEnCarrito es opcional: para la vidriera (antes de que el cliente
+// elija cuánto lleva) se llama sin ese dato, y ahí se asume que SÍ va a
+// llegar al mínimo de cualquier nxm activo -- es lo mismo que ya hacía la
+// rebaja por volumen (mostrar "Llevando 2kg: $X" antes de pesar nada).
+function mejorPromoMarketing(p, cantidadEnCarrito = Infinity) {
   const candidatos = []
 
   const promoOferta = promocionesDelProducto(p.producto_id).find(promo => promo.tipo === 'oferta_producto')
@@ -90,6 +95,14 @@ function mejorPromoMarketing(p) {
     candidatos.push({
       precio: Number(p.precio) * (1 - promoDescuento.descuento_pct / 100),
       promo: promoDescuento
+    })
+  }
+
+  const promoNxm = promocionesDelProducto(p.producto_id).find(promo => promo.tipo === 'nxm')
+  if (promoNxm && cantidadEnCarrito >= Number(promoNxm.cantidad_lleva)) {
+    candidatos.push({
+      precio: Number(p.precio) * (Number(promoNxm.cantidad_paga) / Number(promoNxm.cantidad_lleva)),
+      promo: promoNxm
     })
   }
 
@@ -556,11 +569,100 @@ function detalleLineaCarrito(key, cantidadEnCarrito) {
   }
 }
 
+// --- Combos: a diferencia de las otras 3 promos (que cambian el precio de
+// UNA línea), un combo junta varios productos distintos a un precio cerrado
+// -- por eso no se puede resolver mirando un producto solo, hay que mirar
+// el carrito entero. Se calcula una sola vez acá y lo reusan totalCarrito(),
+// renderCarrito() y confirmarPedido() -- mismo criterio que precioVidriera().
+function ajusteCombosCarrito() {
+  const cantidadPorProducto = {}
+  Object.entries(carrito).forEach(([key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    if (!d || d.presentacion) return
+    const pid = d.producto.producto_id
+    cantidadPorProducto[pid] = (cantidadPorProducto[pid] || 0) + d.cantidadUnidadesBase
+  })
+
+  let ahorro = 0
+  const combosArmados = []
+  const descuentoPorProducto = {} // producto_id -> $ a restarle entre todos sus combos
+
+  promociones
+    .filter(promo => promo.tipo === 'combo')
+    .forEach(promo => {
+      const miembros = promocionProductos.filter(pp => pp.promocion_id === promo.id)
+      if (miembros.length === 0) return
+
+      // Cuántas veces entra el combo completo con lo que hay en el carrito
+      // -- lo manda el miembro más escaso (si el combo pide 2kg de tomate y
+      // solo hay 1kg en el carrito, el combo no se arma ni una vez).
+      const veces = Math.min(...miembros.map(m => {
+        const disponible = cantidadPorProducto[m.producto_id] || 0
+        return Math.floor(disponible / Number(m.cantidad_en_combo))
+      }))
+      if (!veces || veces < 1) return
+
+      const costosPorMiembro = miembros.map(m => {
+        const fila = productos.find(pr => pr.producto_id === m.producto_id)
+        return { producto_id: m.producto_id, costo: fila ? Number(fila.precio) * Number(m.cantidad_en_combo) * veces : 0 }
+      })
+      const costoIndividual = costosPorMiembro.reduce((acc, m) => acc + m.costo, 0)
+      const costoCombo = Number(promo.precio_combo) * veces
+
+      // Mismo criterio que las otras promos: si el combo no achica el
+      // precio de lo que ya ibas a pagar por separado, se ignora.
+      if (costoCombo >= costoIndividual || costoIndividual === 0) return
+
+      const ahorroCombo = costoIndividual - costoCombo
+      ahorro += ahorroCombo
+      combosArmados.push({ nombre: promo.nombre, veces, costoCombo, ahorro: ahorroCombo })
+
+      // El ahorro de este combo se reparte entre sus miembros a prorrata de
+      // lo que cada uno pesa en el costo individual -- así, si el pedido
+      // termina yendo a la base, cada línea de producto queda con el precio
+      // que realmente le tocó pagar, no el de lista.
+      costosPorMiembro.forEach(m => {
+        if (m.costo === 0) return
+        const parte = ahorroCombo * (m.costo / costoIndividual)
+        descuentoPorProducto[m.producto_id] = (descuentoPorProducto[m.producto_id] || 0) + parte
+      })
+    })
+
+  return { ahorro, combosArmados, descuentoPorProducto }
+}
+
+// Reparte el descuento de los combos entre las líneas reales de pedido_items
+// que correspondan a cada producto (si un producto tiene más de una línea
+// -- por ejemplo, dos lotes distintos en el carrito -- se reparte entre
+// ellas a prorrata de su propio subtotal).
+function aplicarDescuentoCombosAItems(items) {
+  const { descuentoPorProducto } = ajusteCombosCarrito()
+  if (Object.keys(descuentoPorProducto).length === 0) return items
+
+  return items.map(item => {
+    const descuentoProducto = descuentoPorProducto[item.producto_id]
+    if (!descuentoProducto) return item
+
+    const lineasDelProducto = items.filter(i => i.producto_id === item.producto_id)
+    const totalProducto = lineasDelProducto.reduce((acc, i) => acc + i.subtotal, 0)
+    if (totalProducto === 0) return item
+
+    const parte = descuentoProducto * (item.subtotal / totalProducto)
+    const nuevoSubtotal = Math.max(0, item.subtotal - parte)
+    return {
+      ...item,
+      subtotal: nuevoSubtotal,
+      precio_unitario: item.cantidad > 0 ? nuevoSubtotal / item.cantidad : item.precio_unitario
+    }
+  })
+}
+
 function totalCarrito() {
-  return Object.entries(carrito).reduce((acc, [key, cant]) => {
+  const base = Object.entries(carrito).reduce((acc, [key, cant]) => {
     const d = detalleLineaCarrito(key, cant)
     return acc + (d ? d.totalLinea : 0)
   }, 0)
+  return base - ajusteCombosCarrito().ahorro
 }
 
 function actualizarBarraCarrito() {
@@ -585,6 +687,16 @@ function renderCarrito() {
     fila.innerHTML = `<span>${d.nombreMostrado} · ${etiquetaCantidad}</span><span>${formatoMoneda(d.totalLinea)}</span>`
     elListaCarrito.appendChild(fila)
   })
+
+  const { combosArmados } = ajusteCombosCarrito()
+  combosArmados.forEach(c => {
+    const fila = document.createElement('div')
+    fila.className = 'fila-carrito fila-combo'
+    const etiqueta = c.veces > 1 ? `${c.nombre} · x${c.veces}` : c.nombre
+    fila.innerHTML = `<span>🎁 ${etiqueta}</span><span>-${formatoMoneda(c.ahorro)}</span>`
+    elListaCarrito.appendChild(fila)
+  })
+
   elCarritoTotal2.textContent = formatoMoneda(totalCarrito())
 }
 
@@ -641,7 +753,7 @@ async function confirmarPedido(metodo, montoEfectivo) {
     return
   }
 
-  const items = Object.entries(carrito).map(([key, cant]) => {
+  const items = aplicarDescuentoCombosAItems(Object.entries(carrito).map(([key, cant]) => {
     const d = detalleLineaCarrito(key, cant)
     if (!d) return null
     const precioUnitario = d.presentacion
@@ -658,7 +770,7 @@ async function confirmarPedido(metodo, montoEfectivo) {
       precio_unitario: precioUnitario,
       subtotal: d.totalLinea
     }
-  }).filter(Boolean)
+  }).filter(Boolean))
 
   // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
   // doble click, un método que falló y se probó con otro), primero limpiamos
@@ -706,7 +818,7 @@ async function pagarConMercadoPago() {
     return
   }
 
-  const items = Object.entries(carrito).map(([key, cant]) => {
+  const items = aplicarDescuentoCombosAItems(Object.entries(carrito).map(([key, cant]) => {
     const d = detalleLineaCarrito(key, cant)
     if (!d) return null
     const precioUnitario = d.presentacion
@@ -720,7 +832,7 @@ async function pagarConMercadoPago() {
       precio_unitario: precioUnitario,
       subtotal: d.totalLinea
     }
-  }).filter(Boolean)
+  }).filter(Boolean))
 
   // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
   // doble click, un método que falló y se probó con otro), primero limpiamos
@@ -760,6 +872,22 @@ async function pagarConMercadoPago() {
       : (d.producto.tipo === 'peso' ? `${d.producto.nombre} (${cant} kg)` : d.producto.nombre)
     return { nombre, cantidad: 1, precioUnitario: d.totalLinea }
   }).filter(Boolean)
+
+  // El combo se resuelve mirando el carrito completo, no una línea sola --
+  // acá se ve como un ítem aparte, con el ahorro en negativo, en vez de
+  // repartirse entre las líneas (que ya se hizo para lo que se guarda en
+  // pedido_items, arriba). El recargo de Mercado Pago (hoy 5%) lo calcula
+  // solo la función crear-preferencia-pago del lado del servidor -- no hay
+  // que sumarlo acá, y si algún día cambia el %, se ajusta ahí, no en este
+  // archivo.
+  const { combosArmados } = ajusteCombosCarrito()
+  combosArmados.forEach(c => {
+    itemsParaMP.push({
+      nombre: `Descuento combo: ${c.nombre}${c.veces > 1 ? ` x${c.veces}` : ''}`,
+      cantidad: 1,
+      precioUnitario: -c.ahorro
+    })
+  })
 
   let initPoint
   try {
