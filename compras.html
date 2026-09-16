@@ -6,6 +6,7 @@
 <title>once · compras y mermas</title>
 <link rel="preload" href="adminlte.min.css" as="style">
 <link rel="stylesheet" href="adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css">
 </head>
@@ -190,8 +191,8 @@
 
               <div class="grilla-compra-wrap">
                 <div class="grilla-compra-header">
-                  <span>codbar</span><span>producto</span><span>cant.</span><span>PCU</span><span>PCT</span>
-                  <span>iva</span><span>marg. %</span><span>PVU</span><span>estado</span><span>ubic.</span><span>cajones</span>
+                  <span>codbar</span><span>producto</span><span>cant.</span><span>pcu</span><span>pct</span>
+                  <span>iva</span><span>marg. %</span><span>pvu</span><span>estado</span><span>depósito/salón</span><span>bultos</span>
                 </div>
                 <div class="grilla-compra-fila" id="fila-compra">
                   <input class="celda" id="compra-codbar" disabled placeholder="—">
@@ -215,7 +216,7 @@
                     </label>
                     <span class="switch-mini-etiqueta">S</span>
                   </div>
-                  <button type="button" class="celda" id="btn-toggle-cajones"><span id="cant-cajones">1</span> <i class="bi bi-chevron-down"></i></button>
+                  <button type="button" class="celda" id="btn-toggle-cajones" title="Ver el detalle de cajones/bultos"><span id="cant-cajones">1</span> bultos <i class="bi bi-chevron-down"></i></button>
                 </div>
                 <p id="compra-error" class="error oculto"></p>
 
@@ -226,7 +227,7 @@
 
                 <div id="bloque-cajones" class="oculto">
                   <div id="pesos-cajones"></div>
-                  <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar cajón</button>
+                  <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar bulto</button>
                 </div>
               </div>
 
