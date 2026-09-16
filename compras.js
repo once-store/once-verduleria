@@ -127,7 +127,7 @@ function renderCajones() {
 
   elPesosCajones.innerHTML = cajones.map((c, i) => `
     <div class="fila-cajon-detalle">
-      <span>Cajón ${i + 1}</span>
+      <span>Bulto ${i + 1}</span>
       <div>
         <label>${porPeso ? 'Bruto (kg)' : 'Cantidad'}</label>
         <input type="number" min="0" step="0.01" inputmode="decimal" class="input-bruto-cajon" data-i="${i}" value="${c.bruto ?? ''}">
@@ -141,7 +141,7 @@ function renderCajones() {
         <label>Neto</label>
         <div id="neto-cajon-${i}" style="font-weight:700; padding:8px 0;">${Math.max(0, (Number(c.bruto) || 0) - (Number(c.tara) || 0))} kg</div>
       </div>` : '<div></div><div></div>'}
-      <button type="button" class="btn-quitar-cajon" data-i="${i}" title="Quitar este cajón" ${cajones.length <= 1 ? 'disabled' : ''}>×</button>
+      <button type="button" class="btn-quitar-cajon" data-i="${i}" title="Quitar este bulto" ${cajones.length <= 1 ? 'disabled' : ''}>×</button>
     </div>
   `).join('')
 
@@ -231,7 +231,7 @@ function renderComprasSesion() {
 async function quitarItemSesion(i) {
   const item = comprasSesion[i]
   if (!item) return
-  if (!confirm(`¿Quitar "${item.nombre} — ${item.cantidad} ${item.unidad}"? Esto borra el lote y sus cajones de la base, no se puede deshacer.`)) return
+  if (!confirm(`¿Quitar "${item.nombre} — ${item.cantidad} ${item.unidad}"? Esto borra el lote y sus bultos de la base, no se puede deshacer.`)) return
 
   const { error: errorCajones } = await supabase.from('cajones').delete().eq('lote_id', item.loteId)
   if (errorCajones) { console.error(errorCajones); alert('No se pudo borrar del todo (cajones). Revisá la consola.'); return }
@@ -785,7 +785,7 @@ async function registrarFila() {
       return
     }
     if (!cantidadBase || cantidadBase <= 0) {
-      elCompraError.textContent = pres ? 'Completá la cantidad de la presentación.' : 'Completá el peso (bruto) de al menos un cajón.'
+      elCompraError.textContent = pres ? 'Completá la cantidad de la presentación.' : 'Completá el peso (bruto) de al menos un bulto.'
       elCompraError.classList.remove('oculto')
       return
     }
@@ -795,7 +795,7 @@ async function registrarFila() {
       return
     }
     if (!pres && cajones.some(c => c.bruto != null && (Number(c.tara) || 0) >= Number(c.bruto))) {
-      elCompraError.textContent = 'La tara no puede ser mayor o igual al peso bruto de un cajón.'
+      elCompraError.textContent = 'La tara no puede ser mayor o igual al peso bruto de un bulto.'
       elCompraError.classList.remove('oculto')
       return
     }
