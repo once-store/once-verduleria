@@ -981,8 +981,31 @@ if (SERVICE_WORKER_ACTIVO && 'serviceWorker' in navigator) {
   })
 } else if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(reg => reg.unregister())
-  })
+cargarProductos()
+
+// --- Catálogo en vivo: cuando cambia un precio, una compra, una oferta o
+// una promoción, el catálogo se actualiza solo en la pantalla del cliente
+// -- no hace falta que recargue la página a mano. Se escuchan las tablas
+// de base (lotes, productos, promociones, promocion_productos) porque
+// catalogo_disponible es una vista, y las vistas no se pueden escuchar
+// directamente.
+//
+// Se junta todo con un debounce corto: si entrás una compra de 25
+// productos de una, eso dispara 25 avisos casi juntos -- en vez de volver
+// a pedir el catálogo 25 veces, se espera un toque y se pide una sola vez.
+let refrescoPendiente = null
+function programarRefrescoCatalogo() {
+  if (refrescoPendiente) clearTimeout(refrescoPendiente)
+  refrescoPendiente = setTimeout(() => {
+    refrescoPendiente = null
+    cargarProductos()
+  }, 800)
 }
 
-cargarProductos()
+supabase
+  .channel('catalogo-en-vivo')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'lotes' }, programarRefrescoCatalogo)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, programarRefrescoCatalogo)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'promociones' }, programarRefrescoCatalogo)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'promocion_productos' }, programarRefrescoCatalogo)
+  .subscribe()
