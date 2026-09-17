@@ -981,6 +981,10 @@ if (SERVICE_WORKER_ACTIVO && 'serviceWorker' in navigator) {
   })
 } else if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister())
+  })
+}
+
 cargarProductos()
 
 // --- Catálogo en vivo: cuando cambia un precio, una compra, una oferta o
