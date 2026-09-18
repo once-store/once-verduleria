@@ -179,7 +179,13 @@ async function cargarProductos() {
   presentaciones = resPresentaciones.data || []
   // Filtramos acá las vigentes por fecha (no todas las "activa=true" están
   // necesariamente dentro de su rango de fecha_desde/fecha_hasta hoy)
-  const hoy = new Date().toISOString().slice(0, 10)
+  // OJO: nunca usar new Date().toISOString().slice(0,10) para "hoy" acá --
+  // eso da la fecha en UTC, y como Argentina está 3 horas atrás, después de
+  // las 21hs ya devuelve el día siguiente (una promo podría cortarse antes
+  // de tiempo, o arrancar 3 horas antes). Se arma la fecha con los
+  // componentes locales del navegador en su lugar.
+  const ahora = new Date()
+  const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`
   promociones = (resPromociones.data || []).filter(promo =>
     promo.fecha_desde <= hoy && (!promo.fecha_hasta || promo.fecha_hasta >= hoy)
   )
@@ -583,6 +589,11 @@ function ajusteCombosCarrito() {
     cantidadPorProducto[pid] = (cantidadPorProducto[pid] || 0) + d.cantidadUnidadesBase
   })
 
+  // Lo que cada combo ya "usó" de cada producto -- para que dos combos
+  // distintos no puedan contar las mismas unidades de banana dos veces.
+  const consumidoPorProducto = {}
+  const disponibleDe = (pid) => (cantidadPorProducto[pid] || 0) - (consumidoPorProducto[pid] || 0)
+
   let ahorro = 0
   const combosArmados = []
   const descuentoPorProducto = {} // producto_id -> $ a restarle entre todos sus combos
@@ -593,13 +604,10 @@ function ajusteCombosCarrito() {
       const miembros = promocionProductos.filter(pp => pp.promocion_id === promo.id)
       if (miembros.length === 0) return
 
-      // Cuántas veces entra el combo completo con lo que hay en el carrito
-      // -- lo manda el miembro más escaso (si el combo pide 2kg de tomate y
-      // solo hay 1kg en el carrito, el combo no se arma ni una vez).
-      const veces = Math.min(...miembros.map(m => {
-        const disponible = cantidadPorProducto[m.producto_id] || 0
-        return Math.floor(disponible / Number(m.cantidad_en_combo))
-      }))
+      // Cuántas veces entra el combo completo con lo que hay TODAVÍA
+      // disponible (descontando lo que otro combo ya se llevó) -- lo manda
+      // el miembro más escaso.
+      const veces = Math.min(...miembros.map(m => Math.floor(disponibleDe(m.producto_id) / Number(m.cantidad_en_combo))))
       if (!veces || veces < 1) return
 
       const costosPorMiembro = miembros.map(m => {
@@ -612,6 +620,13 @@ function ajusteCombosCarrito() {
       // Mismo criterio que las otras promos: si el combo no achica el
       // precio de lo que ya ibas a pagar por separado, se ignora.
       if (costoCombo >= costoIndividual || costoIndividual === 0) return
+
+      // Recién acá, con el combo ya confirmado, se marca como "gastado" --
+      // si se hubiera reservado antes de este chequeo, un combo que no
+      // convenía igual le robaría unidades a uno más abajo que sí convenía.
+      miembros.forEach(m => {
+        consumidoPorProducto[m.producto_id] = (consumidoPorProducto[m.producto_id] || 0) + Number(m.cantidad_en_combo) * veces
+      })
 
       const ahorroCombo = costoIndividual - costoCombo
       ahorro += ahorroCombo
@@ -662,7 +677,7 @@ function totalCarrito() {
     const d = detalleLineaCarrito(key, cant)
     return acc + (d ? d.totalLinea : 0)
   }, 0)
-  return base - ajusteCombosCarrito().ahorro
+  return Math.max(0, base - ajusteCombosCarrito().ahorro)
 }
 
 function actualizarBarraCarrito() {
