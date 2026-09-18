@@ -1123,12 +1123,16 @@ async function cargarLotesParaPrecio() {
     fila.innerHTML = `
       <div class="detalle-pedido">
         <div class="fila-titulo">${lote.cantidad_restante} ${unidad} · ${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</div>
-        <p class="muted">Precio original: ${formatoMoneda(lote.precio_original)}</p>
+        <p class="muted">Precio original: <span class="precio-original-lote" data-lote-id="${lote.id}">${formatoMoneda(lote.precio_original)}</span></p>
         <label>Costo de este lote <span class="muted">(lo que te costó a vos)</span>
           <input type="number" min="0" step="1" class="input-costo-lote" value="${lote.costo_unitario}" data-original="${lote.costo_unitario}" data-lote-id="${lote.id}">
         </label>
         <label>Precio actual de este lote <span class="muted">(lo que le cobrás al cliente)</span>
           <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-original="${lote.precio}" data-lote-id="${lote.id}">
+        </label>
+        <label class="check-volumen-lote">
+          <input type="checkbox" class="chk-requiere-volumen-lote" data-lote-id="${lote.id}" data-original="${lote.precio_original != lote.precio}" ${lote.precio_original != lote.precio ? 'checked' : ''}>
+          Es una rebaja por consumo pronto (requiere 2kg)
         </label>
         <p class="muted margen-lote" data-lote-id="${lote.id}"></p>
         <div class="acciones-pedido">
@@ -1145,6 +1149,7 @@ async function cargarLotesParaPrecio() {
 function actualizarMargenLote(loteId) {
   const inputCosto = elListaPrecioLotes.querySelector(`.input-costo-lote[data-lote-id="${loteId}"]`)
   const inputPrecio = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${loteId}"]`)
+  const chkVolumen = elListaPrecioLotes.querySelector(`.chk-requiere-volumen-lote[data-lote-id="${loteId}"]`)
   const elMargen = elListaPrecioLotes.querySelector(`.margen-lote[data-lote-id="${loteId}"]`)
   const btn = elListaPrecioLotes.querySelector(`.btn-guardar-precio-lote[data-lote-id="${loteId}"]`)
   const elGuardado = elListaPrecioLotes.querySelector(`.guardado-lote[data-lote-id="${loteId}"]`)
@@ -1155,7 +1160,9 @@ function actualizarMargenLote(loteId) {
     ? `Margen con estos números: ${(((precio - costo) / costo) * 100).toFixed(1)}%`
     : 'Margen: —'
 
-  const cambioAlgo = inputCosto.value !== inputCosto.dataset.original || inputPrecio.value !== inputPrecio.dataset.original
+  const cambioAlgo = inputCosto.value !== inputCosto.dataset.original
+    || inputPrecio.value !== inputPrecio.dataset.original
+    || String(chkVolumen.checked) !== chkVolumen.dataset.original
   btn.disabled = !cambioAlgo
   // Si volvés a tocar un campo, el "✓ Guardado" de antes ya no aplica a lo
   // que se ve en pantalla -- lo escondemos hasta que guardes de nuevo.
@@ -1168,12 +1175,19 @@ elListaPrecioLotes.addEventListener('input', (e) => {
   actualizarMargenLote(loteId)
 })
 
+elListaPrecioLotes.addEventListener('change', (e) => {
+  const loteId = e.target.dataset.loteId
+  if (!loteId || !e.target.matches('.chk-requiere-volumen-lote')) return
+  actualizarMargenLote(loteId)
+})
+
 elListaPrecioLotes.addEventListener('click', async (e) => {
   const btn = e.target.closest('.btn-guardar-precio-lote')
   if (!btn) return
 
   const inputPrecio = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${btn.dataset.loteId}"]`)
   const inputCosto = elListaPrecioLotes.querySelector(`.input-costo-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const chkVolumen = elListaPrecioLotes.querySelector(`.chk-requiere-volumen-lote[data-lote-id="${btn.dataset.loteId}"]`)
   const precio = Number(inputPrecio.value)
   const costo = Number(inputCosto.value)
 
@@ -1198,7 +1212,8 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
 
   const { error } = await supabase.rpc('confirmar_precio_maduracion', {
     p_lote_id: btn.dataset.loteId,
-    p_precio: precio
+    p_precio: precio,
+    p_requiere_volumen: chkVolumen.checked
   })
 
   btn.disabled = false
@@ -1210,8 +1225,14 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
   }
   inputCosto.dataset.original = inputCosto.value
   inputPrecio.dataset.original = inputPrecio.value
+  chkVolumen.dataset.original = String(chkVolumen.checked)
   btn.disabled = true
   const elGuardado = elListaPrecioLotes.querySelector(`.guardado-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const elPrecioOriginal = elListaPrecioLotes.querySelector(`.precio-original-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  // Si no requiere volumen, el "precio original" que se guarda pasa a ser
+  // el mismo precio nuevo -- lo reflejamos acá al toque para no mostrar un
+  // número viejo hasta que se recargue la pestaña.
+  if (!chkVolumen.checked) elPrecioOriginal.textContent = formatoMoneda(precio)
   const ahora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
   elGuardado.textContent = `✓ Guardado a las ${ahora}`
   elGuardado.classList.remove('oculto')
