@@ -5,6 +5,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// Los mensajes de WhatsApp y los nombres de contacto vienen de afuera (los
+// escribe el cliente, no nosotros) -- antes se insertaban directo en el
+// HTML. Si alguien manda algo como "<img onerror=...>" como mensaje, esto
+// evita que el navegador lo interprete como una etiqueta real.
+function escapeHtml(texto) {
+  if (texto == null) return ''
+  return String(texto)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
 const vistaConversaciones = document.getElementById('vista-conversaciones')
 const elConvLista = document.getElementById('conv-lista')
 const elConvVacio = document.getElementById('conv-vacio')
@@ -60,11 +74,11 @@ async function cargarLista() {
   }
 
   elConvLista.innerHTML = data.map(c => `
-    <div class="conv-fila" data-numero="${c.numero_cliente}">
-      <div class="conv-avatar">${iniciales(c.nombre || c.numero_cliente)}</div>
+    <div class="conv-fila" data-numero="${escapeHtml(c.numero_cliente)}">
+      <div class="conv-avatar">${escapeHtml(iniciales(c.nombre || c.numero_cliente))}</div>
       <div class="conv-info">
-        <p class="conv-nombre">${c.nombre || c.numero_cliente}</p>
-        <p class="conv-preview">${c.ultimo_mensaje || ''}</p>
+        <p class="conv-nombre">${escapeHtml(c.nombre || c.numero_cliente)}</p>
+        <p class="conv-preview">${escapeHtml(c.ultimo_mensaje || '')}</p>
       </div>
       <span class="conv-fecha">${formatoFechaCorta(c.ultima_fecha)}</span>
     </div>
@@ -97,21 +111,21 @@ async function abrirHilo(numeroCliente) {
 
   const contacto = data.contacto
   elContactoCard.innerHTML = `
-    <p class="conv-nombre">${contacto?.nombre || numeroCliente}</p>
-    <p>${numeroCliente}</p>
+    <p class="conv-nombre">${escapeHtml(contacto?.nombre || numeroCliente)}</p>
+    <p>${escapeHtml(numeroCliente)}</p>
     ${contacto ? `<p>Cliente desde ${formatoFechaHora(contacto.primera_interaccion)}</p>` : ''}
   `
 
   elMensajes.innerHTML = data.mensajes.map(m => `
     ${m.mensaje_cliente ? `
       <div class="conv-burbuja conv-burbuja-cliente">
-        ${m.mensaje_cliente}
+        ${escapeHtml(m.mensaje_cliente)}
         <span class="conv-burbuja-hora">${formatoFechaHora(m.creado_en)}</span>
       </div>
     ` : ''}
     ${m.respuesta_bot ? `
       <div class="conv-burbuja conv-burbuja-bot">
-        ${m.respuesta_bot}
+        ${escapeHtml(m.respuesta_bot)}
       </div>
     ` : ''}
   `).join('')
