@@ -734,11 +734,28 @@ function actualizarBarraCarrito() {
   elCarritoTotal.textContent = formatoMoneda(totalCarrito())
 }
 
+// Si un lote se agota o desaparece del catálogo mientras el cliente tiene
+// algo suyo en el carrito (puede pasar: el catálogo se actualiza solo, en
+// vivo), antes esa línea se caía en silencio del total -- el cliente
+// terminaba pagando menos de lo que creía, sin enterarse de que le
+// faltaba algo. Guardamos el nombre de cada línea mientras se puede
+// resolver, así si después desaparece, igual sabemos qué avisarle.
+let nombresCarritoCache = {}
+
 function renderCarrito() {
   elListaCarrito.innerHTML = ''
+  const desaparecidos = []
+
   Object.entries(carrito).forEach(([key, cant]) => {
     const d = detalleLineaCarrito(key, cant)
-    if (!d) return
+    if (!d) {
+      desaparecidos.push(nombresCarritoCache[key] || 'un producto')
+      delete carrito[key]
+      delete nombresCarritoCache[key]
+      return
+    }
+    nombresCarritoCache[key] = d.nombreMostrado
+
     const fila = document.createElement('div')
     fila.className = 'fila-carrito'
     const etiquetaCantidad = d.presentacion ? `x${cant}` : `${cant}${d.producto.tipo === 'peso' ? 'kg' : ''}`
@@ -756,6 +773,10 @@ function renderCarrito() {
   })
 
   elCarritoTotal2.textContent = formatoMoneda(totalCarrito())
+
+  if (desaparecidos.length > 0) {
+    alert(`Uno o más productos de tu carrito ya no están disponibles y se sacaron de tu compra: ${desaparecidos.join(', ')}. Revisá el carrito antes de pagar.`)
+  }
 }
 
 document.getElementById('btn-ver-carrito').addEventListener('click', () => {
