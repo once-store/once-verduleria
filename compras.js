@@ -5,6 +5,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// OJO: nunca usar new Date().toISOString().slice(0,10) para "hoy" -- eso da
+// la fecha en UTC, y como Argentina está 3 horas atrás, después de las 21hs
+// ya devuelve el día siguiente. Se arma con los componentes locales.
+function fechaLocalHoy() {
+  const ahora = new Date()
+  return `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`
+}
+
 const vistaCompras = document.getElementById('vista-compras')
 
 // Esta página vive protegida por la sesión que ya abriste en admin-v2.html.
@@ -266,7 +274,7 @@ btnFinalizarCarga.addEventListener('click', () => {
   facturaActualId = null
   elCompraTipoComprobante.value = 'Sin comprobante'
   elCompraNumeroComprobante.value = ''
-  elCompraFechaComprobante.value = new Date().toISOString().slice(0, 10)
+  elCompraFechaComprobante.value = fechaLocalHoy()
   elFacturaAviso.classList.add('oculto')
   desbloquearProveedor()
   renderComprasSesion()
@@ -546,7 +554,7 @@ const elCompraTipoComprobante = document.getElementById('compra-tipo-comprobante
 const elCompraNumeroComprobante = document.getElementById('compra-numero-comprobante')
 const elCompraFechaComprobante = document.getElementById('compra-fecha-comprobante')
 const elFacturaAviso = document.getElementById('factura-existente-aviso')
-elCompraFechaComprobante.value = new Date().toISOString().slice(0, 10)
+elCompraFechaComprobante.value = fechaLocalHoy()
 
 // null = todavía no se creó ninguna factura para esta sesión; se crea sola
 // con el primer producto que registrás. Si "Ver/Editar" carga una ya
@@ -680,7 +688,7 @@ async function obtenerOCrearFactura(proveedorId) {
     proveedor_id: proveedorId,
     tipo_comprobante: elCompraTipoComprobante.value,
     numero_comprobante: elCompraNumeroComprobante.value.trim() || null,
-    fecha_comprobante: elCompraFechaComprobante.value || new Date().toISOString().slice(0, 10)
+    fecha_comprobante: elCompraFechaComprobante.value || fechaLocalHoy()
   }
   const { data, error } = await supabase.from('facturas').insert(nueva).select('id').single()
   if (!error) {
