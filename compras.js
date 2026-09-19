@@ -1073,17 +1073,21 @@ async function cargarMaduracion() {
         </div>
       `
     } else {
+      const sinPrecioSugerido = s.precio_sugerido === null || s.precio_sugerido === undefined
       fila.innerHTML = `
         <div class="detalle-pedido">
           <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
-          <p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} → sugerido ${formatoMoneda(s.precio_sugerido)} (-${s.descuento_pct}%)</p>
+          ${sinPrecioSugerido
+            ? `<p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} — no hay un % de descuento cargado para este día en su perfil de maduración. Ajustalo a mano en la pestaña Precio, o cargá el % que falta en las reglas.</p>`
+            : `<p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} → sugerido ${formatoMoneda(s.precio_sugerido)} (-${s.descuento_pct}%)</p>
           <label class="oculto campo-precio-maduracion">Precio a aplicar
             <input type="number" min="0" step="1" class="input-precio-maduracion" value="${s.precio_sugerido}">
           </label>
           <div class="acciones-pedido">
             <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}">Usar este precio</button>
             <button class="btn-cancelar btn-ignorar-maduracion">Ignorar</button>
-          </div>
+          </div>`
+          }
         </div>
       `
     }
