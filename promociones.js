@@ -5,6 +5,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// OJO: nunca usar new Date().toISOString().slice(0,10) para "hoy" -- eso da
+// la fecha en UTC, y como Argentina está 3 horas atrás, después de las 21hs
+// ya devuelve el día siguiente. Se arma con los componentes locales.
+function fechaLocalHoy() {
+  const ahora = new Date()
+  return `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`
+}
+
 const vistaPromociones = document.getElementById('vista-promociones')
 const listaPromos = document.getElementById('lista-promos')
 const btnNuevaPromo = document.getElementById('btn-nueva-promo')
@@ -170,7 +178,7 @@ campoTipo.addEventListener('change', actualizarCamposPorTipo)
 function limpiarForm() {
   formPromo.reset()
   campoId.value = ''
-  campoFechaDesde.value = new Date().toISOString().slice(0, 10)
+  campoFechaDesde.value = fechaLocalHoy()
   campoOrden.value = 0
   archivoImagenPendiente = null
   imagenFueQuitada = false
