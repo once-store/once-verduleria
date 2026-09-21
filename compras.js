@@ -1281,7 +1281,11 @@ elListaMaduracion.addEventListener('click', async (e) => {
     btnAplicar.disabled = true
     const { error } = await supabase.rpc('confirmar_precio_maduracion', {
       p_lote_id: btnAplicar.dataset.loteId,
-      p_precio: precio
+      p_precio: precio,
+      // Una sugerencia de Maduración ES, por definición, una rebaja por
+      // consumo pronto -- si no le avisamos esto a la función, borra el
+      // precio original y la oferta desaparece apenas la aceptás.
+      p_requiere_volumen: true
     })
 
     if (error) {
