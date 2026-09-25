@@ -9,6 +9,8 @@ const vistaLogin = document.getElementById('vista-login')
 const vistaPanel = document.getElementById('vista-panel')
 const formLogin = document.getElementById('form-login')
 const loginError = document.getElementById('login-error')
+const loginInfo = document.getElementById('login-info')
+const btnOlvidePass = document.getElementById('btn-olvide-pass')
 const listaPendientes = document.getElementById('lista-pendientes')
 const badgePorArmar = document.getElementById('badge-por-armar')
 const resumenHoy = document.getElementById('resumen-hoy')
@@ -49,6 +51,34 @@ formLogin.addEventListener('submit', async (e) => {
     return
   }
   mostrarPanel()
+})
+
+btnOlvidePass.addEventListener('click', async () => {
+  loginError.classList.add('oculto')
+  loginInfo.classList.add('oculto')
+  const email = document.getElementById('login-email').value
+
+  if (!email) {
+    loginError.textContent = 'Escribí tu email arriba y volvé a tocar "¿Olvidaste tu contraseña?".'
+    loginError.classList.remove('oculto')
+    return
+  }
+
+  btnOlvidePass.disabled = true
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://once-store.github.io/once-verduleria/restablecer-contrasena.html'
+  })
+  btnOlvidePass.disabled = false
+
+  if (error) {
+    loginError.textContent = 'No se pudo enviar el mail. Probá de nuevo en un rato.'
+    loginError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  loginInfo.textContent = 'Si ese email está registrado, te va a llegar un link para elegir una contraseña nueva.'
+  loginInfo.classList.remove('oculto')
 })
 
 document.getElementById('btn-salir').addEventListener('click', async () => {
