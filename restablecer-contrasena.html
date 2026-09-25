@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · restablecer contraseña</title>
+<link rel="stylesheet" href="adminlte.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="once-adminlte-overrides.css">
+</head>
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
+
+<section class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <b>once</b> · panel
+    </div>
+    <div class="card">
+      <div class="card-body login-card-body">
+        <p class="login-box-msg">Elegí tu nueva contraseña</p>
+        <form id="form-restablecer">
+          <div class="mb-3">
+            <label class="form-label" for="nueva-password">Nueva contraseña</label>
+            <input type="password" id="nueva-password" class="form-control" required minlength="6" autocomplete="new-password">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="nueva-password-confirmar">Repetila</label>
+            <input type="password" id="nueva-password-confirmar" class="form-control" required minlength="6" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn btn-primary d-block w-100">Guardar contraseña</button>
+          <p id="restablecer-error" class="error oculto mt-2"></p>
+        </form>
+        <p id="restablecer-ok" class="oculto mt-2 text-success">
+          Contraseña actualizada. Ya podés <a href="admin-v2.html">volver al panel</a> e ingresar.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="module" src="restablecer-contrasena.js"></script>
+</body>
+</html>
