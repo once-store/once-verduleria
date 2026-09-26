@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 const vistaLogin = document.getElementById('vista-login')
 const vistaPanel = document.getElementById('vista-panel')
@@ -50,7 +45,7 @@ formLogin.addEventListener('submit', async (e) => {
     loginError.classList.remove('oculto')
     return
   }
-  mostrarPanel()
+  await mostrarPanel()
 })
 
 btnOlvidePass.addEventListener('click', async () => {
@@ -90,9 +85,23 @@ document.getElementById('btn-salir').addEventListener('click', async () => {
 
 // Si ya había una sesión activa (no cerró sesión la última vez), entra directo
 const { data: { session } } = await supabase.auth.getSession()
-if (session) mostrarPanel()
+if (session) await mostrarPanel()
 
-function mostrarPanel() {
+async function mostrarPanel() {
+  const sesion = await obtenerSesionActual({ forzarRecarga: true })
+
+  if (!sesion || !sesion.rol || sesion.rol === 'vendedor') {
+    // Sin fila en usuarios_perfil, o rol Vendedor: este panel no es para esa cuenta.
+    await supabase.auth.signOut()
+    vistaPanel.classList.add('oculto')
+    vistaLogin.classList.remove('oculto')
+    loginError.textContent = 'Esta cuenta no tiene acceso al panel de administración.'
+    loginError.classList.remove('oculto')
+    return
+  }
+
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
+
   vistaLogin.classList.add('oculto')
   vistaPanel.classList.remove('oculto')
   cargarPendientes()
