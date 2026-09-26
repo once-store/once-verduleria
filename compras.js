@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 // OJO: nunca usar new Date().toISOString().slice(0,10) para "hoy" -- eso da
 // la fecha en UTC, y como Argentina está 3 horas atrás, después de las 21hs
@@ -17,10 +12,25 @@ const vistaCompras = document.getElementById('vista-compras')
 
 // Esta página vive protegida por la sesión que ya abriste en admin-v2.html.
 // Si entrás acá directo sin haber iniciado sesión, te manda de vuelta.
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
+const sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || !sesion.rol || sesion.rol === 'vendedor') {
   window.location.href = 'admin-v2.html'
 } else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
+  // Compra/Depósito/Maduración/Precio manejan costos y precios de venta --
+  // por ahora son Dueño-únicamente. Encargado/Mostrador solo cargan mermas.
+  if (sesion.rol !== 'dueno') {
+    document.querySelectorAll('.tab').forEach(btn => {
+      if (btn.dataset.tab !== 'merma') btn.classList.add('oculto')
+    })
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('activa'))
+    document.querySelector('.tab[data-tab="merma"]').classList.add('activa')
+    document.getElementById('panel-compra').classList.add('oculto')
+    document.getElementById('panel-merma').classList.remove('oculto')
+    document.getElementById('panel-deposito').classList.add('oculto')
+    document.getElementById('panel-maduracion').classList.add('oculto')
+    document.getElementById('panel-precio').classList.add('oculto')
+  }
   vistaCompras.classList.remove('oculto')
   cargarProductosParaCompraYMerma()
 }
