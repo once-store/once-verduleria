@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 // OJO: nunca usar new Date().toISOString().slice(0,10) para "hoy" -- eso da
 // la fecha en UTC, y como Argentina está 3 horas atrás, después de las 21hs
@@ -59,10 +54,16 @@ function formatoMoneda(n) {
 }
 
 // --- Sesión: esta pantalla requiere estar logueado, igual que el resto del panel ---
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
+// Crear/editar/eliminar promociones es Dueño-únicamente por ahora (Encargado/Mostrador
+// solo miran) -- la base ya lo bloquea, acá lo reflejamos en la interfaz.
+let puedeEditarPromos = false
+const sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || !sesion.rol || sesion.rol === 'vendedor') {
   window.location.href = 'admin-v2.html'
 } else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
+  puedeEditarPromos = sesion.rol === 'dueno'
+  if (!puedeEditarPromos) btnNuevaPromo.classList.add('oculto')
   vistaPromociones.classList.remove('oculto')
   init()
 }
@@ -154,12 +155,13 @@ async function cargarPromociones() {
           ${p.activa ? '<span class="chip">Activa</span>' : '<span class="chip chip-apagado">Inactiva</span>'}
         </div>
       </div>
-      <button class="btn-texto btn-editar-promo" data-id="${p.id}">Editar</button>
+      ${puedeEditarPromos ? `<button class="btn-texto btn-editar-promo" data-id="${p.id}">Editar</button>` : ''}
     </div>
   `).join('')
 }
 
 listaPromos.addEventListener('click', (e) => {
+  if (!puedeEditarPromos) return
   const btn = e.target.closest('.btn-editar-promo')
   if (!btn) return
   abrirForm(promocionesCache.find(p => p.id === btn.dataset.id))
