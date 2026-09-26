@@ -1,19 +1,16 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 const vistaArmado = document.getElementById('vista-armado')
 const listaPorArmar = document.getElementById('lista-por-armar')
 
 // Esta página vive protegida por la sesión que ya abriste en admin-v2.html.
-// Si entrás acá directo sin haber iniciado sesión, te manda de vuelta.
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
+// Si entrás acá directo sin haber iniciado sesión, o tu cuenta no tiene rol
+// de staff (ej. Vendedor), te manda de vuelta.
+const sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || !sesion.rol || sesion.rol === 'vendedor') {
   window.location.href = 'admin-v2.html'
 } else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
   vistaArmado.classList.remove('oculto')
   cargarPorArmar()
   setInterval(cargarPorArmar, 5000)
