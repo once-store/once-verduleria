@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 const vistaHorario = document.getElementById('vista-horario')
 const listaHorario = document.getElementById('lista-horario')
@@ -13,10 +8,11 @@ const franjaError = document.getElementById('franja-error')
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 // Si no hay sesión, no tiene sentido mostrar esto — volvemos al login del admin
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
+const sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || sesion.rol !== 'dueno') {
   window.location.href = 'admin-v2.html'
 } else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
   vistaHorario.classList.remove('oculto')
   cargarHorario()
 }
