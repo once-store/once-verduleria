@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 const vistaClientes = document.getElementById('vista-clientes')
 const elListaClientes = document.getElementById('lista-clientes')
@@ -41,6 +36,11 @@ const pagoError = document.getElementById('pago-error')
 let clientesCache = []
 let clienteFichaActual = null // el cliente que está abierto en la ficha ahora mismo
 
+// Dar de alta un cliente o cambiarle el límite de fiado es Dueño-únicamente por ahora;
+// registrar un pago (alguien que viene a pagar su cuenta) lo puede hacer cualquier staff,
+// igual que cargar una venta a cuenta -- son acciones del día a día en el mostrador.
+let puedeAdministrarClientes = false
+
 function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
 }
@@ -51,10 +51,13 @@ document.getElementById('btn-salir').addEventListener('click', async () => {
 })
 
 // --- Sesión: esta pantalla requiere estar logueado, igual que el resto del panel ---
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
+const sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || !sesion.rol || sesion.rol === 'vendedor') {
   window.location.href = 'admin-v2.html'
 } else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
+  puedeAdministrarClientes = sesion.rol === 'dueno'
+  if (!puedeAdministrarClientes) btnNuevoCliente.classList.add('oculto')
   vistaClientes.classList.remove('oculto')
   cargarClientes()
 }
@@ -185,6 +188,7 @@ async function abrirFicha(cliente) {
   pagoError.classList.add('oculto')
   formPago.reset()
   pagoClienteId.value = cliente.id
+  btnEditarCliente.classList.toggle('oculto', !puedeAdministrarClientes)
 
   panelFichaCliente.classList.remove('oculto')
 
