@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
 
 const vistaCaja = document.getElementById('vista-caja')
 const tarjetaCaja = document.getElementById('tarjeta-caja')
@@ -13,10 +8,11 @@ function formatoMoneda(n) {
 }
 
 // --- Sesión: esta pantalla requiere estar logueado, igual que el resto del panel ---
-const { data: { session } } = await supabase.auth.getSession()
-if (!session) {
+const sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || !sesion.rol || sesion.rol === 'vendedor') {
   window.location.href = 'admin-v2.html'
 } else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
   vistaCaja.classList.remove('oculto')
   cargarEstadoCaja()
 }
