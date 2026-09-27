@@ -1,4 +1,4 @@
-import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
+import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol, renderizarSelectorLocal, obtenerLocalFiltroActivo } from './sesion.js'
 
 const vistaLogin = document.getElementById('vista-login')
 const vistaPanel = document.getElementById('vista-panel')
@@ -101,6 +101,7 @@ async function mostrarPanel() {
   }
 
   aplicarVisibilidadSidebarPorRol(sesion.rol)
+  renderizarSelectorLocal(document.getElementById('contenedor-selector-local'), sesion.rol)
 
   vistaLogin.classList.add('oculto')
   vistaPanel.classList.remove('oculto')
@@ -144,11 +145,14 @@ function reproducirAlertaSonora() {
 
 // --- Contador de pedidos de WhatsApp por armar (solo el número, para el botón) ---
 async function cargarContadorPorArmar() {
-  const { count, error } = await supabase
+  let consulta = supabase
     .from('pedidos')
     .select('id', { count: 'exact', head: true })
     .eq('origen', 'whatsapp')
     .eq('armado_estado', 'pendiente')
+  const filtroLocal = obtenerLocalFiltroActivo()
+  if (filtroLocal) consulta = consulta.eq('local_id', filtroLocal)
+  const { count, error } = await consulta
 
   if (error) {
     console.error(error)
@@ -170,11 +174,14 @@ async function cargarContadorPorArmar() {
 
 // --- Pendientes de confirmar ---
 async function cargarPendientes() {
-  const { data, error } = await supabase
+  let consulta = supabase
     .from('pedidos')
     .select('*')
     .in('estado', ['pendiente_efectivo', 'pendiente_transferencia', 'pendiente_combinado', 'pendiente_mp'])
     .order('creado_en', { ascending: true })
+  const filtroLocal = obtenerLocalFiltroActivo()
+  if (filtroLocal) consulta = consulta.eq('local_id', filtroLocal)
+  const { data, error } = await consulta
 
   if (error) {
     console.error(error)
@@ -349,11 +356,14 @@ async function cargarResumenHoy() {
   const inicioHoy = new Date()
   inicioHoy.setHours(0, 0, 0, 0)
 
-  const { data, error } = await supabase
+  let consulta = supabase
     .from('pedidos')
     .select('monto_total, metodo_pago')
     .eq('estado', 'pagado')
     .gte('pagado_en', inicioHoy.toISOString())
+  const filtroLocal = obtenerLocalFiltroActivo()
+  if (filtroLocal) consulta = consulta.eq('local_id', filtroLocal)
+  const { data, error } = await consulta
 
   if (error) {
     console.error(error)
