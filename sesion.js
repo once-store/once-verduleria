@@ -48,6 +48,43 @@ export function limpiarSesionCache() {
   sesionCache = null
 }
 
+const CLAVE_LOCAL_FILTRO = 'once_local_filtro'
+
+/** Local elegido en el selector (solo tiene sentido para Dueño). null = "Todos". */
+export function obtenerLocalFiltroActivo() {
+  return localStorage.getItem(CLAVE_LOCAL_FILTRO) || null
+}
+
+function guardarLocalFiltroActivo(id) {
+  if (id) localStorage.setItem(CLAVE_LOCAL_FILTRO, id)
+  else localStorage.removeItem(CLAVE_LOCAL_FILTRO)
+}
+
+/**
+ * Dibuja el selector de local dentro de `contenedorEl` y lo deja funcionando.
+ * Solo se muestra para Dueño -- Encargado/Mostrador están atados a un único
+ * local fijo por ahora, así que no tiene sentido ofrecerles nada para elegir.
+ * Al cambiar, guarda la elección y recarga la página para que se aplique.
+ */
+export async function renderizarSelectorLocal(contenedorEl, rol) {
+  if (!contenedorEl || rol !== 'dueno') return
+
+  const { data, error } = await supabase.from('locales').select('id, nombre').order('nombre')
+  if (error || !data || data.length < 2) return // con un solo local no hace falta selector
+
+  const activo = obtenerLocalFiltroActivo()
+  contenedorEl.innerHTML = `
+    <select id="selector-local-activo" class="form-select form-select-sm" style="width:auto;">
+      <option value="">Todos los locales</option>
+      ${data.map(l => `<option value="${l.id}" ${l.id === activo ? 'selected' : ''}>${l.nombre}</option>`).join('')}
+    </select>
+  `
+  contenedorEl.querySelector('#selector-local-activo').addEventListener('change', (e) => {
+    guardarLocalFiltroActivo(e.target.value || null)
+    window.location.reload()
+  })
+}
+
 /**
  * Esconde del sidebar los <li> cuyo <a data-roles="..."> no incluya el rol actual.
  * Un link SIN atributo data-roles queda visible para cualquier rol logueado (ej. "Panel").
