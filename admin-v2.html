@@ -146,60 +146,63 @@
 
   <!--begin::Main-->
   <main class="app-main">
-    <div class="app-content-header">
-      <div class="container-fluid">
-        <h3 class="mb-0">Panel</h3>
+    <div class="app-content-header dashboard-heading">
+      <div class="container-fluid dashboard-heading-inner">
+        <div>
+          <span class="dashboard-eyebrow">ONCE · OPERACIÓN</span>
+          <h1 class="dashboard-title">Panel</h1>
+          <p class="dashboard-subtitle">Un vistazo claro a las ventas y la operación de hoy.</p>
+        </div>
+        <a href="caja.html" class="dashboard-cash-link">
+          <span class="dashboard-cash-icon"><i class="bi bi-safe2"></i></span>
+          <span><strong>Abrir caja</strong><small id="badge-estado-caja">cargando…</small></span>
+          <i class="bi bi-arrow-up-right dashboard-cash-arrow"></i>
+        </a>
       </div>
     </div>
 
-    <div class="app-content">
-      <div class="container-fluid">
-
+    <div class="app-content dashboard-content">
+      <div class="container-fluid dashboard-container">
         <div id="tarjeta-clima" class="tarjeta-clima oculto mb-3"></div>
 
-        <div class="row">
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Hoy</h3></div>
-              <div class="card-body">
-                <div id="resumen-hoy" class="resumen-grid"></div>
-                <a href="caja.html" class="btn btn-outline-secondary w-100 mt-3">Caja: <span id="badge-estado-caja">cargando…</span></a>
-              </div>
-            </div>
+        <section class="dashboard-metrics-section" aria-label="Resumen de hoy">
+          <div class="dashboard-section-heading">
+            <div><span class="dashboard-eyebrow">RESUMEN</span><h2>Hoy</h2></div>
+            <span class="dashboard-live"><span></span> Actualizado al momento</span>
           </div>
+          <div id="resumen-hoy" class="resumen-grid dashboard-metrics"></div>
+        </section>
 
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Pendientes de confirmar</h3></div>
-              <div class="card-body" id="lista-pendientes"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
+        <div class="dashboard-workspace">
+          <section class="dashboard-card dashboard-pending">
+            <header class="dashboard-card-header">
+              <div class="dashboard-card-title-wrap"><span class="dashboard-icon dashboard-icon-amber"><i class="bi bi-inbox"></i></span><div><h2>Pendientes de confirmar</h2><p>Pedidos que necesitan tu atención</p></div></div>
+            </header>
+            <div class="dashboard-card-body" id="lista-pendientes"><p class="muted">Cargando…</p></div>
+          </section>
 
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Conversaciones recientes</h3>
-                <a href="conversaciones.html" class="btn-texto" style="font-size:13px;">Ver todas</a>
-              </div>
-              <div class="card-body" id="tarjeta-conversaciones-recientes"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
+          <section class="dashboard-card dashboard-conversations">
+            <header class="dashboard-card-header">
+              <div class="dashboard-card-title-wrap"><span class="dashboard-icon dashboard-icon-green"><i class="bi bi-chat-dots"></i></span><div><h2>Conversaciones recientes</h2><p>Últimos mensajes de tus clientes</p></div></div>
+              <a href="conversaciones.html" class="dashboard-view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
+            </header>
+            <div class="dashboard-card-body" id="tarjeta-conversaciones-recientes"><p class="muted">Cargando…</p></div>
+          </section>
 
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Accesos rápidos</h3></div>
-              <div class="card-body d-grid gap-2">
-                <a href="armado.html" class="btn btn-outline-primary btn-con-badge">Pedidos por armar <span id="badge-por-armar" class="badge text-bg-danger oculto">0</span></a>
-                <a href="compras.html" class="btn btn-outline-secondary">Cargar compras y mermas</a>
-                <a href="promociones.html" class="btn btn-outline-secondary">Gestionar promociones</a>
-                <a href="clientes.html" class="btn btn-outline-secondary">Clientes y cuenta corriente</a>
-                <a href="metricas.html" class="btn btn-outline-secondary">📊 Cómo van los números</a>
-                <a href="horario.html" class="btn btn-link text-center">Editar horario habitual</a>
-              </div>
+          <section class="dashboard-shortcuts-section">
+            <div class="dashboard-section-heading dashboard-shortcuts-heading">
+              <div><span class="dashboard-eyebrow">PARA SEGUIR</span><h2>Accesos rápidos</h2></div>
             </div>
-          </div>
+            <nav class="dashboard-shortcuts" aria-label="Accesos rápidos">
+              <a href="armado.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-green"><i class="bi bi-bag-check"></i></span><span><strong>Pedidos por armar</strong><small>Prepará los pedidos</small></span><span id="badge-por-armar" class="badge text-bg-danger oculto">0</span><i class="bi bi-arrow-up-right"></i></a>
+              <a href="compras.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-orange"><i class="bi bi-basket2"></i></span><span><strong>Compras y mermas</strong><small>Registrá movimientos</small></span><i class="bi bi-arrow-up-right"></i></a>
+              <a href="clientes.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-blue"><i class="bi bi-people"></i></span><span><strong>Clientes</strong><small>Revisá cuentas y datos</small></span><i class="bi bi-arrow-up-right"></i></a>
+              <a href="promociones.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-pink"><i class="bi bi-tag"></i></span><span><strong>Promociones</strong><small>Administrá ofertas</small></span><i class="bi bi-arrow-up-right"></i></a>
+              <a href="metricas.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-violet"><i class="bi bi-bar-chart-line"></i></span><span><strong>Cómo van los números</strong><small>Consultá tus métricas</small></span><i class="bi bi-arrow-up-right"></i></a>
+              <a href="horario.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-slate"><i class="bi bi-clock"></i></span><span><strong>Horario habitual</strong><small>Configurá tus horarios</small></span><i class="bi bi-arrow-up-right"></i></a>
+            </nav>
+          </section>
         </div>
-
       </div>
     </div>
   </main>
