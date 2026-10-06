@@ -1674,3 +1674,90 @@ body {
 @media (prefers-reduced-motion:reduce) {
   #vista-panel .dashboard-cash-link,#vista-panel .dashboard-shortcut { transition:none; }
 }
+
+
+/* Ajustes de fidelidad al boceto: solo afectan al panel */
+#vista-panel .app-sidebar {
+  --lte-sidebar-bg: #183b2a;
+  --lte-sidebar-color: #d0ddd3;
+  --lte-sidebar-hover-bg: #244b34;
+  --lte-sidebar-hover-color: #fff;
+  --lte-sidebar-active-bg: #2a5e3f;
+  --lte-sidebar-active-color: #fff;
+  background: #183b2a !important;
+  color: #d0ddd3;
+}
+#vista-panel .app-sidebar .sidebar-brand { background:#183b2a; border-bottom:1px solid #315641; }
+#vista-panel .app-sidebar .brand-link { color:#f3faf4; }
+#vista-panel .app-sidebar .brand-link:hover { color:#fff; }
+#vista-panel .app-sidebar .sidebar-menu .nav-link { color:#d0ddd3; border-radius:9px; margin:2px 10px; }
+#vista-panel .app-sidebar .sidebar-menu .nav-link:hover { color:#fff; background:#244b34; }
+#vista-panel .app-sidebar .sidebar-menu .nav-link.active {
+  color:#fff; background:#2a5e3f; border-left:3px solid #91d5a3;
+}
+#vista-panel .app-sidebar .sidebar-menu .nav-link .nav-icon { color:inherit; }
+/* Lleva el selector de local a la zona derecha del encabezado, junto a alertas. */
+#vista-panel .app-header .navbar-nav.mx-auto {
+  margin-left:auto !important; margin-right:14px !important;
+}
+#vista-panel #contenedor-selector-local { display:flex; align-items:center; }
+#vista-panel #selector-local-activo {
+  min-height:38px; padding:7px 34px 7px 12px; border:1px solid #e5ebe5;
+  border-radius:9px; color:#20352a; background-color:#f8faf8; font-size:13px;
+  box-shadow:none;
+}
+#vista-panel #selector-local-activo:focus { border-color:#9bc5a8; box-shadow:0 0 0 3px #28744818; }
+/* Iconos y contexto de cada métrica, sin tocar el HTML que genera admin.js. */
+#vista-panel .dashboard-metrics .resumen-item { padding:16px 17px 14px; }
+#vista-panel .dashboard-metrics .resumen-item > span:first-child {
+  display:flex; align-items:center; gap:9px; color:#748178; font-size:12px;
+}
+#vista-panel .dashboard-metrics .resumen-item > span:first-child::before {
+  display:grid; place-items:center; width:31px; height:31px; flex:0 0 31px;
+  border-radius:10px; color:#287448; background:#edf6ef; font-size:13px; font-weight:800;
+}
+#vista-panel .dashboard-metrics .resumen-item:nth-child(1) > span:first-child::before { content:"$"; color:#287448; background:#edf6ef; }
+#vista-panel .dashboard-metrics .resumen-item:nth-child(2) > span:first-child::before { content:"▤"; color:#5677a7; background:#eef3fa; }
+#vista-panel .dashboard-metrics .resumen-item:nth-child(3) > span:first-child::before { content:"↗"; color:#7567a4; background:#f1effa; }
+#vista-panel .dashboard-metrics .resumen-item:nth-child(4) > span:first-child::before { content:"◉"; color:#ae7940; background:#fbf2e9; }
+#vista-panel .dashboard-metrics .resumen-item > strong { margin-top:12px; }
+#vista-panel .dashboard-metrics .resumen-item > strong::after {
+  display:block; margin-top:7px; color:#7d8b82; font-size:11px; line-height:1.2;
+  font-weight:400; letter-spacing:0;
+}
+#vista-panel .dashboard-metrics .resumen-item:nth-child(1) > strong::after { content:"Total confirmado"; }
+#vista-panel .dashboard-metrics .resumen-item:nth-child(2) > strong::after { content:"Durante el día"; }
+#vista-panel .dashboard-metrics .resumen-item:nth-child(3) > strong::after { content:"Transferencia y otros"; }
+#vista-panel .dashboard-metrics .resumen-item:nth-child(4) > strong::after { content:"En caja"; }
+/* El mensaje vacío recibe una composición visual sin sustituir el texto que genera la app. */
+#vista-panel #lista-pendientes:has(> p.muted:only-child) {
+  display:grid; place-items:center; min-height:188px; padding:18px; background:#fff;
+}
+#vista-panel #lista-pendientes > p.muted:only-child {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; width:100%; min-height:145px; margin:0; padding:18px;
+  border:1px dashed #dfe9e1; border-radius:12px; background:#f9fbf9;
+  color:transparent; font-size:0;
+}
+#vista-panel #lista-pendientes > p.muted:only-child::before {
+  content:"✓"; display:grid; place-items:center; width:44px; height:44px;
+  border-radius:50%; color:#348250; background:#e9f4eb; font-size:21px; font-weight:700;
+}
+#vista-panel #lista-pendientes > p.muted:only-child::after {
+  content:"Todo al día"; color:#20352a; font-size:14px; font-weight:650;
+}
+/* Conserva los seis destinos, con tarjetas más cómodas y cercanas al boceto. */
+#vista-panel .dashboard-shortcuts { gap:12px; }
+#vista-panel .dashboard-shortcut { min-height:91px; padding:15px 16px; }
+#vista-panel .dashboard-shortcut-icon { flex-basis:43px; width:43px; height:43px; font-size:18px; }
+#vista-panel .dashboard-shortcut strong { font-size:13px; }
+#vista-panel .dashboard-shortcut small { font-size:11px; }
+@media (max-width:767.98px) {
+  #vista-panel .app-header .navbar-nav.mx-auto { margin-right:8px !important; }
+  #vista-panel #selector-local-activo { max-width:170px; font-size:12px; }
+  #vista-panel .dashboard-shortcut { min-height:82px; padding:12px; }
+}
+@media (max-width:480px) {
+  #vista-panel .app-header .navbar-nav.mx-auto { margin:0 5px 0 auto !important; }
+  #vista-panel #selector-local-activo { max-width:128px; min-height:34px; padding:5px 26px 5px 8px; font-size:11px; }
+}
