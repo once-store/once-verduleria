@@ -1586,3 +1586,91 @@ body {
   color: var(--texto-suave);
   display: block;
 }
+
+
+/* Panel principal: rediseño visual aislado */
+#vista-panel .app-main { background: #f5f7f5; }
+#vista-panel .app-content-header.dashboard-heading { padding: 27px 0 22px; background: #fff; border-bottom: 1px solid #e9eee9; }
+#vista-panel .dashboard-heading-inner { display:flex; align-items:center; justify-content:space-between; gap:24px; }
+#vista-panel .dashboard-eyebrow { display:block; color:#27815c; font-size:10px; font-weight:800; letter-spacing:.13em; margin-bottom:5px; }
+#vista-panel .dashboard-title { margin:0; color:#18382d; font-size:27px; font-weight:750; letter-spacing:-.035em; }
+#vista-panel .dashboard-subtitle { margin:5px 0 0; color:#78857e; font-size:13px; }
+#vista-panel .dashboard-cash-link { display:flex; align-items:center; gap:12px; min-width:205px; padding:11px 14px; color:#fff; background:#176747; border-radius:12px; text-decoration:none; box-shadow:0 5px 14px #17674724; transition:transform .18s,background .18s; }
+#vista-panel .dashboard-cash-link:hover { color:#fff; background:#11583c; transform:translateY(-1px); }
+#vista-panel .dashboard-cash-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:10px; color:#d3f1df; background:#ffffff1c; font-size:19px; }
+#vista-panel .dashboard-cash-link strong,#vista-panel .dashboard-cash-link small { display:block; }
+#vista-panel .dashboard-cash-link strong { font-size:13px; }
+#vista-panel .dashboard-cash-link small { margin-top:2px; color:#c3e3d1; font-size:11px; }
+#vista-panel .dashboard-cash-arrow { margin-left:auto; color:#c3e3d1; }
+#vista-panel .dashboard-content { padding:24px 0 42px; }
+#vista-panel .dashboard-container { max-width:1540px; }
+#vista-panel .dashboard-section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:13px; }
+#vista-panel .dashboard-section-heading h2 { margin:0; color:#203a30; font-size:18px; font-weight:700; letter-spacing:-.02em; }
+#vista-panel .dashboard-live { display:flex; align-items:center; gap:7px; padding-bottom:2px; color:#79877f; font-size:11px; }
+#vista-panel .dashboard-live span { width:7px; height:7px; border-radius:50%; background:#39a876; box-shadow:0 0 0 3px #39a87620; }
+#vista-panel .dashboard-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; margin:0 0 24px; }
+#vista-panel .dashboard-metrics .resumen-item { position:relative; min-height:110px; padding:17px 18px; overflow:hidden; border:1px solid #e5ebe5; border-radius:13px; background:#fff; box-shadow:0 3px 12px #243b2e08; }
+#vista-panel .dashboard-metrics .resumen-item::after { content:""; position:absolute; right:-17px; top:-22px; width:80px; height:80px; border-radius:50%; background:#eaf5ee; }
+#vista-panel .dashboard-metrics .resumen-item > * { position:relative; z-index:1; }
+#vista-panel .dashboard-metrics .resumen-item .label,#vista-panel .dashboard-metrics .resumen-item small { color:#77867e; font-size:12px; }
+#vista-panel .dashboard-metrics .resumen-item strong,#vista-panel .dashboard-metrics .resumen-item .valor { display:block; margin-top:9px; color:#18382d; font-size:25px; line-height:1.15; font-weight:750; letter-spacing:-.04em; }
+#vista-panel .dashboard-workspace { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+#vista-panel .dashboard-card { min-width:0; overflow:hidden; border:1px solid #e6ebe6; border-radius:14px; background:#fff; box-shadow:0 4px 14px #243b2e08; }
+#vista-panel .dashboard-card-header { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:76px; padding:15px 18px; border-bottom:1px solid #edf0ed; }
+#vista-panel .dashboard-card-title-wrap { display:flex; align-items:center; gap:11px; }
+#vista-panel .dashboard-icon { display:grid; place-items:center; flex:0 0 38px; width:38px; height:38px; border-radius:11px; font-size:17px; }
+#vista-panel .dashboard-icon-amber { color:#b37521; background:#fff4df; }
+#vista-panel .dashboard-icon-green { color:#26815d; background:#eaf6ef; }
+#vista-panel .dashboard-card-header h2 { margin:0; color:#253b31; font-size:14px; font-weight:700; }
+#vista-panel .dashboard-card-header p { margin:3px 0 0; color:#859088; font-size:11px; }
+#vista-panel .dashboard-card-body { min-height:158px; padding:15px 18px; }
+#vista-panel .dashboard-card-body > .muted { display:flex; align-items:center; min-height:125px; margin:0; color:#89948e; font-size:12px; }
+#vista-panel .dashboard-view-all { flex:0 0 auto; color:#267958; font-size:11px; font-weight:700; text-decoration:none; }
+#vista-panel .dashboard-view-all:hover { color:#14593c; }
+#vista-panel .dashboard-shortcuts-section { grid-column:1/-1; margin-top:3px; }
+#vista-panel .dashboard-shortcuts-heading { margin-bottom:12px; }
+#vista-panel .dashboard-shortcuts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; }
+#vista-panel .dashboard-shortcut { display:flex; align-items:center; gap:11px; min-width:0; min-height:73px; padding:12px 13px; border:1px solid #e6ebe6; border-radius:12px; color:#263a31; background:#fff; text-decoration:none; box-shadow:0 3px 10px #243b2e06; transition:border-color .18s,transform .18s,box-shadow .18s; }
+#vista-panel .dashboard-shortcut:hover { transform:translateY(-2px); border-color:#b8d6c3; color:#18382d; box-shadow:0 7px 16px #243b2e0d; }
+#vista-panel .dashboard-shortcut-icon { display:grid; place-items:center; flex:0 0 39px; width:39px; height:39px; border-radius:11px; font-size:17px; }
+#vista-panel .shortcut-green { color:#27815c; background:#eaf6ef; }
+#vista-panel .shortcut-orange { color:#bc762b; background:#fff2e4; }
+#vista-panel .shortcut-blue { color:#4279a7; background:#eaf3fb; }
+#vista-panel .shortcut-pink { color:#b65b78; background:#fcedf2; }
+#vista-panel .shortcut-violet { color:#7662ad; background:#f0edfa; }
+#vista-panel .shortcut-slate { color:#657d7a; background:#edf2f1; }
+#vista-panel .dashboard-shortcut > span:nth-child(2) { min-width:0; flex:1; }
+#vista-panel .dashboard-shortcut strong,#vista-panel .dashboard-shortcut small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#vista-panel .dashboard-shortcut strong { font-size:12px; font-weight:700; }
+#vista-panel .dashboard-shortcut small { margin-top:3px; color:#849087; font-size:10px; }
+#vista-panel .dashboard-shortcut > .bi-arrow-up-right { color:#9ba69f; font-size:12px; }
+#vista-panel .dashboard-shortcut .badge { flex:0 0 auto; }
+#vista-panel .sidebar-wrapper .nav-link.active { color:#e7f6ec; background:#ffffff12; border-left:3px solid #58c58c; }
+@media (max-width:1100px) {
+  #vista-panel .dashboard-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:767.98px) {
+  #vista-panel .app-content-header.dashboard-heading { padding:21px 0 18px; }
+  #vista-panel .dashboard-heading-inner { align-items:flex-start; }
+  #vista-panel .dashboard-title { font-size:23px; }
+  #vista-panel .dashboard-cash-link { min-width:auto; padding:9px 11px; }
+  #vista-panel .dashboard-cash-icon { width:34px; height:34px; }
+  #vista-panel .dashboard-workspace { grid-template-columns:1fr; gap:13px; }
+  #vista-panel .dashboard-shortcuts-section { grid-column:auto; }
+  #vista-panel .dashboard-shortcuts { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #vista-panel .dashboard-card-header { padding:13px 14px; }
+  #vista-panel .dashboard-card-body { padding:13px 14px; }
+}
+@media (max-width:480px) {
+  #vista-panel .dashboard-heading-inner { flex-direction:column; gap:15px; }
+  #vista-panel .dashboard-cash-link { width:100%; }
+  #vista-panel .dashboard-content { padding-top:19px; }
+  #vista-panel .dashboard-metrics { gap:9px; }
+  #vista-panel .dashboard-metrics .resumen-item { min-height:96px; padding:13px; }
+  #vista-panel .dashboard-metrics .resumen-item strong,#vista-panel .dashboard-metrics .resumen-item .valor { font-size:21px; }
+  #vista-panel .dashboard-shortcuts { grid-template-columns:1fr; }
+  #vista-panel .dashboard-live { font-size:10px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  #vista-panel .dashboard-cash-link,#vista-panel .dashboard-shortcut { transition:none; }
+}
