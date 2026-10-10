@@ -450,3 +450,124 @@
   #panel-compra #fila-compra { grid-template-columns: 1fr; grid-template-areas: "product" "costs" "price" "maturity" "location" "packages"; }
   #panel-compra .fila-cajon-detalle { grid-template-columns: 1fr 1fr; width: 100%; }
 }
+
+/* Ajustes de Compra para acercar el formulario al boceto aprobado. */
+#vista-compras .compras-page-eyebrow {
+  margin: 0 0 5px;
+  color: #2E7D52;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#vista-compras .app-content-header h3 { font-size: 24px; }
+#vista-compras .compras-page-description {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 13px;
+}
+#vista-compras .card.card-primary.card-outline { background: #fff; }
+#vista-compras .tabs {
+  gap: 4px;
+  margin: 8px 12px 0;
+  padding: 5px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#vista-compras .tabs .tab {
+  flex: 1 0 auto;
+  border: 0;
+  border-radius: 7px;
+  margin: 0;
+  padding: 11px 14px;
+}
+#vista-compras .tabs .tab.activa {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(32, 53, 39, .09);
+}
+#panel-compra .compra-card,
+#panel-compra .compra-resumen { background: #F7F9F7; }
+#panel-compra .compra-producto-card .compra-section-head p { display: none; }
+#panel-compra #fila-compra {
+  grid-template-columns: minmax(200px, 1.6fr) repeat(3, minmax(125px, 1fr));
+  grid-template-areas:
+    "product maturity location presentation"
+    "costs costs price price"
+    "packages packages packages packages";
+}
+#panel-compra .compra-costos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+#panel-compra .compra-costo-item {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .compra-costo-item label { display: block; }
+#panel-compra .compra-costos .celda { width: 100%; }
+#panel-compra .compra-precio-sugerido { grid-area: price; }
+#panel-compra .compra-presentacion:not(.oculto) {
+  grid-area: presentation;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .compra-presentacion > span { display: block; }
+#panel-compra .compra-presentacion .muted { margin-top: 8px; }
+#panel-compra .compra-presentacion input { margin-top: 4px; }
+#panel-compra .compra-estado-wrap { grid-area: maturity; }
+#panel-compra .switch-ubicacion {
+  grid-area: location;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  min-height: 0;
+  padding: 12px;
+}
+#panel-compra .switch-ubicacion .compra-control-label {
+  grid-column: 1 / -1;
+  margin-bottom: 9px;
+}
+#panel-compra .switch-ubicacion .switch-mini-etiqueta:first-of-type { text-align: left; }
+#panel-compra .switch-ubicacion .switch-mini-etiqueta:last-of-type { text-align: right; }
+#panel-compra .compra-bultos-toggle {
+  grid-area: packages;
+  min-height: 50px;
+  padding: 12px;
+  border-color: #E3EAE3;
+}
+#panel-compra .compra-bultos-toggle strong {
+  color: #287448;
+  font-size: 11px;
+}
+#panel-compra #bloque-cajones:not(.oculto) { margin-top: 10px; }
+#panel-compra .compra-resumen { background: #fff; }
+
+@media (max-width: 900px) {
+  #panel-compra #fila-compra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "product product"
+      "maturity location"
+      "presentation presentation"
+      "costs price"
+      "packages packages";
+  }
+}
+@media (max-width: 560px) {
+  #panel-compra #fila-compra {
+    grid-template-columns: 1fr;
+    grid-template-areas: "product" "maturity" "location" "presentation" "costs" "price" "packages";
+  }
+  #panel-compra .compra-costos { grid-template-columns: 1fr; }
+}
