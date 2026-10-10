@@ -100,13 +100,13 @@
   color: #26342B;
 }
 
-.tabs {
+#vista-compras .tabs {
   display: flex;
   overflow-x: auto;
   border-bottom: 1px solid #E6E0D3;
   padding: 0 12px;
 }
-.tabs .tab {
+#vista-compras .tabs .tab {
   background: none;
   border: none;
   padding: 14px 14px;
@@ -118,29 +118,12 @@
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
-.tabs .tab.activa {
+#vista-compras .tabs .tab.activa {
   color: #2E7D52;
   border-bottom-color: #2E7D52;
   font-weight: 600;
 }
-.tabs .tab:hover { color: #26342B; }
-
-.card > .card-body > .form-carga { margin-top: 14px; }
-
-.conv-split {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  min-height: 560px;
-}
-.conv-lista-col {
-  border-right: 1px solid #E6E0D3;
-  overflow-y: auto;
-  max-height: 640px;
-}
-.conv-fila-activa { background: var(--verde-suave, #E8F3EA); }
-.conv-hilo-col { display: flex; flex-direction: column; padding: 18px; }
-.conv-vacio { display: flex; align-items: center; justify-content: center; height: 100%; }
-.conv-mensajes { flex: 1; overflow-y: auto; max-height: 500px; }
+#vista-compras .tabs .tab:hover { color: #26342B; }
 
 .btn { border-radius: 8px; font-weight: 500; }
 .btn-outline-secondary {
@@ -149,4 +132,321 @@
   --bs-btn-hover-bg: #F4EFE3;
   --bs-btn-hover-color: #26342B;
   --bs-btn-hover-border-color: #E6E0D3;
+}
+
+/* --- Compras: carga de compra en bloques claros, manteniendo los hooks de compras.js --- */
+#panel-compra .compra-intro {
+  margin: 2px 0 16px;
+}
+#panel-compra .compra-eyebrow {
+  margin: 0 0 5px;
+  color: #2E7D52;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#panel-compra .compra-intro h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 18px;
+  font-weight: 650;
+}
+#panel-compra .compra-intro p:last-child,
+#panel-compra .compra-section-head p {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 11px;
+}
+#panel-compra .compra-card {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#panel-compra .compra-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+#panel-compra .compra-section-head h5 {
+  margin: 0;
+  color: #26342B;
+  font-size: 13px;
+  font-weight: 650;
+}
+#panel-compra .cabecera-boleta {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) repeat(3, minmax(130px, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin: 0;
+}
+#panel-compra .cabecera-boleta label,
+#panel-compra .compra-entry label,
+#panel-compra #label-compra-presentacion {
+  display: block;
+  margin: 0;
+  color: #56645B;
+  font-size: 10px;
+  font-weight: 600;
+}
+#panel-compra .cabecera-boleta input,
+#panel-compra .cabecera-boleta select,
+#panel-compra .compra-entry input,
+#panel-compra .compra-entry select,
+#panel-compra #label-compra-presentacion input,
+#panel-compra #label-compra-presentacion select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid #D8E1D9;
+  border-radius: 7px;
+  background: #fff;
+  color: #26342B;
+  font: inherit;
+  font-size: 11px;
+}
+#panel-compra .compra-quick-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+#panel-compra .compra-quick-links .btn-texto {
+  color: #287448;
+  font-size: 10px;
+}
+#panel-compra #factura-existente-aviso {
+  margin: 0 0 14px;
+}
+#panel-compra #form-nuevo-proveedor,
+#panel-compra #form-nuevo-producto {
+  margin: 0 0 14px;
+  padding: 14px;
+  border: 1px solid #E3EAE3;
+  border-radius: 9px;
+  background: #fff;
+}
+#panel-compra .compra-stock {
+  display: inline-flex;
+  margin: 0 0 12px;
+  padding: 6px 9px;
+  border-radius: 99px;
+  background: #EDF5EE;
+  color: #35734B;
+  font-size: 10px;
+}
+#panel-compra .grilla-compra-wrap {
+  overflow: visible;
+  padding: 0;
+}
+#panel-compra .grilla-compra-header {
+  display: none;
+}
+#panel-compra #fila-compra {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.1fr) minmax(180px, .95fr) minmax(210px, 1fr);
+  grid-template-areas:
+    "product costs price"
+    "maturity location packages";
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+}
+#panel-compra .compra-id-interno {
+  display: none;
+}
+#panel-compra .compra-producto-select,
+#panel-compra .compra-costos,
+#panel-compra .compra-precio-sugerido,
+#panel-compra .compra-estado-wrap,
+#panel-compra .switch-ubicacion,
+#panel-compra .compra-bultos-toggle {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .compra-producto-select { grid-area: product; }
+#panel-compra .compra-costos {
+  grid-area: costs;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 10px;
+}
+#panel-compra .compra-costos label + input + label {
+  margin-top: 10px;
+}
+#panel-compra .compra-precio-sugerido {
+  grid-area: price;
+}
+#panel-compra .compra-estado-wrap { grid-area: maturity; }
+#panel-compra .switch-ubicacion { grid-area: location; }
+#panel-compra .compra-bultos-toggle { grid-area: packages; }
+#panel-compra .compra-cantidad {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #E8EDE8;
+  color: #728078;
+  font-size: 10px;
+}
+#panel-compra .compra-cantidad .celda-texto {
+  padding: 0;
+  color: #26342B;
+  font-size: 12px;
+  font-weight: 650;
+}
+#panel-compra .compra-costos .celda,
+#panel-compra .compra-precio-sugerido .celda {
+  width: 100%;
+  min-height: 38px;
+}
+#panel-compra .compra-precio-resultado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 11px 0 0;
+  border-top: 1px solid #E8EDE8;
+}
+#panel-compra .compra-precio-resultado span {
+  color: #728078;
+  font-size: 10px;
+  line-height: 1.4;
+}
+#panel-compra .compra-precio-resultado .celda-texto {
+  padding: 0;
+  color: #287448;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#panel-compra .compra-control-label {
+  display: block;
+  margin-bottom: 9px;
+  color: #56645B;
+  font-size: 10px;
+  font-weight: 600;
+}
+#panel-compra .switch3 {
+  width: 100%;
+  height: 36px;
+  background: #F7F9F7;
+}
+#panel-compra .switch3-opcion.activo {
+  background: #2E7D52;
+}
+#panel-compra .switch-ubicacion {
+  justify-content: space-around;
+  gap: 7px;
+  min-height: 62px;
+}
+#panel-compra .switch-mini-etiqueta {
+  font-size: 10px;
+}
+#panel-compra .compra-bultos-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  color: #26342B;
+  font-size: 11px;
+  text-align: left;
+}
+#panel-compra #label-compra-presentacion:not(.oculto) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra #label-compra-presentacion select {
+  flex: 1 1 180px;
+  width: auto;
+}
+#panel-compra #label-compra-presentacion input {
+  flex: 0 0 90px;
+  width: 90px !important;
+}
+#panel-compra #bloque-cajones:not(.oculto) {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .fila-cajon-detalle {
+  grid-template-columns: minmax(65px, .6fr) repeat(3, minmax(100px, 1fr)) 30px;
+  width: 100%;
+  padding: 7px 0;
+}
+#panel-compra .input-bruto-cajon,
+#panel-compra .input-tara-cajon {
+  min-height: 36px;
+  background: #fff;
+}
+#panel-compra #btn-agregar-cajon {
+  margin-top: 2px;
+  color: #287448;
+  font-size: 10px;
+}
+#panel-compra #compra-error {
+  margin: 10px 0 0;
+}
+#panel-compra .compra-resumen {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#panel-compra .compra-resumen .subtitulo {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+#panel-compra #btn-finalizar-carga {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: #2E7D52;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+@media (max-width: 900px) {
+  #panel-compra .cabecera-boleta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #panel-compra #fila-compra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "product product"
+      "costs price"
+      "maturity location"
+      "packages packages";
+  }
+}
+@media (max-width: 560px) {
+  #panel-compra .compra-card { padding: 13px; }
+  #panel-compra .cabecera-boleta { grid-template-columns: 1fr; }
+  #panel-compra #fila-compra { grid-template-columns: 1fr; grid-template-areas: "product" "costs" "price" "maturity" "location" "packages"; }
+  #panel-compra .fila-cajon-detalle { grid-template-columns: 1fr 1fr; width: 100%; }
 }

@@ -117,29 +117,44 @@
 
             <div id="panel-compra" class="tab-panel">
 
-              <div class="cabecera-boleta">
-                <label>Proveedor <span class="muted">(opcional)</span>
-                  <select id="compra-proveedor"></select>
-                </label>
-                <label>Comprobante
-                  <select id="compra-tipo-comprobante">
-                    <option>Sin comprobante</option>
-                    <option>Factura A</option>
-                    <option>Factura B</option>
-                    <option>Factura C</option>
-                    <option>Remito</option>
-                    <option>Nota de crédito</option>
-                  </select>
-                </label>
-                <label>Número <span class="muted">(opcional)</span>
-                  <input type="text" id="compra-numero-comprobante" placeholder="0001-00001234">
-                </label>
-                <label>Fecha
-                  <input type="date" id="compra-fecha-comprobante">
-                </label>
-                <button type="button" id="btn-mostrar-nuevo-proveedor" class="btn-texto btn-enlace-chico">+ Nuevo proveedor</button>
-                <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
+              <div class="compra-intro">
+                <div>
+                  <p class="compra-eyebrow">REGISTRO DE INGRESO</p>
+                  <h4>Registrar una compra</h4>
+                  <p>Completá los datos del comprobante y después cargá los productos de esta compra.</p>
+                </div>
               </div>
+
+              <section class="compra-card compra-documento">
+                <div class="compra-section-head">
+                  <div><h5>Datos del comprobante</h5><p>El proveedor es opcional. Podés registrar varios productos en una misma compra.</p></div>
+                </div>
+                <div class="cabecera-boleta">
+                  <label>Proveedor <span class="muted">(opcional)</span>
+                    <select id="compra-proveedor"></select>
+                  </label>
+                  <label>Comprobante
+                    <select id="compra-tipo-comprobante">
+                      <option>Sin comprobante</option>
+                      <option>Factura A</option>
+                      <option>Factura B</option>
+                      <option>Factura C</option>
+                      <option>Remito</option>
+                      <option>Nota de crédito</option>
+                    </select>
+                  </label>
+                  <label>Número <span class="muted">(opcional)</span>
+                    <input type="text" id="compra-numero-comprobante" placeholder="0001-00001234">
+                  </label>
+                  <label>Fecha
+                    <input type="date" id="compra-fecha-comprobante">
+                  </label>
+                </div>
+                <div class="compra-quick-links">
+                  <button type="button" id="btn-mostrar-nuevo-proveedor" class="btn-texto btn-enlace-chico">+ Nuevo proveedor</button>
+                  <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
+                </div>
+              </section>
 
               <p id="factura-existente-aviso" class="aviso-info oculto"></p>
 
@@ -187,57 +202,75 @@
                 <p id="nuevo-producto-error" class="error oculto"></p>
               </div>
 
-              <p id="compra-stock-actual" class="muted oculto"></p>
-
-              <div class="grilla-compra-wrap">
-                <div class="grilla-compra-header">
-                  <span>codbar</span><span>producto</span><span>cant.</span><span>pcu</span><span>pct</span>
-                  <span>iva</span><span>marg. %</span><span>pvu</span><span>estado</span><span>depósito/salón</span><span>bultos</span>
+              <section class="compra-card compra-producto-card">
+                <div class="compra-section-head">
+                  <div><h5>Producto de esta compra</h5><p>Al registrar un producto, la fila queda lista para cargar el siguiente.</p></div>
                 </div>
-                <div class="grilla-compra-fila" id="fila-compra">
-                  <input class="celda" id="compra-codbar" disabled placeholder="—">
-                  <select class="celda" id="compra-producto" required></select>
-                  <div class="celda-texto" id="compra-cantidad-out">—</div>
-                  <input class="celda" id="compra-pcu" type="number" min="0" step="0.01" inputmode="decimal">
-                  <input class="celda" id="compra-pct" type="number" min="0" step="1" inputmode="decimal">
-                  <input class="celda" id="compra-iva" disabled value="N/A">
-                  <input class="celda" id="compra-margen" type="number" min="0" step="1" placeholder="30">
-                  <div class="celda-texto" id="compra-pvu-out">—</div>
-                  <div class="switch3 celda" id="compra-estado" data-valor="0" tabindex="0" title="Avance de madurez">
-                    <button type="button" class="switch3-opcion activo" data-valor="0" tabindex="-1">Nueva</button>
-                    <button type="button" class="switch3-opcion" data-valor="50" tabindex="-1">Media</button>
-                    <button type="button" class="switch3-opcion" data-valor="90" tabindex="-1">Ya</button>
+                <p id="compra-stock-actual" class="muted compra-stock oculto"></p>
+
+                <div class="grilla-compra-wrap">
+                  <div class="grilla-compra-header">
+                    <span>codbar</span><span>producto</span><span>cant.</span><span>pcu</span><span>pct</span>
+                    <span>iva</span><span>marg. %</span><span>pvu</span><span>estado</span><span>depósito/salón</span><span>bultos</span>
                   </div>
-                  <div class="celda switch-ubicacion" title="Depósito / Salón">
-                    <span class="switch-mini-etiqueta">D</span>
-                    <label class="switch">
-                      <input type="checkbox" id="compra-ubicacion">
-                      <span class="switch-slider"></span>
-                    </label>
-                    <span class="switch-mini-etiqueta">S</span>
+                  <div class="grilla-compra-fila compra-entry" id="fila-compra">
+                    <div class="compra-producto-select">
+                      <label for="compra-producto">Producto</label>
+                      <select class="celda" id="compra-producto" required></select>
+                      <div class="compra-cantidad"><span>Cantidad neta</span><strong class="celda-texto" id="compra-cantidad-out">—</strong></div>
+                    </div>
+                    <input class="celda compra-id-interno" id="compra-codbar" disabled placeholder="—" aria-label="Código de barras">
+                    <div class="compra-costos">
+                      <label for="compra-pcu">Costo por unidad (PCU)</label>
+                      <input class="celda" id="compra-pcu" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$ por kg / unidad">
+                      <label for="compra-pct">Costo total (PCT)</label>
+                      <input class="celda" id="compra-pct" type="number" min="0" step="1" inputmode="decimal" placeholder="Total del producto">
+                    </div>
+                    <input class="celda compra-id-interno" id="compra-iva" disabled value="N/A" aria-label="IVA">
+                    <div class="compra-precio-sugerido">
+                      <label for="compra-margen">Margen objetivo (%)</label>
+                      <input class="celda" id="compra-margen" type="number" min="0" step="1" placeholder="30">
+                      <div class="compra-precio-resultado"><span>Precio de venta sugerido para este lote</span><strong class="celda-texto" id="compra-pvu-out">—</strong></div>
+                    </div>
+                    <div class="compra-estado-wrap">
+                      <span class="compra-control-label">Estado al llegar</span>
+                      <div class="switch3 celda" id="compra-estado" data-valor="0" tabindex="0" title="Avance de madurez">
+                        <button type="button" class="switch3-opcion activo" data-valor="0" tabindex="-1">Nueva</button>
+                        <button type="button" class="switch3-opcion" data-valor="50" tabindex="-1">Media</button>
+                        <button type="button" class="switch3-opcion" data-valor="90" tabindex="-1">Ya</button>
+                      </div>
+                    </div>
+                    <div class="celda switch-ubicacion" title="Depósito / Salón">
+                      <span class="switch-mini-etiqueta">Depósito</span>
+                      <label class="switch">
+                        <input type="checkbox" id="compra-ubicacion">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span class="switch-mini-etiqueta">Salón</span>
+                    </div>
+                    <button type="button" class="celda compra-bultos-toggle" id="btn-toggle-cajones" title="Ver el detalle de cajones/bultos"><span id="cant-cajones">1</span> bultos <i class="bi bi-chevron-down"></i></button>
                   </div>
-                  <button type="button" class="celda" id="btn-toggle-cajones" title="Ver el detalle de cajones/bultos"><span id="cant-cajones">1</span> bultos <i class="bi bi-chevron-down"></i></button>
+                  <p id="compra-error" class="error oculto"></p>
+
+                  <label id="label-compra-presentacion" class="oculto">Comprás en
+                    <select id="compra-presentacion"></select>
+                    <span class="muted">Cantidad de </span><input type="number" id="compra-cantidad-presentacion" min="1" step="1" style="width:70px;">
+                  </label>
+
+                  <div id="bloque-cajones" class="oculto">
+                    <div id="pesos-cajones"></div>
+                    <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar bulto</button>
+                  </div>
                 </div>
-                <p id="compra-error" class="error oculto"></p>
+              </section>
 
-                <label id="label-compra-presentacion" class="oculto">Comprás en
-                  <select id="compra-presentacion"></select>
-                  <span class="muted">Cantidad de </span><input type="number" id="compra-cantidad-presentacion" min="1" step="1" style="width:70px;">
-                </label>
-
-                <div id="bloque-cajones" class="oculto">
-                  <div id="pesos-cajones"></div>
-                  <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar bulto</button>
-                </div>
-              </div>
-
-              <div id="resumen-sesion-compra" class="bloque oculto" style="margin-top:20px;">
+              <div id="resumen-sesion-compra" class="bloque compra-resumen oculto">
                 <p class="subtitulo">Cargado en esta compra</p>
                 <div id="lista-sesion-compra"></div>
                 <div class="t-fila" style="font-weight:800; font-size:16px; margin-top:8px; display:flex; justify-content:space-between;">
                   <span>Total</span><span id="total-sesion-compra">$0</span>
                 </div>
-                <button type="button" id="btn-finalizar-carga" class="btn-texto" style="margin-top:12px;">Finalizar esta compra (boleta terminada)</button>
+                <button type="button" id="btn-finalizar-carga" class="btn-texto">Finalizar esta compra (boleta terminada)</button>
               </div>
             </div>
 
