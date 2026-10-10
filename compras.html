@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-2">
+<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-3">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -253,17 +253,18 @@
                       <span class="muted">Cantidad</span>
                       <input type="number" id="compra-cantidad-presentacion" min="1" step="1">
                     </label>
-                    <button type="button" class="celda compra-bultos-toggle" id="btn-toggle-cajones" title="Ver el detalle de cajones/bultos">
-                      <span>Detalle de bultos</span>
-                      <strong><span id="cant-cajones">1</span> bultos <i class="bi bi-chevron-down"></i></strong>
-                    </button>
+                    <div class="compra-bultos">
+                      <button type="button" class="celda compra-bultos-toggle" id="btn-toggle-cajones" title="Ver el detalle de cajones/bultos">
+                        <span>Detalle de bultos</span>
+                        <strong><span id="cant-cajones">1</span> bultos <i class="bi bi-chevron-down"></i></strong>
+                      </button>
+                      <div id="bloque-cajones" class="oculto">
+                        <div id="pesos-cajones"></div>
+                        <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar bulto</button>
+                      </div>
+                    </div>
                   </div>
                   <p id="compra-error" class="error oculto"></p>
-
-                  <div id="bloque-cajones" class="oculto">
-                    <div id="pesos-cajones"></div>
-                    <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar bulto</button>
-                  </div>
                 </div>
               </section>
 

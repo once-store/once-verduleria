@@ -465,7 +465,16 @@
   color: #728078;
   font-size: 13px;
 }
-#vista-compras .card.card-primary.card-outline { background: #fff; }
+#vista-compras .card.card-primary.card-outline,
+#vista-compras .card.card-primary.card-outline > .card-body { background: #fff; }
+#vista-compras .app-sidebar { background: #183D2E !important; }
+#vista-compras .sidebar-brand .brand-link { color: #fff; }
+#vista-compras .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-compras .sidebar-menu .nav-link.active {
+  color: #fff;
+  background: #2B5942;
+  border-left: 3px solid #91CFA5;
+}
 #vista-compras .tabs {
   gap: 4px;
   margin: 8px 12px 0;
@@ -492,8 +501,8 @@
   grid-template-columns: minmax(200px, 1.6fr) repeat(3, minmax(125px, 1fr));
   grid-template-areas:
     "product maturity location presentation"
-    "costs costs price price"
-    "packages packages packages packages";
+    "packages packages packages packages"
+    "costs costs price price";
 }
 #panel-compra .compra-costos {
   display: grid;
@@ -540,10 +549,18 @@
 }
 #panel-compra .switch-ubicacion .switch-mini-etiqueta:first-of-type { text-align: left; }
 #panel-compra .switch-ubicacion .switch-mini-etiqueta:last-of-type { text-align: right; }
-#panel-compra .compra-bultos-toggle {
+#panel-compra .compra-bultos {
   grid-area: packages;
+  min-width: 0;
+}
+#panel-compra .compra-bultos-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
   min-height: 50px;
   padding: 12px;
+  background: #fff;
   border-color: #E3EAE3;
 }
 #panel-compra .compra-bultos-toggle strong {
@@ -560,14 +577,14 @@
       "product product"
       "maturity location"
       "presentation presentation"
-      "costs price"
-      "packages packages";
+      "packages packages"
+      "costs price";
   }
 }
 @media (max-width: 560px) {
   #panel-compra #fila-compra {
     grid-template-columns: 1fr;
-    grid-template-areas: "product" "maturity" "location" "presentation" "costs" "price" "packages";
+    grid-template-areas: "product" "maturity" "location" "presentation" "packages" "costs" "price";
   }
   #panel-compra .compra-costos { grid-template-columns: 1fr; }
 }
