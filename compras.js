@@ -1109,12 +1109,17 @@ async function cargarMaduracion() {
 // ni a la sugerencia de compra ni a la de maduración ---
 const selectPrecioProducto = document.getElementById('precio-producto')
 const elListaPrecioLotes = document.getElementById('lista-precio-lotes')
+const elPrecioLotesCount = document.getElementById('precio-lotes-count')
 
 selectPrecioProducto.addEventListener('change', cargarLotesParaPrecio)
 
 async function cargarLotesParaPrecio() {
   const productoId = selectPrecioProducto.value
-  if (!productoId) return
+  elPrecioLotesCount.textContent = ''
+  if (!productoId) {
+    elListaPrecioLotes.innerHTML = '<p class="muted">Elegí un producto para ver sus lotes.</p>'
+    return
+  }
   elListaPrecioLotes.innerHTML = '<p class="muted">Cargando…</p>'
 
   const producto = productoSeleccionado(productoId)
@@ -1128,30 +1133,43 @@ async function cargarLotesParaPrecio() {
 
   if (error) {
     console.error(error)
+    elPrecioLotesCount.textContent = ''
     elListaPrecioLotes.innerHTML = '<p class="muted">No se pudieron cargar los lotes.</p>'
     return
   }
 
-  if (data.length === 0) {
+  if (!data?.length) {
+    elPrecioLotesCount.textContent = ''
     elListaPrecioLotes.innerHTML = '<p class="muted">Este producto no tiene ningún lote activo todavía.</p>'
     return
   }
 
+  elPrecioLotesCount.textContent = data.length === 1 ? '1 lote activo' : `${data.length} lotes activos`
   const unidad = producto?.tipo === 'peso' ? 'kg' : 'unidades'
   elListaPrecioLotes.innerHTML = ''
   data.forEach(lote => {
     const fila = document.createElement('div')
-    fila.className = 'fila-pendiente-wrap'
+    fila.className = 'fila-pendiente-wrap precio-lote-card'
+    const fechaIngreso = lote.fecha_ingreso
+      ? new Date(`${String(lote.fecha_ingreso).slice(0, 10)}T00:00:00`).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+      : ''
     fila.innerHTML = `
-      <div class="detalle-pedido">
-        <div class="fila-titulo">${lote.cantidad_restante} ${unidad} · ${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</div>
-        <p class="muted">Precio original: <span class="precio-original-lote" data-lote-id="${lote.id}">${formatoMoneda(lote.precio_original)}</span></p>
+      <div class="detalle-pedido precio-lote-detalle">
+        <div class="precio-lote-cabecera">
+          <div>
+            <div class="fila-titulo precio-lote-titulo">Lote · ${lote.cantidad_restante} ${unidad} disponibles</div>
+            <p class="muted precio-lote-meta">${fechaIngreso ? `Ingreso ${fechaIngreso} · ` : ''}Precio original: <span class="precio-original-lote" data-lote-id="${lote.id}">${formatoMoneda(lote.precio_original)}</span></p>
+          </div>
+          <span class="precio-lote-ubicacion">${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</span>
+        </div>
+        <div class="precio-lote-campos">
         <label>Costo de este lote <span class="muted">(lo que te costó a vos)</span>
           <input type="number" min="0" step="1" class="input-costo-lote" value="${lote.costo_unitario}" data-original="${lote.costo_unitario}" data-lote-id="${lote.id}">
         </label>
         <label>Precio actual de este lote <span class="muted">(lo que le cobrás al cliente)</span>
           <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-original="${lote.precio}" data-lote-id="${lote.id}">
         </label>
+        </div>
         <label class="check-volumen-lote">
           <input type="checkbox" class="chk-requiere-volumen-lote" data-lote-id="${lote.id}" data-original="${lote.precio_original != lote.precio}" ${lote.precio_original != lote.precio ? 'checked' : ''}>
           Es una rebaja por consumo pronto (requiere 2kg)
@@ -1179,7 +1197,7 @@ function actualizarMargenLote(loteId) {
   const costo = Number(inputCosto.value)
   const precio = Number(inputPrecio.value)
   elMargen.textContent = costo > 0
-    ? `Margen con estos números: ${(((precio - costo) / costo) * 100).toFixed(1)}%`
+    ? `Margen con estos valores: ${(((precio - costo) / costo) * 100).toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`
     : 'Margen: —'
 
   const cambioAlgo = inputCosto.value !== inputCosto.dataset.original
