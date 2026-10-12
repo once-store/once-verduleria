@@ -1126,7 +1126,7 @@ async function cargarLotesParaPrecio() {
 
   const { data, error } = await supabase
     .from('lotes')
-    .select('id, cantidad_restante, ubicacion, precio, precio_original, costo_unitario, fecha_ingreso')
+    .select('id, codigo, cantidad_restante, ubicacion, precio, precio_original, costo_unitario, fecha_ingreso')
     .eq('producto_id', productoId)
     .gt('cantidad_restante', 0)
     .order('fecha_ingreso')
@@ -1157,7 +1157,7 @@ async function cargarLotesParaPrecio() {
       <div class="detalle-pedido precio-lote-detalle">
         <div class="precio-lote-cabecera">
           <div>
-            <div class="fila-titulo precio-lote-titulo">Lote · ${lote.cantidad_restante} ${unidad} disponibles</div>
+            <div class="fila-titulo precio-lote-titulo">${lote.codigo || 'Lote'} · ${lote.cantidad_restante} ${unidad} disponibles</div>
             <p class="muted precio-lote-meta">${fechaIngreso ? `Ingreso ${fechaIngreso} · ` : ''}Precio original: <span class="precio-original-lote" data-lote-id="${lote.id}">${formatoMoneda(lote.precio_original)}</span></p>
           </div>
           <span class="precio-lote-ubicacion">${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</span>
