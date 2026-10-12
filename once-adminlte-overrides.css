@@ -588,3 +588,203 @@
   }
   #panel-compra .compra-costos { grid-template-columns: 1fr; }
 }
+
+/* --- Precio: presentación propia de las tarjetas por lote --- */
+#panel-precio .precio-intro {
+  margin: 2px 0 16px;
+}
+#panel-precio .precio-intro-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+#panel-precio .precio-intro-cabecera h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 17px;
+  font-weight: 700;
+}
+#panel-precio .precio-intro-cabecera p {
+  margin: 4px 0 0;
+  color: #728078;
+  font-size: 12px;
+}
+#panel-precio .precio-lotes-count {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border-radius: 99px;
+  background: #EDF5EE;
+  color: #287448;
+  font-size: 10px;
+  font-weight: 650;
+}
+#panel-precio .precio-lotes-count:empty {
+  display: none;
+}
+#panel-precio .precio-selector-card {
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid #DCE6DD;
+  border-radius: 10px;
+  background: #F8FAF8;
+}
+#panel-precio .precio-selector-card label {
+  display: block;
+  margin: 0;
+  color: #35453A;
+  font-size: 11px;
+  font-weight: 600;
+}
+#panel-precio #precio-producto {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 8px;
+  padding: 8px 11px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font: inherit;
+}
+#panel-precio .precio-selector-card .muted {
+  margin: 9px 0 0;
+  color: #728078;
+  font-size: 10px;
+}
+#lista-precio-lotes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#lista-precio-lotes > .muted {
+  margin: 0;
+  padding: 12px 2px;
+  color: #728078;
+  font-size: 12px;
+}
+#lista-precio-lotes .precio-lote-card {
+  margin: 0;
+}
+#lista-precio-lotes .precio-lote-detalle {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #DCE6DD;
+  border-radius: 10px;
+  background: #fff;
+}
+#lista-precio-lotes .precio-lote-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #E3EAE3;
+}
+#lista-precio-lotes .precio-lote-titulo {
+  color: #26342B;
+  font-size: 13px;
+  font-weight: 700;
+}
+#lista-precio-lotes .precio-lote-meta {
+  margin: 6px 0 0;
+  color: #728078;
+  font-size: 10px;
+}
+#lista-precio-lotes .precio-lote-ubicacion {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-radius: 99px;
+  background: #EDF5EE;
+  color: #287448;
+  font-size: 10px;
+  font-weight: 650;
+}
+#lista-precio-lotes .precio-lote-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 12px;
+}
+#lista-precio-lotes .precio-lote-campos label {
+  min-width: 0;
+  margin: 0;
+  color: #35453A;
+  font-size: 10px;
+  font-weight: 600;
+}
+#lista-precio-lotes .precio-lote-campos label .muted {
+  color: #728078;
+  font-size: 9px;
+  font-weight: 400;
+}
+#lista-precio-lotes .precio-lote-campos input {
+  min-height: 40px;
+  margin-top: 7px;
+  padding: 9px 11px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font-size: 12px;
+}
+#lista-precio-lotes .check-volumen-lote {
+  margin: 11px 0 0;
+  padding: 10px;
+  border: 1px solid #E0E9E1;
+  border-radius: 8px;
+  background: #F8FAF8;
+  color: #56645B;
+  font-size: 10px;
+}
+#lista-precio-lotes .margen-lote {
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid #E3EAE3;
+  color: #728078;
+  font-size: 10px;
+}
+#lista-precio-lotes .acciones-pedido {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+}
+#lista-precio-lotes .btn-guardar-precio-lote {
+  flex: 0 0 auto;
+  min-width: 104px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: #287448;
+  font-size: 10px;
+}
+#lista-precio-lotes .btn-guardar-precio-lote:disabled {
+  border: 1px solid #D6E1D7;
+  background: #fff;
+  color: #56645B;
+  opacity: 1;
+}
+#panel-precio .precio-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 11px 12px;
+  border: 1px solid #DCE6DD;
+  border-radius: 9px;
+  background: #F8FAF8;
+  color: #728078;
+  font-size: 10px;
+  line-height: 1.5;
+}
+#panel-precio .precio-nota span {
+  flex: 0 0 auto;
+  color: #287448;
+  font-size: 12px;
+}
+@media (max-width: 560px) {
+  #panel-precio .precio-intro-cabecera { align-items: center; }
+  #lista-precio-lotes .precio-lote-detalle { padding: 13px; }
+  #lista-precio-lotes .precio-lote-campos { grid-template-columns: 1fr; gap: 8px; }
+}
