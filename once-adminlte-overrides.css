@@ -730,6 +730,9 @@
   font-size: 12px;
 }
 #lista-precio-lotes .check-volumen-lote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 11px 0 0;
   padding: 10px;
   border: 1px solid #E0E9E1;
@@ -737,6 +740,12 @@
   background: #F8FAF8;
   color: #56645B;
   font-size: 10px;
+}
+#lista-precio-lotes .check-volumen-lote input {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 0;
+  margin: 0;
 }
 #lista-precio-lotes .margen-lote {
   margin: 0;
