@@ -1756,3 +1756,140 @@
   right: 10px;
   transform: translateY(-50%);
 }
+
+/* --- Depósito: lista de lotes con el mismo lenguaje que Maduración y Precio.
+   Todo acotado a #panel-deposito: las clases fila-pendiente-wrap, item-detalle y
+   btn-confirmar las comparten otras pestañas. --- */
+#panel-deposito .deposito-lista {
+  overflow: hidden;
+  border: 1px solid #E3EAE3;
+  border-radius: 12px;
+  background: #F7F9F7;
+}
+#panel-deposito .deposito-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #E3EAE3;
+  background: #fff;
+}
+#panel-deposito .deposito-cabecera h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 16px;
+  font-weight: 650;
+}
+#panel-deposito .deposito-cabecera p {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 12px;
+}
+#panel-deposito .deposito-count {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #EDF5EE;
+  color: #277348;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#panel-deposito #lista-deposito { padding: 0 18px; }
+#panel-deposito #lista-deposito > .muted {
+  margin: 0;
+  padding: 22px 0;
+  font-size: 13px;
+}
+#panel-deposito .deposito-fila { border-bottom: 1px solid #E0E7E1; }
+#panel-deposito .deposito-fila:last-child { border-bottom: 0; }
+#panel-deposito .deposito-item {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(90px, 130px) 84px auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+}
+#panel-deposito .deposito-producto strong {
+  display: block;
+  color: #17291F;
+  font-size: 14px;
+  font-weight: 700;
+}
+#panel-deposito .deposito-fecha {
+  display: block;
+  margin-top: 6px;
+  color: #7A8780;
+  font-size: 11px;
+}
+#panel-deposito .deposito-cantidad {
+  color: #26342B;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+#panel-deposito .deposito-cantidad small {
+  display: block;
+  margin-top: 5px;
+  color: #819087;
+  font-size: 11px;
+  font-weight: 400;
+}
+#panel-deposito .deposito-edad {
+  justify-self: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #EEF1EE;
+  color: #738078;
+  font-size: 11px;
+  white-space: nowrap;
+}
+#panel-deposito .deposito-edad.aviso {
+  background: #FFF3DF;
+  color: #976517;
+}
+#panel-deposito .deposito-item .btn-pasar-salon {
+  flex: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #2E7D52;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#panel-deposito .deposito-item .btn-pasar-salon:disabled { opacity: .6; }
+#panel-deposito .deposito-nota {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #fff;
+  color: #728078;
+  font-size: 12px;
+}
+#panel-deposito .deposito-nota-icono {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #EDF5EE;
+  color: #328356;
+  font-size: 12px;
+  font-weight: 800;
+}
+@media (max-width: 600px) {
+  #panel-deposito .deposito-item {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px 12px;
+  }
+  #panel-deposito .deposito-item .btn-pasar-salon {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
