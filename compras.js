@@ -1042,6 +1042,22 @@ elListaDeposito.addEventListener('click', async (e) => {
 
 // --- Maduración: sugerencias de descuento u retiro por lote ---
 const elListaMaduracion = document.getElementById('lista-maduracion')
+const elConteoMaduracion = document.getElementById('maduracion-count')
+
+function actualizarConteoMaduracion(cantidad = elListaMaduracion.querySelectorAll('.fila-pendiente-wrap').length) {
+  if (!elConteoMaduracion) return
+  elConteoMaduracion.textContent = `${cantidad} ${cantidad === 1 ? 'lote' : 'lotes'}`
+}
+
+function escaparTextoHTML(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[caracter])
+}
 
 async function cargarMaduracion() {
   elListaMaduracion.innerHTML = '<p class="muted">Cargando…</p>'
@@ -1058,47 +1074,71 @@ async function cargarMaduracion() {
   }
 
   if (data.length === 0) {
+    actualizarConteoMaduracion(0)
     elListaMaduracion.innerHTML = '<p class="muted">Ningún lote necesita atención hoy.</p>'
     return
   }
 
+  actualizarConteoMaduracion(data.length)
   elListaMaduracion.innerHTML = ''
   data.forEach(s => {
     const fila = document.createElement('div')
     fila.className = 'fila-pendiente-wrap'
+    const nombreSeguro = escaparTextoHTML(s.nombre)
 
     if (s.retirar) {
       const productoDeEsteLote = productoSeleccionado(s.producto_id)
       const unidadLote = productoDeEsteLote?.tipo === 'unidad' ? 'unidades' : 'kg'
       fila.innerHTML = `
-        <div class="detalle-pedido">
-          <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
-          <p class="muted">Este lote ya pasó su punto de venta. Quedan ${s.cantidad_restante} ${unidadLote} — si parte todavía se puede vender (ej: sacando hojas feas), poné solo lo que se pierde.</p>
-          <label>Cantidad que se pierde
-            <input type="number" min="0.01" step="0.01" class="input-cantidad-baja" value="${s.cantidad_restante}" data-max="${s.cantidad_restante}">
-          </label>
-          <div class="acciones-pedido">
+        <article class="detalle-pedido maduracion-card maduracion-card-retiro">
+          <div class="maduracion-card-head">
+            <div>
+              <h5 class="maduracion-producto">${nombreSeguro}</h5>
+              <p class="maduracion-lote">Lote con ${s.dias_efectivos} días efectivos · quedan ${s.cantidad_restante} ${unidadLote}</p>
+            </div>
+            <span class="maduracion-etiqueta maduracion-etiqueta-retiro">Pasó su punto de venta</span>
+          </div>
+          <div class="maduracion-merma">
+            <p>Indicá cuánto se pierde. Si parte todavía se puede vender, registrá solo lo que hay que retirar.</p>
+            <div class="maduracion-cantidad">
+              <label>Cantidad que se pierde
+                <input type="number" min="0.01" step="0.01" class="input-cantidad-baja" value="${s.cantidad_restante}" data-max="${s.cantidad_restante}">
+              </label>
+              <span>Máximo disponible: ${s.cantidad_restante} ${unidadLote}</span>
+            </div>
+          </div>
+          <div class="acciones-pedido maduracion-acciones">
             <button class="btn-cancelar btn-dar-de-baja" data-producto-id="${s.producto_id}">Registrar como merma</button>
           </div>
-        </div>
+        </article>
       `
     } else {
       const sinPrecioSugerido = s.precio_sugerido === null || s.precio_sugerido === undefined
       fila.innerHTML = `
-        <div class="detalle-pedido">
-          <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
+        <article class="detalle-pedido maduracion-card">
+          <div class="maduracion-card-head">
+            <div>
+              <h5 class="maduracion-producto">${nombreSeguro}</h5>
+              <p class="maduracion-lote">Lote con ${s.dias_efectivos} días efectivos · quedan ${s.cantidad_restante} ${productoSeleccionado(s.producto_id)?.tipo === 'unidad' ? 'unidades' : 'kg'}</p>
+            </div>
+            <span class="maduracion-etiqueta ${sinPrecioSugerido ? 'maduracion-etiqueta-revision' : ''}">${sinPrecioSugerido ? 'Revisar precio' : 'Rebaja sugerida'}</span>
+          </div>
           ${sinPrecioSugerido
-            ? `<p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} — no hay un % de descuento cargado para este día en su perfil de maduración. Ajustalo a mano en la pestaña Precio, o cargá el % que falta en las reglas.</p>`
-            : `<p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} → sugerido ${formatoMoneda(s.precio_sugerido)} (-${s.descuento_pct}%)</p>
-          <label class="oculto campo-precio-maduracion">Precio a aplicar
-            <input type="number" min="0" step="1" class="input-precio-maduracion" value="${s.precio_sugerido}">
-          </label>
-          <div class="acciones-pedido">
-            <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}">Usar este precio</button>
-            <button class="btn-cancelar btn-ignorar-maduracion">Ignorar</button>
-          </div>`
+            ? `<p class="maduracion-descripcion">No hay un descuento cargado para esta edad en el perfil del producto. Podés ajustar el precio desde la pestaña Precio o completar la regla que falta.</p>
+               <div class="maduracion-precio-resumen"><span>Precio actual</span><strong>${formatoMoneda(s.precio_actual)}</strong></div>`
+            : `<p class="maduracion-descripcion">El perfil de maduración sugiere bajar el precio para favorecer su venta.</p>
+               <div class="maduracion-precio-fila">
+                 <div class="maduracion-precio-resumen"><span>Precio actual</span><strong>${formatoMoneda(s.precio_actual)}</strong><p>Precio sugerido <b>${formatoMoneda(s.precio_sugerido)}</b><em>−${s.descuento_pct}%</em></p></div>
+                 <label class="oculto campo-precio-maduracion">Precio a aplicar
+                   <input type="number" min="0" step="1" class="input-precio-maduracion" value="${s.precio_sugerido}">
+                 </label>
+               </div>
+               <div class="acciones-pedido maduracion-acciones">
+                 <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}">Usar este precio</button>
+                 <button class="btn-cancelar btn-ignorar-maduracion">Ignorar</button>
+               </div>`
           }
-        </div>
+        </article>
       `
     }
     elListaMaduracion.appendChild(fila)
@@ -1282,6 +1322,7 @@ elListaMaduracion.addEventListener('click', async (e) => {
   const btnIgnorar = e.target.closest('.btn-ignorar-maduracion')
   if (btnIgnorar) {
     btnIgnorar.closest('.fila-pendiente-wrap').remove()
+    actualizarConteoMaduracion()
     return
   }
 
@@ -1323,6 +1364,7 @@ elListaMaduracion.addEventListener('click', async (e) => {
       return
     }
     btnAplicar.closest('.fila-pendiente-wrap').remove()
+    actualizarConteoMaduracion()
     return
   }
 
@@ -1357,6 +1399,7 @@ elListaMaduracion.addEventListener('click', async (e) => {
       return
     }
     btnBaja.closest('.fila-pendiente-wrap').remove()
+    actualizarConteoMaduracion()
   }
 })
 
