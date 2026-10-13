@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="once-adminlte-overrides.css">
+<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-10">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -103,21 +103,21 @@
   <main class="app-main">
     <div class="app-content-header">
       <div class="container-fluid">
+        <p class="caja-page-eyebrow">ONCE · GESTIÓN DEL LOCAL</p>
         <h3 class="mb-0">Caja</h3>
+        <p class="caja-page-description">Controlá el efectivo del día: abrí la caja, seguí lo esperado y cerrala contando lo que hay.</p>
       </div>
     </div>
 
     <div class="app-content">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-lg-6 mb-4">
-            <div class="card card-primary card-outline">
-              <div class="card-header"><h3 class="card-title">Caja de hoy</h3></div>
-              <div class="card-body" id="tarjeta-caja"><p class="muted">Cargando…</p></div>
-            </div>
+        <div class="caja-pagina">
+          <div id="tarjeta-caja"><p class="muted">Cargando…</p></div>
+          <div class="caja-nota">
+            <span class="caja-nota-icono">i</span>
+            <span>Próximamente: gastos del día, retiros y pagos a proveedores registrados contra la caja.</span>
           </div>
         </div>
-        <p class="muted">Próximamente acá: gastos del día y pagos a proveedores registrados contra la caja.</p>
       </div>
     </div>
   </main>
