@@ -797,3 +797,935 @@
   #lista-precio-lotes .precio-lote-detalle { padding: 13px; }
   #lista-precio-lotes .precio-lote-campos { grid-template-columns: 1fr; gap: 8px; }
 }
+
+
+/* Rediseño de Merma: estilos limitados a su panel. */
+#panel-merma .merma-intro { margin: 2px 0 18px; }
+#panel-merma .merma-intro h4 { margin: 0; color: #26372D; font-size: 18px; font-weight: 650; }
+#panel-merma .merma-intro p { margin: 5px 0 0; color: #728078; font-size: 12px; }
+#panel-merma .merma-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(250px, .9fr); gap: 16px; align-items: start; }
+#panel-merma .merma-form,
+#panel-merma .merma-guia { min-width: 0; padding: 19px; border: 1px solid #E3EAE3; border-radius: 11px; background: #F7F9F7; }
+#panel-merma .merma-form { margin: 0; gap: 13px; }
+#panel-merma .merma-form-head { display: flex; align-items: center; gap: 11px; margin-bottom: 2px; }
+#panel-merma .merma-icono,
+#panel-merma .merma-guia-icono { display: grid; flex: 0 0 36px; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: #EDF5EE; color: #287448; font-size: 17px; }
+#panel-merma .merma-form-head h5,
+#panel-merma .merma-guia h5 { margin: 0; color: #26372D; font-size: 14px; font-weight: 650; }
+#panel-merma .merma-form-head p { margin: 4px 0 0; color: #728078; font-size: 10px; }
+#panel-merma .merma-form label { margin: 0; color: #56645B; font-size: 11px; font-weight: 600; }
+#panel-merma .merma-form input,
+#panel-merma .merma-form select { width: 100%; min-height: 41px; margin-top: 6px; padding: 10px 11px; border: 1px solid #D8E1D9; border-radius: 7px; background: #fff; color: #26372D; font: inherit; font-size: 12px; }
+#panel-merma .merma-cantidad-wrap { position: relative; }
+#panel-merma .merma-cantidad-wrap input { padding-right: 62px; }
+#panel-merma .merma-unidad { position: absolute; top: 50%; right: 11px; transform: translateY(-25%); color: #728078; font-size: 10px; font-weight: 500; pointer-events: none; }
+#panel-merma .merma-ayuda-motivos { margin: -5px 0 0; color: #728078; font-size: 10px; line-height: 1.5; }
+#panel-merma .merma-form .btn-primario { width: auto; min-width: 148px; align-self: flex-end; margin-top: 1px; padding: 11px 15px; border-radius: 8px; background: #287448; font-size: 11px; font-weight: 650; }
+#panel-merma .merma-form .error { margin: 0; font-size: 11px; }
+#panel-merma .merma-guia { background: #fff; }
+#panel-merma .merma-guia-icono { margin-bottom: 12px; }
+#panel-merma .merma-guia > p { margin: 7px 0 0; color: #728078; font-size: 11px; line-height: 1.55; }
+#panel-merma .merma-motivos { display: grid; gap: 8px; margin-top: 15px; }
+#panel-merma .merma-motivos > div { display: flex; align-items: flex-start; gap: 9px; padding: 9px 10px; border-radius: 7px; background: #F7F9F7; color: #59665E; }
+#panel-merma .merma-punto { flex: 0 0 7px; width: 7px; height: 7px; margin-top: 4px; border-radius: 50%; background: #8BB396; }
+#panel-merma .merma-motivos strong { display: block; color: #405047; font-size: 10px; font-weight: 650; }
+#panel-merma .merma-motivos small { display: block; margin-top: 2px; color: #728078; font-size: 9px; line-height: 1.45; }
+@media (max-width: 700px) {
+  #panel-merma .merma-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  #panel-merma .merma-form,
+  #panel-merma .merma-guia { padding: 15px; }
+  #panel-merma .merma-form .btn-primario { width: 100%; }
+}
+
+/* --- Maduración: tarjetas de atención, con estilos aislados a esta pestaña --- */
+#panel-maduracion .maduracion-panel { max-width: 980px; margin: 0 auto; }
+#panel-maduracion .maduracion-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 2px 0 16px;
+}
+#panel-maduracion .maduracion-eyebrow {
+  margin: 0 0 5px;
+  color: #2E7D52;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#panel-maduracion .maduracion-panel-head h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 18px;
+  font-weight: 650;
+}
+#panel-maduracion .maduracion-intro {
+  margin: 6px 0 0;
+  color: #728078;
+  font-size: 12px;
+}
+#panel-maduracion .maduracion-count {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #EAF2EC;
+  color: #286545;
+  font-size: 11px;
+  font-weight: 650;
+}
+#panel-maduracion #lista-maduracion {
+  display: grid;
+  gap: 12px;
+}
+#panel-maduracion .maduracion-card {
+  margin: 0;
+  padding: 17px;
+  border: 1px solid #E6E0D3;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+#panel-maduracion .maduracion-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+#panel-maduracion .maduracion-producto {
+  margin: 0;
+  color: #26342B;
+  font-size: 14px;
+  font-weight: 650;
+}
+#panel-maduracion .maduracion-lote {
+  margin: 4px 0 0;
+  color: #728078;
+  font-size: 11px;
+}
+#panel-maduracion .maduracion-etiqueta {
+  flex: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #FBF2DF;
+  color: #81621B;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+#panel-maduracion .maduracion-etiqueta-retiro {
+  background: #F8E9E5;
+  color: #A54D36;
+}
+#panel-maduracion .maduracion-etiqueta-revision {
+  background: #EEF1EF;
+  color: #59675E;
+}
+#panel-maduracion .maduracion-descripcion {
+  margin: 13px 0;
+  color: #59675E;
+  font-size: 12px;
+  line-height: 1.5;
+}
+#panel-maduracion .maduracion-precio-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(145px, 190px);
+  gap: 14px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid #E6E0D3;
+  border-radius: 8px;
+  background: #FBFAF7;
+}
+#panel-maduracion .maduracion-precio-resumen {
+  color: #728078;
+  font-size: 10px;
+}
+#panel-maduracion .maduracion-precio-resumen strong {
+  display: block;
+  margin-top: 4px;
+  color: #26342B;
+  font-size: 13px;
+}
+#panel-maduracion .maduracion-precio-resumen p { margin: 5px 0 0; }
+#panel-maduracion .maduracion-precio-resumen b { color: #2E7D52; font-size: 12px; }
+#panel-maduracion .maduracion-precio-resumen em {
+  margin-left: 7px;
+  color: #2E7D52;
+  font-style: normal;
+  font-weight: 650;
+}
+#panel-maduracion .campo-precio-maduracion,
+#panel-maduracion .maduracion-cantidad label {
+  display: block;
+  color: #728078;
+  font-size: 10px;
+}
+#panel-maduracion .campo-precio-maduracion input,
+#panel-maduracion .maduracion-cantidad input {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px 9px;
+  border: 1px solid #D8E1D9;
+  border-radius: 6px;
+  background: #fff;
+  color: #26342B;
+  font-size: 12px;
+}
+#panel-maduracion .maduracion-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+#panel-maduracion .maduracion-acciones button {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 650;
+}
+#panel-maduracion .maduracion-acciones .btn-confirmar {
+  border: 1px solid #2E7D52;
+  background: #2E7D52;
+  color: #fff;
+}
+#panel-maduracion .maduracion-acciones .btn-confirmar:hover { background: #1D5B3B; }
+#panel-maduracion .maduracion-acciones .btn-cancelar {
+  border: 1px solid #E6E0D3;
+  background: #fff;
+  color: #59675E;
+}
+#panel-maduracion .maduracion-card-retiro .maduracion-merma {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 210px);
+  gap: 14px;
+  align-items: end;
+  margin-top: 13px;
+}
+#panel-maduracion .maduracion-merma > p {
+  margin: 0;
+  color: #59675E;
+  font-size: 12px;
+  line-height: 1.5;
+}
+#panel-maduracion .maduracion-cantidad {
+  padding: 10px;
+  border: 1px solid #E6E0D3;
+  border-radius: 8px;
+  background: #FBFAF7;
+}
+#panel-maduracion .maduracion-cantidad > span {
+  display: block;
+  margin-top: 5px;
+  color: #728078;
+  font-size: 10px;
+}
+#panel-maduracion .maduracion-ayuda {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 13px;
+  padding: 11px 13px;
+  border: 1px solid #E6E0D3;
+  border-radius: 8px;
+  background: #fff;
+  color: #728078;
+  font-size: 11px;
+  line-height: 1.5;
+}
+#panel-maduracion .maduracion-ayuda-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #EAF2EC;
+  color: #2E7D52;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  #panel-maduracion .maduracion-panel-head { align-items: flex-start; }
+  #panel-maduracion .maduracion-card { padding: 13px; }
+  #panel-maduracion .maduracion-precio-fila,
+  #panel-maduracion .maduracion-card-retiro .maduracion-merma { grid-template-columns: 1fr; }
+  #panel-maduracion .maduracion-acciones { justify-content: stretch; }
+  #panel-maduracion .maduracion-acciones button { flex: 1; }
+}
+
+.btn { border-radius: 8px; font-weight: 500; }
+.btn-outline-secondary {
+  --bs-btn-color: #26342B;
+  --bs-btn-border-color: #E6E0D3;
+  --bs-btn-hover-bg: #F4EFE3;
+  --bs-btn-hover-color: #26342B;
+  --bs-btn-hover-border-color: #E6E0D3;
+}
+
+/* --- Compras: carga de compra en bloques claros, manteniendo los hooks de compras.js --- */
+#panel-compra .compra-intro {
+  margin: 2px 0 16px;
+}
+#panel-compra .compra-eyebrow {
+  margin: 0 0 5px;
+  color: #2E7D52;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#panel-compra .compra-intro h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 18px;
+  font-weight: 650;
+}
+#panel-compra .compra-intro p:last-child,
+#panel-compra .compra-section-head p {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 11px;
+}
+#panel-compra .compra-card {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#panel-compra .compra-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+#panel-compra .compra-section-head h5 {
+  margin: 0;
+  color: #26342B;
+  font-size: 13px;
+  font-weight: 650;
+}
+#panel-compra .cabecera-boleta {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) repeat(3, minmax(130px, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin: 0;
+}
+#panel-compra .cabecera-boleta label,
+#panel-compra .compra-entry label,
+#panel-compra #label-compra-presentacion {
+  display: block;
+  margin: 0;
+  color: #56645B;
+  font-size: 10px;
+  font-weight: 600;
+}
+#panel-compra .cabecera-boleta input,
+#panel-compra .cabecera-boleta select,
+#panel-compra .compra-entry input,
+#panel-compra .compra-entry select,
+#panel-compra #label-compra-presentacion input,
+#panel-compra #label-compra-presentacion select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid #D8E1D9;
+  border-radius: 7px;
+  background: #fff;
+  color: #26342B;
+  font: inherit;
+  font-size: 11px;
+}
+#panel-compra .compra-quick-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+#panel-compra .compra-quick-links .btn-texto {
+  color: #287448;
+  font-size: 10px;
+}
+#panel-compra #factura-existente-aviso {
+  margin: 0 0 14px;
+}
+#panel-compra #form-nuevo-proveedor,
+#panel-compra #form-nuevo-producto {
+  margin: 0 0 14px;
+  padding: 14px;
+  border: 1px solid #E3EAE3;
+  border-radius: 9px;
+  background: #fff;
+}
+#panel-compra .compra-stock {
+  display: inline-flex;
+  margin: 0 0 12px;
+  padding: 6px 9px;
+  border-radius: 99px;
+  background: #EDF5EE;
+  color: #35734B;
+  font-size: 10px;
+}
+#panel-compra .grilla-compra-wrap {
+  overflow: visible;
+  padding: 0;
+}
+#panel-compra .grilla-compra-header {
+  display: none;
+}
+#panel-compra #fila-compra {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.1fr) minmax(180px, .95fr) minmax(210px, 1fr);
+  grid-template-areas:
+    "product costs price"
+    "maturity location packages";
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+}
+#panel-compra .compra-id-interno {
+  display: none;
+}
+#panel-compra .compra-producto-select,
+#panel-compra .compra-costos,
+#panel-compra .compra-precio-sugerido,
+#panel-compra .compra-estado-wrap,
+#panel-compra .switch-ubicacion,
+#panel-compra .compra-bultos-toggle {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .compra-producto-select { grid-area: product; }
+#panel-compra .compra-costos {
+  grid-area: costs;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 10px;
+}
+#panel-compra .compra-costos label + input + label {
+  margin-top: 10px;
+}
+#panel-compra .compra-precio-sugerido {
+  grid-area: price;
+}
+#panel-compra .compra-estado-wrap { grid-area: maturity; }
+#panel-compra .switch-ubicacion { grid-area: location; }
+#panel-compra .compra-bultos-toggle { grid-area: packages; }
+#panel-compra .compra-cantidad {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #E8EDE8;
+  color: #728078;
+  font-size: 10px;
+}
+#panel-compra .compra-cantidad .celda-texto {
+  padding: 0;
+  color: #26342B;
+  font-size: 12px;
+  font-weight: 650;
+}
+#panel-compra .compra-costos .celda,
+#panel-compra .compra-precio-sugerido .celda {
+  width: 100%;
+  min-height: 38px;
+}
+#panel-compra .compra-precio-resultado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 11px 0 0;
+  border-top: 1px solid #E8EDE8;
+}
+#panel-compra .compra-precio-resultado span {
+  color: #728078;
+  font-size: 10px;
+  line-height: 1.4;
+}
+#panel-compra .compra-precio-resultado .celda-texto {
+  padding: 0;
+  color: #287448;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#panel-compra .compra-control-label {
+  display: block;
+  margin-bottom: 9px;
+  color: #56645B;
+  font-size: 10px;
+  font-weight: 600;
+}
+#panel-compra .switch3 {
+  width: 100%;
+  height: 36px;
+  background: #F7F9F7;
+}
+#panel-compra .switch3-opcion.activo {
+  background: #2E7D52;
+}
+#panel-compra .switch-ubicacion {
+  justify-content: space-around;
+  gap: 7px;
+  min-height: 62px;
+}
+#panel-compra .switch-mini-etiqueta {
+  font-size: 10px;
+}
+#panel-compra .compra-bultos-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  color: #26342B;
+  font-size: 11px;
+  text-align: left;
+}
+#panel-compra #label-compra-presentacion:not(.oculto) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra #label-compra-presentacion select {
+  flex: 1 1 180px;
+  width: auto;
+}
+#panel-compra #label-compra-presentacion input {
+  flex: 0 0 90px;
+  width: 90px !important;
+}
+#panel-compra #bloque-cajones:not(.oculto) {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .fila-cajon-detalle {
+  grid-template-columns: minmax(65px, .6fr) repeat(3, minmax(100px, 1fr)) 30px;
+  width: 100%;
+  padding: 7px 0;
+}
+#panel-compra .input-bruto-cajon,
+#panel-compra .input-tara-cajon {
+  min-height: 36px;
+  background: #fff;
+}
+#panel-compra #btn-agregar-cajon {
+  margin-top: 2px;
+  color: #287448;
+  font-size: 10px;
+}
+#panel-compra #compra-error {
+  margin: 10px 0 0;
+}
+#panel-compra .compra-resumen {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#panel-compra .compra-resumen .subtitulo {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+#panel-compra #btn-finalizar-carga {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: #2E7D52;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+@media (max-width: 900px) {
+  #panel-compra .cabecera-boleta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #panel-compra #fila-compra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "product product"
+      "costs price"
+      "maturity location"
+      "packages packages";
+  }
+}
+@media (max-width: 560px) {
+  #panel-compra .compra-card { padding: 13px; }
+  #panel-compra .cabecera-boleta { grid-template-columns: 1fr; }
+  #panel-compra #fila-compra { grid-template-columns: 1fr; grid-template-areas: "product" "costs" "price" "maturity" "location" "packages"; }
+  #panel-compra .fila-cajon-detalle { grid-template-columns: 1fr 1fr; width: 100%; }
+}
+
+/* Ajustes de Compra para acercar el formulario al boceto aprobado. */
+#vista-compras .compras-page-eyebrow {
+  margin: 0 0 5px;
+  color: #2E7D52;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#vista-compras .app-content-header h3 { font-size: 24px; }
+#vista-compras .compras-page-description {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 13px;
+}
+#vista-compras .card.card-primary.card-outline,
+#vista-compras .card.card-primary.card-outline > .card-body { background: #fff; }
+#vista-compras .app-sidebar { background: #183D2E !important; }
+#vista-compras .sidebar-brand .brand-link { color: #fff; }
+#vista-compras .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-compras .sidebar-menu .nav-link.active {
+  color: #fff;
+  background: #2B5942;
+  border-left: 3px solid #91CFA5;
+}
+#vista-compras .tabs {
+  gap: 4px;
+  margin: 8px 12px 0;
+  padding: 5px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#vista-compras .tabs .tab {
+  flex: 1 0 auto;
+  border: 0;
+  border-radius: 7px;
+  margin: 0;
+  padding: 11px 14px;
+}
+#vista-compras .tabs .tab.activa {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(32, 53, 39, .09);
+}
+#panel-compra .compra-card,
+#panel-compra .compra-resumen { background: #F7F9F7; }
+#panel-compra .compra-producto-card .compra-section-head p { display: none; }
+#panel-compra #fila-compra {
+  grid-template-columns: minmax(200px, 1.6fr) repeat(3, minmax(125px, 1fr));
+  grid-template-areas:
+    "product maturity location presentation"
+    "packages packages packages packages"
+    "costs costs price price";
+}
+#panel-compra .compra-costos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+#panel-compra .compra-costo-item {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .compra-costo-item label { display: block; }
+#panel-compra .compra-costos .celda { width: 100%; }
+#panel-compra .compra-precio-sugerido { grid-area: price; }
+#panel-compra .compra-presentacion:not(.oculto) {
+  grid-area: presentation;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #E3EAE3;
+  border-radius: 8px;
+  background: #fff;
+}
+#panel-compra .compra-presentacion > span { display: block; }
+#panel-compra .compra-presentacion .muted { margin-top: 8px; }
+#panel-compra .compra-presentacion input { margin-top: 4px; }
+#panel-compra .compra-estado-wrap { grid-area: maturity; }
+#panel-compra .switch-ubicacion {
+  grid-area: location;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  min-height: 0;
+  padding: 12px;
+}
+#panel-compra .switch-ubicacion .compra-control-label {
+  grid-column: 1 / -1;
+  margin-bottom: 9px;
+}
+#panel-compra .switch-ubicacion .switch-mini-etiqueta:first-of-type { text-align: left; }
+#panel-compra .switch-ubicacion .switch-mini-etiqueta:last-of-type { text-align: right; }
+#panel-compra .compra-bultos {
+  grid-area: packages;
+  min-width: 0;
+}
+#panel-compra .compra-bultos-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 12px;
+  background: #fff;
+  border-color: #E3EAE3;
+}
+#panel-compra .compra-bultos-toggle strong {
+  color: #287448;
+  font-size: 11px;
+}
+#panel-compra #bloque-cajones:not(.oculto) { margin-top: 10px; }
+#panel-compra .compra-resumen { background: #fff; }
+
+@media (max-width: 900px) {
+  #panel-compra #fila-compra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "product product"
+      "maturity location"
+      "presentation presentation"
+      "packages packages"
+      "costs price";
+  }
+}
+@media (max-width: 560px) {
+  #panel-compra #fila-compra {
+    grid-template-columns: 1fr;
+    grid-template-areas: "product" "maturity" "location" "presentation" "packages" "costs" "price";
+  }
+  #panel-compra .compra-costos { grid-template-columns: 1fr; }
+}
+
+/* --- Precio: presentación propia de las tarjetas por lote --- */
+#panel-precio .precio-intro {
+  margin: 2px 0 16px;
+}
+#panel-precio .precio-intro-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+#panel-precio .precio-intro-cabecera h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 17px;
+  font-weight: 700;
+}
+#panel-precio .precio-intro-cabecera p {
+  margin: 4px 0 0;
+  color: #728078;
+  font-size: 12px;
+}
+#panel-precio .precio-lotes-count {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border-radius: 99px;
+  background: #EDF5EE;
+  color: #287448;
+  font-size: 10px;
+  font-weight: 650;
+}
+#panel-precio .precio-lotes-count:empty {
+  display: none;
+}
+#panel-precio .precio-selector-card {
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid #DCE6DD;
+  border-radius: 10px;
+  background: #F8FAF8;
+}
+#panel-precio .precio-selector-card label {
+  display: block;
+  margin: 0;
+  color: #35453A;
+  font-size: 11px;
+  font-weight: 600;
+}
+#panel-precio #precio-producto {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 8px;
+  padding: 8px 11px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font: inherit;
+}
+#panel-precio .precio-selector-card .muted {
+  margin: 9px 0 0;
+  color: #728078;
+  font-size: 10px;
+}
+#lista-precio-lotes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#lista-precio-lotes > .muted {
+  margin: 0;
+  padding: 12px 2px;
+  color: #728078;
+  font-size: 12px;
+}
+#lista-precio-lotes .precio-lote-card {
+  margin: 0;
+}
+#lista-precio-lotes .precio-lote-detalle {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #DCE6DD;
+  border-radius: 10px;
+  background: #fff;
+}
+#lista-precio-lotes .precio-lote-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #E3EAE3;
+}
+#lista-precio-lotes .precio-lote-titulo {
+  color: #26342B;
+  font-size: 13px;
+  font-weight: 700;
+}
+#lista-precio-lotes .precio-lote-meta {
+  margin: 6px 0 0;
+  color: #728078;
+  font-size: 10px;
+}
+#lista-precio-lotes .precio-lote-ubicacion {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-radius: 99px;
+  background: #EDF5EE;
+  color: #287448;
+  font-size: 10px;
+  font-weight: 650;
+}
+#lista-precio-lotes .precio-lote-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 12px;
+}
+#lista-precio-lotes .precio-lote-campos label {
+  min-width: 0;
+  margin: 0;
+  color: #35453A;
+  font-size: 10px;
+  font-weight: 600;
+}
+#lista-precio-lotes .precio-lote-campos label .muted {
+  color: #728078;
+  font-size: 9px;
+  font-weight: 400;
+}
+#lista-precio-lotes .precio-lote-campos input {
+  min-height: 40px;
+  margin-top: 7px;
+  padding: 9px 11px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font-size: 12px;
+}
+#lista-precio-lotes .check-volumen-lote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 11px 0 0;
+  padding: 10px;
+  border: 1px solid #E0E9E1;
+  border-radius: 8px;
+  background: #F8FAF8;
+  color: #56645B;
+  font-size: 10px;
+}
+#lista-precio-lotes .check-volumen-lote input {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+}
+#lista-precio-lotes .margen-lote {
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid #E3EAE3;
+  color: #728078;
+  font-size: 10px;
+}
+#lista-precio-lotes .acciones-pedido {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+}
+#lista-precio-lotes .btn-guardar-precio-lote {
+  flex: 0 0 auto;
+  min-width: 104px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: #287448;
+  font-size: 10px;
+}
+#lista-precio-lotes .btn-guardar-precio-lote:disabled {
+  border: 1px solid #D6E1D7;
+  background: #fff;
+  color: #56645B;
+  opacity: 1;
+}
+#panel-precio .precio-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 11px 12px;
+  border: 1px solid #DCE6DD;
+  border-radius: 9px;
+  background: #F8FAF8;
+  color: #728078;
+  font-size: 10px;
+  line-height: 1.5;
+}
+#panel-precio .precio-nota span {
+  flex: 0 0 auto;
+  color: #287448;
+  font-size: 12px;
+}
+@media (max-width: 560px) {
+  #panel-precio .precio-intro-cabecera { align-items: center; }
+  #lista-precio-lotes .precio-lote-detalle { padding: 13px; }
+  #lista-precio-lotes .precio-lote-campos { grid-template-columns: 1fr; gap: 8px; }
+}
