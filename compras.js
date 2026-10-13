@@ -1044,10 +1044,36 @@ elListaDeposito.addEventListener('click', async (e) => {
 const elListaMaduracion = document.getElementById('lista-maduracion')
 const elConteoMaduracion = document.getElementById('maduracion-count')
 
+// Aviso en la pestaña Maduración: cuántos lotes piden atención (se ve sin
+// tener que abrir la pestaña). El aviso del sidebar lo maneja sidebar-alertas.js.
+const elAvisoTabMaduracion = document.getElementById('maduracion-tab-aviso')
+
+function mostrarAvisoTabMaduracion(cantidad) {
+  if (!elAvisoTabMaduracion) return
+  elAvisoTabMaduracion.textContent = cantidad
+  elAvisoTabMaduracion.title = `${cantidad} ${cantidad === 1 ? 'lote necesita' : 'lotes necesitan'} atención`
+  elAvisoTabMaduracion.classList.toggle('oculto', !cantidad)
+}
+
+async function cargarAvisoMaduracion() {
+  const { count, error } = await supabase
+    .from('sugerencias_maduracion')
+    .select('*', { count: 'exact', head: true })
+  if (error) {
+    console.error(error)
+    return
+  }
+  mostrarAvisoTabMaduracion(count || 0)
+}
+
 function actualizarConteoMaduracion(cantidad = elListaMaduracion.querySelectorAll('.fila-pendiente-wrap').length) {
+  mostrarAvisoTabMaduracion(cantidad)
   if (!elConteoMaduracion) return
   elConteoMaduracion.textContent = `${cantidad} ${cantidad === 1 ? 'lote' : 'lotes'}`
 }
+
+// Solo el Dueño ve la pestaña Maduración, así que solo él consulta el conteo.
+if (sesion?.rol === 'dueno') cargarAvisoMaduracion()
 
 function escaparTextoHTML(valor) {
   return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
