@@ -982,6 +982,34 @@ document.getElementById('form-merma').addEventListener('submit', async (e) => {
 
 // --- Depósito: lotes esperando pasar a salón ---
 const elListaDeposito = document.getElementById('lista-deposito')
+const elConteoDeposito = document.getElementById('deposito-count')
+
+// A partir de cuántos días en depósito se resalta la edad del lote (solo cambia el color).
+const DIAS_AVISO_DEPOSITO = 3
+
+function actualizarConteoDeposito(cantidad) {
+  if (!elConteoDeposito) return
+  elConteoDeposito.textContent = `${cantidad} ${cantidad === 1 ? 'lote' : 'lotes'}`
+}
+
+// fecha_ingreso es un date ('2026-10-09'). Se arma con componentes locales:
+// new Date('2026-10-09') es medianoche UTC y después de las 21hs ya cuenta un día de más.
+function diasDesdeIngreso(fechaIngreso) {
+  const [anio, mes, dia] = String(fechaIngreso).slice(0, 10).split('-').map(Number)
+  const ahora = new Date()
+  const hoyLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())
+  return Math.max(0, Math.round((hoyLocal - new Date(anio, mes - 1, dia)) / 86400000))
+}
+
+function textoFechaIngreso(fechaIngreso) {
+  const [anio, mes, dia] = String(fechaIngreso).slice(0, 10).split('-')
+  return `${dia}/${mes}/${anio}`
+}
+
+function textoEdadDeposito(dias) {
+  if (dias === 0) return 'Hoy'
+  return dias === 1 ? '1 día' : `${dias} días`
+}
 
 async function cargarDeposito() {
   elListaDeposito.innerHTML = '<p class="muted">Cargando…</p>'
@@ -999,21 +1027,28 @@ async function cargarDeposito() {
     return
   }
 
+  actualizarConteoDeposito(data.length)
+
   if (data.length === 0) {
     elListaDeposito.innerHTML = '<p class="muted">No hay lotes en depósito.</p>'
     return
   }
 
-  const hoy = new Date()
   elListaDeposito.innerHTML = ''
   data.forEach(lote => {
     const unidad = lote.productos?.tipo === 'peso' ? 'kg' : 'unidades'
-    const dias = Math.floor((hoy - new Date(lote.fecha_ingreso)) / 86400000)
+    const dias = diasDesdeIngreso(lote.fecha_ingreso)
+    const cantidad = Number(lote.cantidad_restante).toLocaleString('es-AR')
     const fila = document.createElement('div')
-    fila.className = 'fila-pendiente-wrap'
+    fila.className = 'fila-pendiente-wrap deposito-fila'
     fila.innerHTML = `
-      <div class="item-detalle">
-        <span>${lote.productos?.nombre || '?'} · ${lote.cantidad_restante} ${unidad} · ${dias}d</span>
+      <div class="item-detalle deposito-item">
+        <div class="deposito-producto">
+          <strong>${escaparTextoHTML(lote.productos?.nombre || '?')}</strong>
+          <span class="deposito-fecha">Ingreso: ${textoFechaIngreso(lote.fecha_ingreso)}</span>
+        </div>
+        <div class="deposito-cantidad">${cantidad} ${unidad}<small>disponibles</small></div>
+        <span class="deposito-edad${dias >= DIAS_AVISO_DEPOSITO ? ' aviso' : ''}">${textoEdadDeposito(dias)}</span>
         <button class="btn-confirmar btn-pasar-salon" data-id="${lote.id}">Pasar a salón</button>
       </div>
     `
