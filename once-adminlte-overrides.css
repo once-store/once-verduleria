@@ -1729,3 +1729,30 @@
   #lista-precio-lotes .precio-lote-detalle { padding: 13px; }
   #lista-precio-lotes .precio-lote-campos { grid-template-columns: 1fr; gap: 8px; }
 }
+
+/* --- Avisos de Maduración --- */
+/* Indicador en la pestaña: cuántos lotes piden atención. */
+#vista-compras .tabs .tab .tab-aviso {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #F2B84B;
+  color: #4A3300;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+/* Aviso del sidebar: sale del flujo del texto para que la elipsis de
+   "Compras y mermas" no lo recorte. */
+.app-sidebar .sidebar-menu .nav-link:has(#badge-maduracion) { position: relative; }
+.app-sidebar #badge-maduracion {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+}
