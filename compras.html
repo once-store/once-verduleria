@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-8">
+<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-9">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -328,7 +328,20 @@
             </div>
 
             <div id="panel-deposito" class="tab-panel oculto">
-              <div id="lista-deposito"><p class="muted">Cargando…</p></div>
+              <section class="deposito-lista">
+                <header class="deposito-cabecera">
+                  <div>
+                    <h4>Lotes en depósito</h4>
+                    <p>Ordenados desde el ingreso más antiguo.</p>
+                  </div>
+                  <span id="deposito-count" class="deposito-count">0 lotes</span>
+                </header>
+                <div id="lista-deposito"><p class="muted">Cargando…</p></div>
+              </section>
+              <div class="deposito-nota">
+                <span class="deposito-nota-icono">i</span>
+                <span>Al pasarlo a salón, el lote deja de aparecer en esta lista y queda disponible en la ubicación de venta.</span>
+              </div>
             </div>
 
             <div id="panel-maduracion" class="tab-panel oculto">
