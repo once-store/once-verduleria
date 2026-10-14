@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-9">
+<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-12">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -268,11 +268,31 @@
                 </div>
               </section>
 
+              <p id="compra-pago-ok" class="compra-pago-ok oculto" role="status"></p>
+
               <div id="resumen-sesion-compra" class="bloque compra-resumen oculto">
                 <p class="subtitulo">Cargado en esta compra</p>
                 <div id="lista-sesion-compra"></div>
                 <div class="t-fila" style="font-weight:800; font-size:16px; margin-top:8px; display:flex; justify-content:space-between;">
                   <span>Total</span><span id="total-sesion-compra">$0</span>
+                </div>
+                <div id="pago-compra" class="compra-pago">
+                  <p class="compra-pago-titulo">¿Cómo se pagó?</p>
+                  <label class="compra-pago-campo">Pagué en efectivo (sale de la caja)
+                    <input type="number" id="pago-efectivo" min="0" step="any" inputmode="decimal" placeholder="0">
+                  </label>
+                  <div id="pago-resto" class="compra-pago-resto oculto">
+                    <p class="compra-pago-saldo">Resto: <strong id="pago-resto-monto">$0</strong></p>
+                    <div class="compra-pago-fila">
+                      <label class="compra-pago-campo">Forma de pago del resto
+                        <select id="pago-resto-forma"><option value="">A pagar (queda como deuda)</option></select>
+                      </label>
+                      <label id="pago-vencimiento-label" class="compra-pago-campo">Vence
+                        <input type="date" id="pago-vencimiento">
+                      </label>
+                    </div>
+                  </div>
+                  <p id="pago-error" class="error oculto"></p>
                 </div>
                 <button type="button" id="btn-finalizar-carga" class="btn-texto">Finalizar esta compra (boleta terminada)</button>
               </div>
