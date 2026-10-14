@@ -2227,3 +2227,72 @@
 @media (max-width: 480px) {
   #vista-caja .caja-salida-campos { grid-template-columns: 1fr; }
 }
+
+/* --- Compra: pago de la compra (efectivo de la caja + resto). Acotado a #panel-compra. --- */
+#panel-compra .compra-pago {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#panel-compra .compra-pago-titulo {
+  margin: 0 0 10px;
+  color: #26342B;
+  font-size: 13px;
+  font-weight: 650;
+}
+#panel-compra .compra-pago-campo {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  color: #35453A;
+  font-size: 11px;
+  font-weight: 600;
+}
+#panel-compra .compra-pago-campo input,
+#panel-compra .compra-pago-campo select {
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 6px;
+  padding: 8px 11px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font-size: 13px;
+}
+#panel-compra .compra-pago-resto {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #E3EAE3;
+}
+#panel-compra .compra-pago-saldo {
+  margin: 0 0 10px;
+  color: #56645B;
+  font-size: 12px;
+}
+#panel-compra .compra-pago-saldo strong {
+  color: #B2472F;
+  font-size: 15px;
+}
+#panel-compra .compra-pago-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+}
+#panel-compra .compra-pago .error { margin: 10px 0 0; }
+#panel-compra .compra-pago-ok {
+  margin: 0 0 14px;
+  padding: 11px 14px;
+  border: 1px solid #CFE3D4;
+  border-radius: 9px;
+  background: #EDF5EE;
+  color: #1D5B3B;
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (max-width: 560px) {
+  #panel-compra .compra-pago-fila { grid-template-columns: 1fr; }
+}
