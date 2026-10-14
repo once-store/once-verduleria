@@ -216,20 +216,24 @@ const elListaSesion = document.getElementById('lista-sesion-compra')
 const elTotalSesion = document.getElementById('total-sesion-compra')
 const btnFinalizarCarga = document.getElementById('btn-finalizar-carga')
 
-// --- Pago de la compra: efectivo de la caja y, si queda un resto, "A pagar" o una cuenta ---
-// El efectivo viene completo por defecto: pagando todo en efectivo no hay nada que tocar.
+// --- Pago de la compra: una caja de monto por cada forma de pago ---
+// Hoy: Efectivo (sale de la caja) y A pagar (queda como deuda con vencimiento). Las cajas están
+// ligadas: lo que se saca de una pasa a la otra, así siempre suman el total. Cuando Finanzas permita
+// cargar cuentas, "Transferencia" (y otros medios) se suman como una fila más.
 const elPagoEfectivo = document.getElementById('pago-efectivo')
-const elPagoResto = document.getElementById('pago-resto')
-const elPagoRestoMonto = document.getElementById('pago-resto-monto')
-const elPagoRestoForma = document.getElementById('pago-resto-forma')
+const elPagoAPagar = document.getElementById('pago-apagar')
 const elPagoVencimiento = document.getElementById('pago-vencimiento')
 const elPagoVencimientoLabel = document.getElementById('pago-vencimiento-label')
 const elPagoError = document.getElementById('pago-error')
 const elPagoOk = document.getElementById('compra-pago-ok')
 let temporizadorPagoOk = null
 
+function redondear2(n) {
+  return Math.round(n * 100) / 100
+}
+
 function totalSesion() {
-  return Math.round(comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0) * 100) / 100
+  return redondear2(comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0))
 }
 
 function fechaMasDias(dias) {
@@ -248,37 +252,32 @@ function mostrarErrorPago(mensaje) {
   elPagoError.classList.remove('oculto')
 }
 
-function actualizarRestoPago() {
-  const resto = Math.round((totalSesion() - (Number(elPagoEfectivo.value) || 0)) * 100) / 100
-  elPagoResto.classList.toggle('oculto', !(resto > 0))
-  elPagoRestoMonto.textContent = formatoMoneda(Math.max(resto, 0))
-  elPagoVencimientoLabel.classList.toggle('oculto', elPagoRestoForma.value !== '')
+function textoMonto(n) {
+  const r = redondear2(n)
+  return r > 0 ? String(r) : ''
+}
+
+function actualizarVencimientoPago() {
+  elPagoVencimientoLabel.classList.toggle('oculto', !((Number(elPagoAPagar.value) || 0) > 0))
 }
 
 function reiniciarPanelPago() {
   const total = totalSesion()
-  elPagoEfectivo.value = total > 0 ? String(total) : ''
-  elPagoRestoForma.value = ''
+  elPagoEfectivo.value = textoMonto(total)
+  elPagoAPagar.value = ''
   elPagoVencimiento.value = fechaMasDias(7)
   elPagoError.classList.add('oculto')
-  actualizarRestoPago()
+  actualizarVencimientoPago()
 }
 
-elPagoEfectivo.addEventListener('input', actualizarRestoPago)
-elPagoRestoForma.addEventListener('change', actualizarRestoPago)
-
-// Cuentas del negocio (banco, billeteras) para pagar el resto ya mismo. Solo las ve el Dueño.
-async function cargarCuentasPago() {
-  const { data, error } = await supabase.rpc('obtener_resumen_finanzas')
-  if (error) { console.error(error); return }
-  ;(data.cuentas || []).filter(c => c.tipo === 'banco' || c.tipo === 'billetera').forEach(c => {
-    const opcion = document.createElement('option')
-    opcion.value = c.id
-    opcion.textContent = `Ya pagado desde ${c.nombre}`
-    elPagoRestoForma.appendChild(opcion)
-  })
-}
-if (sesion?.rol === 'dueno') cargarCuentasPago()
+elPagoEfectivo.addEventListener('input', () => {
+  elPagoAPagar.value = textoMonto(totalSesion() - (Number(elPagoEfectivo.value) || 0))
+  actualizarVencimientoPago()
+})
+elPagoAPagar.addEventListener('input', () => {
+  elPagoEfectivo.value = textoMonto(totalSesion() - (Number(elPagoAPagar.value) || 0))
+  actualizarVencimientoPago()
+})
 
 function renderComprasSesion() {
   if (comprasSesion.length === 0) {
@@ -344,29 +343,25 @@ async function quitarItemSesion(i) {
 
 btnFinalizarCarga.addEventListener('click', async () => {
   const total = totalSesion()
-  const efectivo = Math.round((Number(elPagoEfectivo.value) || 0) * 100) / 100
-  const resto = Math.round((total - efectivo) * 100) / 100
-  const cuentaResto = elPagoRestoForma.value || null
+  const efectivo = redondear2(Number(elPagoEfectivo.value) || 0)
+  const aPagar = redondear2(Number(elPagoAPagar.value) || 0)
   const vencimiento = elPagoVencimiento.value
   elPagoError.classList.add('oculto')
 
   if (!facturaActualId) { mostrarErrorPago('No hay una compra abierta para cerrar.'); return }
-  if (elPagoEfectivo.value === '' || efectivo < 0 || efectivo > total) {
-    mostrarErrorPago(`El efectivo tiene que estar entre $0 y ${formatoMoneda(total)}.`)
+  if (efectivo < 0 || aPagar < 0) { mostrarErrorPago('Los importes no pueden ser negativos.'); return }
+  if (Math.abs(efectivo + aPagar - total) > 0.009) {
+    mostrarErrorPago(`Efectivo y A pagar tienen que sumar el total (${formatoMoneda(total)}).`)
     return
   }
-  if (resto > 0 && !cuentaResto && !vencimiento) {
+  if (aPagar > 0 && !vencimiento) {
     mostrarErrorPago('Elegí la fecha de vencimiento del saldo a pagar.')
     return
   }
 
   const partes = []
-  if (efectivo > 0) partes.push(`${formatoMoneda(efectivo)} en efectivo de la caja`)
-  if (resto > 0) {
-    partes.push(cuentaResto
-      ? `${formatoMoneda(resto)} ${elPagoRestoForma.selectedOptions[0].textContent.toLowerCase()}`
-      : `${formatoMoneda(resto)} a pagar el ${textoFecha(vencimiento)}`)
-  }
+  if (efectivo > 0) partes.push(`${formatoMoneda(efectivo)} en efectivo`)
+  if (aPagar > 0) partes.push(`${formatoMoneda(aPagar)} a pagar el ${textoFecha(vencimiento)}`)
   const detalle = partes.join(' y ')
   if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?\nPago: ${detalle}.`)) return
 
@@ -374,8 +369,8 @@ btnFinalizarCarga.addEventListener('click', async () => {
   const { data, error } = await supabase.rpc('registrar_pago_compra', {
     p_factura_id: facturaActualId,
     p_efectivo: efectivo,
-    p_resto_cuenta_id: cuentaResto,
-    p_vencimiento: resto > 0 && !cuentaResto ? vencimiento : null
+    p_resto_cuenta_id: null,
+    p_vencimiento: aPagar > 0 ? vencimiento : null
   })
   btnFinalizarCarga.disabled = false
 
