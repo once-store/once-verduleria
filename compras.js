@@ -216,6 +216,70 @@ const elListaSesion = document.getElementById('lista-sesion-compra')
 const elTotalSesion = document.getElementById('total-sesion-compra')
 const btnFinalizarCarga = document.getElementById('btn-finalizar-carga')
 
+// --- Pago de la compra: efectivo de la caja y, si queda un resto, "A pagar" o una cuenta ---
+// El efectivo viene completo por defecto: pagando todo en efectivo no hay nada que tocar.
+const elPagoEfectivo = document.getElementById('pago-efectivo')
+const elPagoResto = document.getElementById('pago-resto')
+const elPagoRestoMonto = document.getElementById('pago-resto-monto')
+const elPagoRestoForma = document.getElementById('pago-resto-forma')
+const elPagoVencimiento = document.getElementById('pago-vencimiento')
+const elPagoVencimientoLabel = document.getElementById('pago-vencimiento-label')
+const elPagoError = document.getElementById('pago-error')
+const elPagoOk = document.getElementById('compra-pago-ok')
+let temporizadorPagoOk = null
+
+function totalSesion() {
+  return Math.round(comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0) * 100) / 100
+}
+
+function fechaMasDias(dias) {
+  const f = new Date()
+  f.setDate(f.getDate() + dias)
+  return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`
+}
+
+function textoFecha(iso) {
+  const [anio, mes, dia] = iso.split('-')
+  return `${dia}/${mes}/${anio}`
+}
+
+function mostrarErrorPago(mensaje) {
+  elPagoError.textContent = mensaje
+  elPagoError.classList.remove('oculto')
+}
+
+function actualizarRestoPago() {
+  const resto = Math.round((totalSesion() - (Number(elPagoEfectivo.value) || 0)) * 100) / 100
+  elPagoResto.classList.toggle('oculto', !(resto > 0))
+  elPagoRestoMonto.textContent = formatoMoneda(Math.max(resto, 0))
+  elPagoVencimientoLabel.classList.toggle('oculto', elPagoRestoForma.value !== '')
+}
+
+function reiniciarPanelPago() {
+  const total = totalSesion()
+  elPagoEfectivo.value = total > 0 ? String(total) : ''
+  elPagoRestoForma.value = ''
+  elPagoVencimiento.value = fechaMasDias(7)
+  elPagoError.classList.add('oculto')
+  actualizarRestoPago()
+}
+
+elPagoEfectivo.addEventListener('input', actualizarRestoPago)
+elPagoRestoForma.addEventListener('change', actualizarRestoPago)
+
+// Cuentas del negocio (banco, billeteras) para pagar el resto ya mismo. Solo las ve el Dueño.
+async function cargarCuentasPago() {
+  const { data, error } = await supabase.rpc('obtener_resumen_finanzas')
+  if (error) { console.error(error); return }
+  ;(data.cuentas || []).filter(c => c.tipo === 'banco' || c.tipo === 'billetera').forEach(c => {
+    const opcion = document.createElement('option')
+    opcion.value = c.id
+    opcion.textContent = `Ya pagado desde ${c.nombre}`
+    elPagoRestoForma.appendChild(opcion)
+  })
+}
+if (sesion?.rol === 'dueno') cargarCuentasPago()
+
 function renderComprasSesion() {
   if (comprasSesion.length === 0) {
     elResumenSesion.classList.add('oculto')
@@ -240,6 +304,7 @@ function renderComprasSesion() {
   })
   const total = comprasSesion.reduce((acc, c) => acc + c.costoTotal, 0)
   elTotalSesion.textContent = formatoMoneda(total)
+  reiniciarPanelPago()
 }
 
 // Sacar un ítem ya registrado no es solo un cambio visual: ese Enter ya
@@ -277,8 +342,57 @@ async function quitarItemSesion(i) {
   }
 }
 
-btnFinalizarCarga.addEventListener('click', () => {
-  if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?`)) return
+btnFinalizarCarga.addEventListener('click', async () => {
+  const total = totalSesion()
+  const efectivo = Math.round((Number(elPagoEfectivo.value) || 0) * 100) / 100
+  const resto = Math.round((total - efectivo) * 100) / 100
+  const cuentaResto = elPagoRestoForma.value || null
+  const vencimiento = elPagoVencimiento.value
+  elPagoError.classList.add('oculto')
+
+  if (!facturaActualId) { mostrarErrorPago('No hay una compra abierta para cerrar.'); return }
+  if (elPagoEfectivo.value === '' || efectivo < 0 || efectivo > total) {
+    mostrarErrorPago(`El efectivo tiene que estar entre $0 y ${formatoMoneda(total)}.`)
+    return
+  }
+  if (resto > 0 && !cuentaResto && !vencimiento) {
+    mostrarErrorPago('Elegí la fecha de vencimiento del saldo a pagar.')
+    return
+  }
+
+  const partes = []
+  if (efectivo > 0) partes.push(`${formatoMoneda(efectivo)} en efectivo de la caja`)
+  if (resto > 0) {
+    partes.push(cuentaResto
+      ? `${formatoMoneda(resto)} ${elPagoRestoForma.selectedOptions[0].textContent.toLowerCase()}`
+      : `${formatoMoneda(resto)} a pagar el ${textoFecha(vencimiento)}`)
+  }
+  const detalle = partes.join(' y ')
+  if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?\nPago: ${detalle}.`)) return
+
+  btnFinalizarCarga.disabled = true
+  const { data, error } = await supabase.rpc('registrar_pago_compra', {
+    p_factura_id: facturaActualId,
+    p_efectivo: efectivo,
+    p_resto_cuenta_id: cuentaResto,
+    p_vencimiento: resto > 0 && !cuentaResto ? vencimiento : null
+  })
+  btnFinalizarCarga.disabled = false
+
+  let aviso
+  if (error && error.message.includes('ya tiene el pago registrado')) {
+    aviso = 'Compra cerrada. Esa boleta ya tenía el pago registrado, así que no se registró uno nuevo.'
+  } else if (error) {
+    console.error(error)
+    mostrarErrorPago(`No se pudo registrar el pago: ${error.message}. La compra sigue cargada: corregí y volvé a tocar Finalizar.`)
+    return
+  } else {
+    aviso = `Compra registrada: ${detalle}.`
+    if (Math.abs(Number(data.total) - total) > 0.01) {
+      aviso += ` Atención: el total guardado (${formatoMoneda(data.total)}) no coincide con el que veías (${formatoMoneda(total)}); revisalo.`
+    }
+  }
+
   comprasSesion = []
   selectCompraProveedor.value = ''
   facturaActualId = null
@@ -288,6 +402,11 @@ btnFinalizarCarga.addEventListener('click', () => {
   elFacturaAviso.classList.add('oculto')
   desbloquearProveedor()
   renderComprasSesion()
+
+  elPagoOk.textContent = aviso
+  elPagoOk.classList.remove('oculto')
+  clearTimeout(temporizadorPagoOk)
+  temporizadorPagoOk = setTimeout(() => elPagoOk.classList.add('oculto'), 15000)
 })
 
 // --- Productos (compartido entre compra y merma) ---
