@@ -2228,7 +2228,7 @@
   #vista-caja .caja-salida-campos { grid-template-columns: 1fr; }
 }
 
-/* --- Compra: pago de la compra (efectivo de la caja + resto). Acotado a #panel-compra. --- */
+/* --- Compra: pago de la compra (una caja de monto por forma de pago). Acotado a #panel-compra. --- */
 #panel-compra .compra-pago {
   margin-top: 14px;
   padding: 14px;
@@ -2237,50 +2237,36 @@
   background: #F7F9F7;
 }
 #panel-compra .compra-pago-titulo {
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   color: #26342B;
   font-size: 13px;
   font-weight: 650;
 }
-#panel-compra .compra-pago-campo {
-  display: block;
-  min-width: 0;
-  margin: 0;
+#panel-compra .compra-pago-forma {
+  display: grid;
+  grid-template-columns: minmax(120px, 190px) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 0;
   color: #35453A;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
-#panel-compra .compra-pago-campo input,
-#panel-compra .compra-pago-campo select {
+#panel-compra .compra-pago-forma small {
+  color: #728078;
+  font-size: 10px;
+  font-weight: 400;
+}
+#panel-compra .compra-pago-forma input {
   display: block;
   width: 100%;
   min-height: 40px;
-  margin-top: 6px;
   padding: 8px 11px;
   border: 1px solid #D6E1D7;
   border-radius: 8px;
   background: #fff;
   color: #26342B;
   font-size: 13px;
-}
-#panel-compra .compra-pago-resto {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #E3EAE3;
-}
-#panel-compra .compra-pago-saldo {
-  margin: 0 0 10px;
-  color: #56645B;
-  font-size: 12px;
-}
-#panel-compra .compra-pago-saldo strong {
-  color: #B2472F;
-  font-size: 15px;
-}
-#panel-compra .compra-pago-fila {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 12px;
 }
 #panel-compra .compra-pago .error { margin: 10px 0 0; }
 #panel-compra .compra-pago-ok {
@@ -2294,5 +2280,5 @@
   line-height: 1.5;
 }
 @media (max-width: 560px) {
-  #panel-compra .compra-pago-fila { grid-template-columns: 1fr; }
+  #panel-compra .compra-pago-forma { grid-template-columns: 1fr; gap: 6px; }
 }
