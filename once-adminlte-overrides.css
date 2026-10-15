@@ -2257,7 +2257,8 @@
   font-size: 10px;
   font-weight: 400;
 }
-#panel-compra .compra-pago-forma input {
+#panel-compra .compra-pago-forma input,
+#panel-compra .compra-pago-forma select {
   display: block;
   width: 100%;
   min-height: 40px;
