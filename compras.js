@@ -222,6 +222,8 @@ const btnFinalizarCarga = document.getElementById('btn-finalizar-carga')
 // cargar cuentas, "Transferencia" (y otros medios) se suman como una fila más.
 const elPagoEfectivo = document.getElementById('pago-efectivo')
 const elPagoAPagar = document.getElementById('pago-apagar')
+const elPagoOrigen = document.getElementById('pago-efectivo-origen')
+const elPagoOrigenLabel = document.getElementById('pago-origen-label')
 const elPagoVencimiento = document.getElementById('pago-vencimiento')
 const elPagoVencimientoLabel = document.getElementById('pago-vencimiento-label')
 const elPagoError = document.getElementById('pago-error')
@@ -265,6 +267,7 @@ function reiniciarPanelPago() {
   const total = totalSesion()
   elPagoEfectivo.value = textoMonto(total)
   elPagoAPagar.value = ''
+  elPagoOrigen.value = ''
   elPagoVencimiento.value = fechaMasDias(7)
   elPagoError.classList.add('oculto')
   actualizarVencimientoPago()
@@ -278,6 +281,23 @@ elPagoAPagar.addEventListener('input', () => {
   elPagoEfectivo.value = textoMonto(totalSesion() - (Number(elPagoAPagar.value) || 0))
   actualizarVencimientoPago()
 })
+
+// El efectivo puede salir de la caja (lo normal) o del efectivo resguardado. Esa opción solo aparece
+// si hay plata resguardada; si no, el panel queda como siempre, sin preguntas.
+async function cargarOrigenesEfectivo() {
+  const { data, error } = await supabase.rpc('obtener_resumen_finanzas')
+  if (error) { console.error(error); return }
+  elPagoOrigen.innerHTML = '<option value="">Caja</option>'
+  ;(data.cuentas || []).filter(c => c.tipo === 'resguardo' && Number(c.saldo) > 0).forEach(c => {
+    const opcion = document.createElement('option')
+    opcion.value = c.id
+    opcion.dataset.saldo = c.saldo
+    opcion.textContent = `${c.nombre} (${formatoMoneda(c.saldo)})`
+    elPagoOrigen.appendChild(opcion)
+  })
+  elPagoOrigenLabel.classList.toggle('oculto', elPagoOrigen.options.length < 2)
+}
+if (sesion?.rol === 'dueno') cargarOrigenesEfectivo()
 
 function renderComprasSesion() {
   if (comprasSesion.length === 0) {
@@ -354,13 +374,21 @@ btnFinalizarCarga.addEventListener('click', async () => {
     mostrarErrorPago(`Efectivo y A pagar tienen que sumar el total (${formatoMoneda(total)}).`)
     return
   }
+  const cuentaEfectivo = efectivo > 0 ? (elPagoOrigen.value || null) : null
+  if (cuentaEfectivo) {
+    const saldo = Number(elPagoOrigen.selectedOptions[0].dataset.saldo)
+    if (efectivo > saldo) {
+      mostrarErrorPago(`El efectivo resguardado solo tiene ${formatoMoneda(saldo)}.`)
+      return
+    }
+  }
   if (aPagar > 0 && !vencimiento) {
     mostrarErrorPago('Elegí la fecha de vencimiento del saldo a pagar.')
     return
   }
 
   const partes = []
-  if (efectivo > 0) partes.push(`${formatoMoneda(efectivo)} en efectivo`)
+  if (efectivo > 0) partes.push(`${formatoMoneda(efectivo)} en efectivo${cuentaEfectivo ? ' (del resguardo)' : ''}`)
   if (aPagar > 0) partes.push(`${formatoMoneda(aPagar)} a pagar el ${textoFecha(vencimiento)}`)
   const detalle = partes.join(' y ')
   if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?\nPago: ${detalle}.`)) return
@@ -370,7 +398,8 @@ btnFinalizarCarga.addEventListener('click', async () => {
     p_factura_id: facturaActualId,
     p_efectivo: efectivo,
     p_resto_cuenta_id: null,
-    p_vencimiento: aPagar > 0 ? vencimiento : null
+    p_vencimiento: aPagar > 0 ? vencimiento : null,
+    p_efectivo_cuenta_id: cuentaEfectivo
   })
   btnFinalizarCarga.disabled = false
 
@@ -398,6 +427,7 @@ btnFinalizarCarga.addEventListener('click', async () => {
   desbloquearProveedor()
   renderComprasSesion()
 
+  if (sesion?.rol === 'dueno') cargarOrigenesEfectivo()
   elPagoOk.textContent = aviso
   elPagoOk.classList.remove('oculto')
   clearTimeout(temporizadorPagoOk)
