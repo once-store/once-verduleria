@@ -98,4 +98,30 @@ export function aplicarVisibilidadSidebarPorRol(rol) {
       if (li) li.classList.add('oculto')
     }
   })
+  agregarLinkFinanzas(rol)
+}
+
+/**
+ * La página Finanzas es solo del Dueño. En vez de copiar su link a mano en el sidebar de cada
+ * página, se agrega acá: aparece (antes de "Números") en toda página que llame a la función de
+ * arriba, y solo si el rol es Dueño y la página todavía no tiene el link.
+ */
+function agregarLinkFinanzas(rol) {
+  if (rol !== 'dueno') return
+  const menu = document.querySelector('.sidebar-menu')
+  if (!menu || menu.querySelector('a[href="finanzas.html"]')) return
+
+  const li = document.createElement('li')
+  li.className = 'nav-item'
+  li.innerHTML = `
+    <a href="finanzas.html" class="nav-link" data-roles="dueno">
+      <i class="nav-icon bi bi-bank"></i>
+      <p>Finanzas</p>
+    </a>`
+
+  const numeros = menu.querySelector('a[href="metricas.html"]')?.closest('li')
+  const salir = menu.querySelector('#btn-salir')?.closest('li')
+  const referencia = numeros || salir
+  if (referencia) referencia.before(li)
+  else menu.appendChild(li)
 }
