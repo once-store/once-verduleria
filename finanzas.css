@@ -1,0 +1,372 @@
+/* Finanzas: estilos propios de la página (no se toca el CSS compartido). Todo acotado a #vista-finanzas. */
+
+/* --- Marco: menú verde y encabezado, igual que Compras y Caja --- */
+#vista-finanzas .app-sidebar { background: #183D2E !important; }
+#vista-finanzas .sidebar-brand .brand-link { color: #fff; }
+#vista-finanzas .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-finanzas .sidebar-menu .nav-link.active {
+  color: #fff;
+  background: #2B5942;
+  border-left: 3px solid #91CFA5;
+}
+
+#vista-finanzas .fin-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+#vista-finanzas .fin-eyebrow {
+  margin: 0 0 5px;
+  color: #2E7D52;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#vista-finanzas .app-content-header h3 { font-size: 24px; }
+#vista-finanzas .fin-descripcion {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 13px;
+}
+#vista-finanzas .fin-cabecera-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+#vista-finanzas .fin-pagina { max-width: 1120px; margin-top: 10px; }
+
+/* --- Botones --- */
+#vista-finanzas .fin-btn {
+  padding: 9px 14px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+#vista-finanzas .fin-btn:hover { background: #F4F8F4; }
+#vista-finanzas .fin-btn-primario {
+  border-color: #287448;
+  background: #287448;
+  color: #fff;
+}
+#vista-finanzas .fin-btn-primario:hover { background: #1D5B3B; }
+#vista-finanzas .fin-link {
+  display: block;
+  margin: 4px 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #287448;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: underline;
+}
+#vista-finanzas .fin-link-peligro { color: #B2472F; }
+
+/* --- Resumen --- */
+#vista-finanzas .fin-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+#vista-finanzas .fin-kpi {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #E3EAE3;
+  border-radius: 12px;
+  background: #fff;
+}
+#vista-finanzas .fin-kpi span { color: #728078; font-size: 11px; }
+#vista-finanzas .fin-kpi strong {
+  margin-top: 10px;
+  color: #17291F;
+  font-size: 24px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#vista-finanzas .fin-kpi small { margin-top: 10px; color: #8C9A91; font-size: 11px; }
+#vista-finanzas .fin-neg { color: #B2472F !important; }
+#vista-finanzas .fin-pos { color: #287448; }
+
+/* --- Pestañas --- */
+#vista-finanzas .fin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #E3EAE3;
+}
+#vista-finanzas .fin-tab {
+  margin-bottom: -1px;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: #6C766F;
+  font-size: 13px;
+  font-weight: 600;
+}
+#vista-finanzas .fin-tab.activa { color: #2E7D52; border-bottom-color: #2E7D52; }
+#vista-finanzas .fin-tab-aviso {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #F2B84B;
+  color: #4A3300;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* --- Secciones --- */
+#vista-finanzas .fin-dos-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+#vista-finanzas .fin-col { display: grid; gap: 20px; min-width: 0; }
+#vista-finanzas .fin-seccion {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #E3EAE3;
+  border-radius: 12px;
+  background: #fff;
+}
+#vista-finanzas .fin-seccion-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+#vista-finanzas .fin-seccion h4 {
+  margin: 0;
+  color: #26342B;
+  font-size: 16px;
+  font-weight: 650;
+}
+#vista-finanzas .fin-sub {
+  margin: 5px 0 0;
+  color: #728078;
+  font-size: 12px;
+  line-height: 1.5;
+}
+#vista-finanzas .fin-vacio { margin: 8px 0; color: #8C9A91; font-size: 12px; }
+
+/* --- Cuentas --- */
+#vista-finanzas .fin-cuentas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+#vista-finanzas .fin-cuenta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#vista-finanzas .fin-cuenta strong { display: block; color: #17291F; font-size: 13px; }
+#vista-finanzas .fin-cuenta small { display: block; margin-top: 5px; color: #8C9A91; font-size: 10px; }
+#vista-finanzas .fin-cuenta-saldo { text-align: right; }
+#vista-finanzas .fin-cuenta-saldo strong { font-size: 15px; white-space: nowrap; }
+#vista-finanzas .fin-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #EDF5EE;
+  color: #3C5A47;
+  font-size: 11px;
+  line-height: 1.5;
+}
+#vista-finanzas .fin-nota-icono {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #D6EADB;
+  color: #287448;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* --- Movimientos --- */
+#vista-finanzas .fin-tabla-wrap { overflow-x: auto; }
+#vista-finanzas .fin-tabla { width: 100%; border-collapse: collapse; }
+#vista-finanzas .fin-tabla th {
+  padding: 9px 10px;
+  background: #F7F9F7;
+  color: #728078;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+}
+#vista-finanzas .fin-tabla td {
+  padding: 11px 10px;
+  border-bottom: 1px solid #E8EDE8;
+  color: #26342B;
+  font-size: 12px;
+  vertical-align: top;
+}
+#vista-finanzas .fin-tabla td strong { display: block; font-size: 12px; font-weight: 650; }
+#vista-finanzas .fin-tabla td small { display: block; margin-top: 3px; color: #8C9A91; font-size: 10px; }
+#vista-finanzas .fin-importe { text-align: right !important; white-space: nowrap; font-weight: 650; }
+#vista-finanzas .fin-anulado td { color: #9AA59E; }
+#vista-finanzas .fin-anulado td strong,
+#vista-finanzas .fin-anulado .fin-importe { text-decoration: line-through; color: #9AA59E !important; }
+
+/* --- Vencimientos y pagos --- */
+#vista-finanzas .fin-fecha {
+  display: grid;
+  place-items: center;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #F5ECD9;
+  color: #7A5B1B;
+  text-align: center;
+  line-height: 1.1;
+}
+#vista-finanzas .fin-fecha span { font-size: 9px; font-weight: 700; letter-spacing: .5px; }
+#vista-finanzas .fin-fecha strong { font-size: 17px; }
+#vista-finanzas .fin-fecha-pronto { background: #FBE7C2; color: #8A5A00; }
+#vista-finanzas .fin-fecha-vencido { background: #F8E1DA; color: #A5412A; }
+#vista-finanzas .fin-venc,
+#vista-finanzas .fin-pago {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #E8EDE8;
+}
+#vista-finanzas .fin-venc > div:nth-child(2),
+#vista-finanzas .fin-pago-datos { flex: 1 1 auto; min-width: 0; }
+#vista-finanzas .fin-venc strong,
+#vista-finanzas .fin-pago-datos strong { display: block; color: #17291F; font-size: 13px; }
+#vista-finanzas .fin-venc small,
+#vista-finanzas .fin-pago-datos small { display: block; margin-top: 4px; color: #8C9A91; font-size: 11px; line-height: 1.4; }
+#vista-finanzas .fin-venc-monto { color: #17291F; font-size: 13px; font-weight: 700; white-space: nowrap; }
+#vista-finanzas .fin-pago-monto {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+#vista-finanzas .fin-pago-monto strong { color: #17291F; font-size: 15px; white-space: nowrap; }
+#vista-finanzas .fin-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: #F7F9F7;
+  color: #56645B;
+  font-size: 12px;
+}
+#vista-finanzas .fin-total strong { color: #17291F; font-size: 17px; }
+
+/* --- Diálogos --- */
+#vista-finanzas .fin-dialogo {
+  width: min(480px, calc(100vw - 32px));
+  padding: 22px;
+  border: 1px solid #E3EAE3;
+  border-radius: 14px;
+  background: #fff;
+  color: #26342B;
+  box-shadow: 0 18px 50px rgba(20, 40, 28, .22);
+}
+#vista-finanzas .fin-dialogo::backdrop { background: rgba(24, 40, 31, .45); }
+#vista-finanzas .fin-dialogo h4 { margin: 0; color: #17291F; font-size: 17px; font-weight: 700; }
+#vista-finanzas .fin-dialogo label {
+  display: block;
+  margin: 14px 0 0;
+  color: #35453A;
+  font-size: 11px;
+  font-weight: 600;
+}
+#vista-finanzas .fin-dialogo input,
+#vista-finanzas .fin-dialogo select {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 6px;
+  padding: 9px 12px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font-size: 13px;
+}
+#vista-finanzas .fin-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+#vista-finanzas .fin-dialogo .error { margin: 12px 0 0; }
+#vista-finanzas .fin-dialogo-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+#vista-finanzas .fin-tipos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 14px 0 6px;
+  padding: 4px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#vista-finanzas .fin-tipo {
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: #66756C;
+  font-size: 12px;
+  font-weight: 600;
+}
+#vista-finanzas .fin-tipo.activa {
+  background: #fff;
+  color: #237449;
+  box-shadow: 0 1px 4px rgba(32, 53, 39, .09);
+}
+
+/* --- Pantallas chicas --- */
+@media (max-width: 960px) {
+  #vista-finanzas .fin-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #vista-finanzas .fin-dos-columnas { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  #vista-finanzas .fin-kpis { grid-template-columns: 1fr; }
+  #vista-finanzas .fin-cuentas { grid-template-columns: 1fr; }
+  #vista-finanzas .fin-fila { grid-template-columns: 1fr; }
+  #vista-finanzas .fin-pago { flex-wrap: wrap; }
+  #vista-finanzas .fin-pago-monto { width: 100%; justify-content: space-between; }
+  #vista-finanzas .fin-cabecera-acciones { width: 100%; }
+}
