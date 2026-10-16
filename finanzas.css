@@ -1,372 +1,511 @@
-/* Finanzas: estilos propios de la página (no se toca el CSS compartido). Todo acotado a #vista-finanzas. */
+import {
+  supabase,
+  obtenerSesionActual,
+  aplicarVisibilidadSidebarPorRol,
+  renderizarSelectorLocal,
+  obtenerLocalFiltroActivo
+} from './sesion.js'
 
-/* --- Marco: menú verde y encabezado, igual que Compras y Caja --- */
-#vista-finanzas .app-sidebar { background: #183D2E !important; }
-#vista-finanzas .sidebar-brand .brand-link { color: #fff; }
-#vista-finanzas .sidebar-menu .nav-link { color: #E4EEE7; }
-#vista-finanzas .sidebar-menu .nav-link.active {
-  color: #fff;
-  background: #2B5942;
-  border-left: 3px solid #91CFA5;
-}
+// --- Finanzas: solo para el Dueño. Todo sale de las funciones de la base; la pantalla no calcula plata. ---
 
-#vista-finanzas .fin-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-#vista-finanzas .fin-eyebrow {
-  margin: 0 0 5px;
-  color: #2E7D52;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-#vista-finanzas .app-content-header h3 { font-size: 24px; }
-#vista-finanzas .fin-descripcion {
-  margin: 5px 0 0;
-  color: #728078;
-  font-size: 13px;
-}
-#vista-finanzas .fin-cabecera-acciones {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-#vista-finanzas .fin-pagina { max-width: 1120px; margin-top: 10px; }
+const $ = id => document.getElementById(id)
+const vista = $('vista-finanzas')
 
-/* --- Botones --- */
-#vista-finanzas .fin-btn {
-  padding: 9px 14px;
-  border: 1px solid #D6E1D7;
-  border-radius: 8px;
-  background: #fff;
-  color: #26342B;
-  font-size: 12px;
-  font-weight: 650;
-  white-space: nowrap;
-}
-#vista-finanzas .fin-btn:hover { background: #F4F8F4; }
-#vista-finanzas .fin-btn-primario {
-  border-color: #287448;
-  background: #287448;
-  color: #fff;
-}
-#vista-finanzas .fin-btn-primario:hover { background: #1D5B3B; }
-#vista-finanzas .fin-link {
-  display: block;
-  margin: 4px 0 0 auto;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: #287448;
-  font-size: 10px;
-  font-weight: 600;
-  text-decoration: underline;
-}
-#vista-finanzas .fin-link-peligro { color: #B2472F; }
+const filtroLocal = obtenerLocalFiltroActivo() // null = todos los locales
+let datos = { resumen: null, movimientos: [], locales: [] }
+let sesion = null
+let pagoActual = null
+let ajusteActual = null
+let tipoMovimiento = 'gasto'
 
-/* --- Resumen --- */
-#vista-finanzas .fin-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
+const TIPOS_CUENTA = {
+  caja: 'Efectivo · caja del local',
+  resguardo: 'Efectivo resguardado',
+  banco: 'Cuenta bancaria',
+  billetera: 'Billetera virtual'
 }
-#vista-finanzas .fin-kpi {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid #E3EAE3;
-  border-radius: 12px;
-  background: #fff;
-}
-#vista-finanzas .fin-kpi span { color: #728078; font-size: 11px; }
-#vista-finanzas .fin-kpi strong {
-  margin-top: 10px;
-  color: #17291F;
-  font-size: 24px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-#vista-finanzas .fin-kpi small { margin-top: 10px; color: #8C9A91; font-size: 11px; }
-#vista-finanzas .fin-neg { color: #B2472F !important; }
-#vista-finanzas .fin-pos { color: #287448; }
+const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
 
-/* --- Pestañas --- */
-#vista-finanzas .fin-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid #E3EAE3;
-}
-#vista-finanzas .fin-tab {
-  margin-bottom: -1px;
-  padding: 12px 16px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: none;
-  color: #6C766F;
-  font-size: 13px;
-  font-weight: 600;
-}
-#vista-finanzas .fin-tab.activa { color: #2E7D52; border-bottom-color: #2E7D52; }
-#vista-finanzas .fin-tab-aviso {
-  display: inline-grid;
-  place-items: center;
-  min-width: 18px;
-  height: 18px;
-  margin-left: 6px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: #F2B84B;
-  color: #4A3300;
-  font-size: 10px;
-  font-weight: 700;
+// ---------- utilidades ----------
+function fmt(n) {
+  const v = Math.round(Number(n) || 0)
+  return `${v < 0 ? '−' : ''}$${Math.abs(v).toLocaleString('es-AR')}`
 }
 
-/* --- Secciones --- */
-#vista-finanzas .fin-dos-columnas {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-}
-#vista-finanzas .fin-col { display: grid; gap: 20px; min-width: 0; }
-#vista-finanzas .fin-seccion {
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid #E3EAE3;
-  border-radius: 12px;
-  background: #fff;
-}
-#vista-finanzas .fin-seccion-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-#vista-finanzas .fin-seccion h4 {
-  margin: 0;
-  color: #26342B;
-  font-size: 16px;
-  font-weight: 650;
-}
-#vista-finanzas .fin-sub {
-  margin: 5px 0 0;
-  color: #728078;
-  font-size: 12px;
-  line-height: 1.5;
-}
-#vista-finanzas .fin-vacio { margin: 8px 0; color: #8C9A91; font-size: 12px; }
-
-/* --- Cuentas --- */
-#vista-finanzas .fin-cuentas {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-#vista-finanzas .fin-cuenta {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid #E3EAE3;
-  border-radius: 10px;
-  background: #F7F9F7;
-}
-#vista-finanzas .fin-cuenta strong { display: block; color: #17291F; font-size: 13px; }
-#vista-finanzas .fin-cuenta small { display: block; margin-top: 5px; color: #8C9A91; font-size: 10px; }
-#vista-finanzas .fin-cuenta-saldo { text-align: right; }
-#vista-finanzas .fin-cuenta-saldo strong { font-size: 15px; white-space: nowrap; }
-#vista-finanzas .fin-nota {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 14px;
-  padding: 11px 13px;
-  border-radius: 9px;
-  background: #EDF5EE;
-  color: #3C5A47;
-  font-size: 11px;
-  line-height: 1.5;
-}
-#vista-finanzas .fin-nota-icono {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #D6EADB;
-  color: #287448;
-  font-size: 11px;
-  font-weight: 800;
+function escapar(valor) {
+  return String(valor ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
-/* --- Movimientos --- */
-#vista-finanzas .fin-tabla-wrap { overflow-x: auto; }
-#vista-finanzas .fin-tabla { width: 100%; border-collapse: collapse; }
-#vista-finanzas .fin-tabla th {
-  padding: 9px 10px;
-  background: #F7F9F7;
-  color: #728078;
-  font-size: 10px;
-  font-weight: 600;
-  text-align: left;
-}
-#vista-finanzas .fin-tabla td {
-  padding: 11px 10px;
-  border-bottom: 1px solid #E8EDE8;
-  color: #26342B;
-  font-size: 12px;
-  vertical-align: top;
-}
-#vista-finanzas .fin-tabla td strong { display: block; font-size: 12px; font-weight: 650; }
-#vista-finanzas .fin-tabla td small { display: block; margin-top: 3px; color: #8C9A91; font-size: 10px; }
-#vista-finanzas .fin-importe { text-align: right !important; white-space: nowrap; font-weight: 650; }
-#vista-finanzas .fin-anulado td { color: #9AA59E; }
-#vista-finanzas .fin-anulado td strong,
-#vista-finanzas .fin-anulado .fin-importe { text-decoration: line-through; color: #9AA59E !important; }
-
-/* --- Vencimientos y pagos --- */
-#vista-finanzas .fin-fecha {
-  display: grid;
-  place-items: center;
-  flex: 0 0 52px;
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  background: #F5ECD9;
-  color: #7A5B1B;
-  text-align: center;
-  line-height: 1.1;
-}
-#vista-finanzas .fin-fecha span { font-size: 9px; font-weight: 700; letter-spacing: .5px; }
-#vista-finanzas .fin-fecha strong { font-size: 17px; }
-#vista-finanzas .fin-fecha-pronto { background: #FBE7C2; color: #8A5A00; }
-#vista-finanzas .fin-fecha-vencido { background: #F8E1DA; color: #A5412A; }
-#vista-finanzas .fin-venc,
-#vista-finanzas .fin-pago {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 0;
-  border-bottom: 1px solid #E8EDE8;
-}
-#vista-finanzas .fin-venc > div:nth-child(2),
-#vista-finanzas .fin-pago-datos { flex: 1 1 auto; min-width: 0; }
-#vista-finanzas .fin-venc strong,
-#vista-finanzas .fin-pago-datos strong { display: block; color: #17291F; font-size: 13px; }
-#vista-finanzas .fin-venc small,
-#vista-finanzas .fin-pago-datos small { display: block; margin-top: 4px; color: #8C9A91; font-size: 11px; line-height: 1.4; }
-#vista-finanzas .fin-venc-monto { color: #17291F; font-size: 13px; font-weight: 700; white-space: nowrap; }
-#vista-finanzas .fin-pago-monto {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex: 0 0 auto;
-}
-#vista-finanzas .fin-pago-monto strong { color: #17291F; font-size: 15px; white-space: nowrap; }
-#vista-finanzas .fin-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 9px;
-  background: #F7F9F7;
-  color: #56645B;
-  font-size: 12px;
-}
-#vista-finanzas .fin-total strong { color: #17291F; font-size: 17px; }
-
-/* --- Diálogos --- */
-#vista-finanzas .fin-dialogo {
-  width: min(480px, calc(100vw - 32px));
-  padding: 22px;
-  border: 1px solid #E3EAE3;
-  border-radius: 14px;
-  background: #fff;
-  color: #26342B;
-  box-shadow: 0 18px 50px rgba(20, 40, 28, .22);
-}
-#vista-finanzas .fin-dialogo::backdrop { background: rgba(24, 40, 31, .45); }
-#vista-finanzas .fin-dialogo h4 { margin: 0; color: #17291F; font-size: 17px; font-weight: 700; }
-#vista-finanzas .fin-dialogo label {
-  display: block;
-  margin: 14px 0 0;
-  color: #35453A;
-  font-size: 11px;
-  font-weight: 600;
-}
-#vista-finanzas .fin-dialogo input,
-#vista-finanzas .fin-dialogo select {
-  display: block;
-  width: 100%;
-  min-height: 42px;
-  margin-top: 6px;
-  padding: 9px 12px;
-  border: 1px solid #D6E1D7;
-  border-radius: 8px;
-  background: #fff;
-  color: #26342B;
-  font-size: 13px;
-}
-#vista-finanzas .fin-fila {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
-}
-#vista-finanzas .fin-dialogo .error { margin: 12px 0 0; }
-#vista-finanzas .fin-dialogo-acciones {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-#vista-finanzas .fin-tipos {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  margin: 14px 0 6px;
-  padding: 4px;
-  border: 1px solid #E3EAE3;
-  border-radius: 10px;
-  background: #F7F9F7;
-}
-#vista-finanzas .fin-tipo {
-  padding: 9px 6px;
-  border: 0;
-  border-radius: 7px;
-  background: none;
-  color: #66756C;
-  font-size: 12px;
-  font-weight: 600;
-}
-#vista-finanzas .fin-tipo.activa {
-  background: #fff;
-  color: #237449;
-  box-shadow: 0 1px 4px rgba(32, 53, 39, .09);
+function hoyAR() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
 }
 
-/* --- Pantallas chicas --- */
-@media (max-width: 960px) {
-  #vista-finanzas .fin-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  #vista-finanzas .fin-dos-columnas { grid-template-columns: 1fr; }
+function fechaMasDias(dias) {
+  const [a, m, d] = hoyAR().split('-').map(Number)
+  const f = new Date(Date.UTC(a, m - 1, d + dias))
+  return f.toISOString().slice(0, 10)
 }
-@media (max-width: 560px) {
-  #vista-finanzas .fin-kpis { grid-template-columns: 1fr; }
-  #vista-finanzas .fin-cuentas { grid-template-columns: 1fr; }
-  #vista-finanzas .fin-fila { grid-template-columns: 1fr; }
-  #vista-finanzas .fin-pago { flex-wrap: wrap; }
-  #vista-finanzas .fin-pago-monto { width: 100%; justify-content: space-between; }
-  #vista-finanzas .fin-cabecera-acciones { width: 100%; }
+
+function diasHasta(iso) {
+  const [a, m, d] = iso.split('-').map(Number)
+  const [a2, m2, d2] = hoyAR().split('-').map(Number)
+  return Math.round((Date.UTC(a, m - 1, d) - Date.UTC(a2, m2 - 1, d2)) / 86400000)
+}
+
+function textoFecha(iso) {
+  const [a, m, d] = iso.split('-')
+  return `${d}/${m}/${a}`
+}
+
+function textoVence(dias) {
+  if (dias < 0) return `Vencido hace ${-dias} ${dias === -1 ? 'día' : 'días'}`
+  if (dias === 0) return 'Vence hoy'
+  if (dias === 1) return 'Vence mañana'
+  return `Vence en ${dias} días`
+}
+
+function nombreLocal(id) {
+  return datos.locales.find(l => l.id === id)?.nombre || 'Local'
+}
+
+function mostrarError(id, mensaje) {
+  const el = $(id)
+  el.textContent = mensaje
+  el.classList.remove('oculto')
+}
+
+function limpiarError(id) {
+  $(id).classList.add('oculto')
+}
+
+function redondear2(n) {
+  return Math.round(n * 100) / 100
+}
+
+// El local sobre el que se opera: el filtro elegido o, si es "Todos", el local del usuario.
+function localOperativo() {
+  return filtroLocal || sesion?.localId || null
+}
+
+// ---------- carga ----------
+async function cargarFinanzas() {
+  limpiarError('fin-error')
+  const [resumen, movimientos, locales] = await Promise.all([
+    supabase.rpc('obtener_resumen_finanzas', { p_local_id: filtroLocal }),
+    supabase.rpc('obtener_movimientos_recientes', { p_local_id: filtroLocal, p_limite: 40 }),
+    supabase.from('locales').select('id, nombre').order('nombre')
+  ])
+  if (resumen.error) {
+    console.error(resumen.error)
+    mostrarError('fin-error', `No se pudo cargar Finanzas: ${resumen.error.message}`)
+    $('fin-kpis').innerHTML = ''
+    return
+  }
+  if (movimientos.error) console.error(movimientos.error)
+  if (locales.error) console.error(locales.error)
+  datos = {
+    resumen: resumen.data,
+    movimientos: movimientos.data || [],
+    locales: locales.data || []
+  }
+  dibujar()
+}
+
+function dibujar() {
+  dibujarKpis()
+  dibujarCuentas()
+  dibujarMovimientos()
+  dibujarVencimientos()
+  dibujarPagos()
+}
+
+// ---------- dibujo ----------
+function dibujarKpis() {
+  const r = datos.resumen
+  const pendientes = r.compromisos.length
+  const proximo = r.compromisos[0]
+  const kpi = (titulo, valor, detalle, clase = '') => `
+    <div class="fin-kpi">
+      <span>${titulo}</span>
+      <strong class="${clase}">${valor}</strong>
+      <small>${detalle}</small>
+    </div>`
+  $('fin-kpis').innerHTML = [
+    kpi('Dinero disponible', fmt(r.dinero_disponible),
+      filtroLocal ? `En las cuentas de ${escapar(nombreLocal(filtroLocal))} y del negocio` : 'En todas las cuentas activas',
+      r.dinero_disponible < 0 ? 'fin-neg' : ''),
+    kpi('Efectivo en caja', fmt(r.efectivo_en_caja), 'Suma de la caja de cada local'),
+    kpi('Pagos pendientes', fmt(r.pagos_pendientes),
+      pendientes
+        ? `${pendientes} ${pendientes === 1 ? 'compromiso' : 'compromisos'} · próximo ${textoFecha(proximo.vencimiento).slice(0, 5)}`
+        : 'No hay pagos pendientes'),
+    kpi('Disponible luego de pagos', fmt(r.disponible_luego_de_pagos), 'Dinero disponible menos lo pendiente',
+      r.disponible_luego_de_pagos < 0 ? 'fin-neg' : '')
+  ].join('')
+
+  const aviso = $('fin-tab-aviso')
+  aviso.textContent = pendientes
+  aviso.classList.toggle('oculto', pendientes === 0)
+}
+
+function dibujarCuentas() {
+  const cuentas = datos.resumen.cuentas
+  $('fin-cuentas').innerHTML = cuentas.length
+    ? cuentas.map(c => `
+      <div class="fin-cuenta">
+        <div>
+          <strong>${escapar(c.nombre)}</strong>
+          <small>${TIPOS_CUENTA[c.tipo] || escapar(c.tipo)}${c.local_id ? '' : ' · todo el negocio'}</small>
+        </div>
+        <div class="fin-cuenta-saldo">
+          <strong class="${c.saldo < 0 ? 'fin-neg' : ''}">${fmt(c.saldo)}</strong>
+          ${c.tipo !== 'caja' ? `<button type="button" class="fin-link" data-ajustar="${c.id}">Ajustar saldo</button>` : ''}
+        </div>
+      </div>`).join('')
+    : '<p class="fin-vacio">Todavía no hay cuentas.</p>'
+}
+
+function describirMovimiento(m) {
+  if (m.tipo === 'gasto') return { signo: -1, cuenta: m.origen, tipo: 'Gasto' }
+  if (m.tipo === 'ingreso') return { signo: 1, cuenta: m.destino, tipo: 'Ingreso' }
+  if (m.tipo === 'traslado') return { signo: 0, cuenta: `${m.origen} → ${m.destino}`, tipo: 'Traslado' }
+  return { signo: m.destino ? 1 : -1, cuenta: m.destino || m.origen, tipo: 'Ajuste' }
+}
+
+function dibujarMovimientos() {
+  const filas = datos.movimientos.map(m => {
+    const d = describirMovimiento(m)
+    const cuando = new Date(m.creado_en).toLocaleString('es-AR', {
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+      timeZone: 'America/Argentina/Buenos_Aires'
+    })
+    const meta = [cuando, m.registrado_por, m.anulado ? `anulado${m.motivo_anulacion ? ': ' + m.motivo_anulacion : ''}` : null]
+      .filter(Boolean).map(escapar).join(' · ')
+    const clase = d.signo < 0 ? 'fin-neg' : d.signo > 0 ? 'fin-pos' : ''
+    const importe = d.signo === 0 ? fmt(m.monto) : `${d.signo > 0 ? '+' : '−'}${fmt(m.monto)}`
+    const anular = !m.anulado && m.tipo !== 'ajuste'
+      ? `<button type="button" class="fin-link fin-link-peligro" data-anular="${m.id}">Anular</button>` : ''
+    return `
+      <tr class="${m.anulado ? 'fin-anulado' : ''}">
+        <td><strong>${escapar(m.concepto)}</strong><small>${meta}</small></td>
+        <td>${d.tipo}</td>
+        <td>${escapar(d.cuenta)}</td>
+        <td class="fin-importe ${clase}">${importe}${anular}</td>
+      </tr>`
+  })
+  $('fin-movimientos').innerHTML = filas.length
+    ? `<div class="fin-tabla-wrap"><table class="fin-tabla">
+         <thead><tr><th>Movimiento</th><th>Tipo</th><th>Cuenta</th><th class="fin-importe">Importe</th></tr></thead>
+         <tbody>${filas.join('')}</tbody></table></div>`
+    : '<p class="fin-vacio">Todavía no hay movimientos.</p>'
+}
+
+function htmlFecha(iso) {
+  const dias = diasHasta(iso)
+  const [, mes, dia] = iso.split('-')
+  const clase = dias < 0 ? 'fin-fecha-vencido' : dias <= 3 ? 'fin-fecha-pronto' : ''
+  return `<div class="fin-fecha ${clase}"><span>${MESES[Number(mes) - 1]}</span><strong>${dia}</strong></div>`
+}
+
+function dibujarVencimientos() {
+  const comp = datos.resumen.compromisos
+  const proximos = comp.slice(0, 4).map(c => `
+    <div class="fin-venc">
+      ${htmlFecha(c.vencimiento)}
+      <div>
+        <strong>${escapar(c.concepto)}</strong>
+        <small>${textoVence(diasHasta(c.vencimiento))}${c.monto_es_estimado ? ' · estimado' : c.pagado > 0 ? ' · pago parcial' : ''}</small>
+      </div>
+      <span class="fin-venc-monto">${fmt(c.saldo)}</span>
+    </div>`).join('')
+  $('fin-vencimientos').innerHTML = comp.length
+    ? `${proximos}<div class="fin-total"><span>Total pendiente</span><strong>${fmt(datos.resumen.pagos_pendientes)}</strong></div>`
+    : '<p class="fin-vacio">No hay pagos pendientes.</p>'
+}
+
+function dibujarPagos() {
+  const comp = datos.resumen.compromisos
+  $('fin-pagos').innerHTML = comp.length
+    ? comp.map(c => {
+      const detalle = [
+        c.proveedor ? escapar(c.proveedor) : null,
+        datos.locales.length > 1 ? escapar(nombreLocal(c.local_id)) : null,
+        c.monto_es_estimado ? 'monto estimado' : (c.pagado > 0 ? `pagaste ${fmt(c.pagado)} de ${fmt(c.monto)}` : null),
+        c.repite === 'mensual' ? 'se repite todos los meses' : null
+      ].filter(Boolean).join(' · ')
+      return `
+        <div class="fin-pago">
+          ${htmlFecha(c.vencimiento)}
+          <div class="fin-pago-datos">
+            <strong>${escapar(c.concepto)}</strong>
+            <small>${textoVence(diasHasta(c.vencimiento))}${detalle ? ' · ' + detalle : ''}</small>
+          </div>
+          <div class="fin-pago-monto">
+            <strong>${fmt(c.saldo)}</strong>
+            <button type="button" class="fin-btn fin-btn-primario" data-pagar="${c.id}">Pagar</button>
+          </div>
+        </div>`
+    }).join('')
+    : '<p class="fin-vacio">No hay pagos pendientes. Cuando una compra quede "A pagar" o cargues un vencimiento, aparece acá.</p>'
+}
+
+// ---------- diálogos ----------
+function cuentasDeLocal(localId) {
+  return datos.resumen.cuentas.filter(c => c.local_id === localId || c.local_id === null)
+}
+
+function llenarCuentas(select, cuentas, seleccion) {
+  select.innerHTML = cuentas
+    .map(c => `<option value="${c.id}">${escapar(c.nombre)} (${fmt(c.saldo)})</option>`).join('')
+  if (seleccion) select.value = seleccion
+}
+
+function llenarLocales(select, conVacio) {
+  const opciones = datos.locales.map(l => `<option value="${l.id}">${escapar(l.nombre)}</option>`)
+  select.innerHTML = (conVacio ? '<option value="">Todo el negocio</option>' : '') + opciones.join('')
+}
+
+function abrirPagar(id) {
+  const c = datos.resumen.compromisos.find(x => x.id === id)
+  if (!c) return
+  pagoActual = c
+  $('pagar-titulo').textContent = c.concepto
+  $('pagar-info').textContent = c.monto_es_estimado
+    ? `Monto estimado ${fmt(c.monto)}. Cargá el monto real de este mes.`
+    : `Saldo pendiente ${fmt(c.saldo)} de ${fmt(c.monto)}${c.pagado > 0 ? ` (ya pagaste ${fmt(c.pagado)})` : ''}. Podés pagar solo una parte.`
+  $('pagar-etiqueta-monto').textContent = c.monto_es_estimado ? 'Monto real' : 'Monto a pagar ahora'
+  $('pagar-monto').value = String(redondear2(c.saldo))
+  if (c.monto_es_estimado) $('pagar-monto').removeAttribute('max')
+  else $('pagar-monto').max = String(redondear2(c.saldo))
+  const cuentas = cuentasDeLocal(c.local_id)
+  llenarCuentas($('pagar-cuenta'), cuentas, cuentas.find(x => x.tipo === 'caja')?.id)
+  $('pagar-fecha').value = hoyAR()
+  limpiarError('pagar-error')
+  $('dlg-pagar').showModal()
+}
+
+function abrirPagoNuevo() {
+  $('pn-concepto').value = ''
+  $('pn-monto').value = ''
+  $('pn-vencimiento').value = fechaMasDias(7)
+  $('pn-repite').value = 'no'
+  llenarLocales($('pn-local'), false)
+  if (localOperativo()) $('pn-local').value = localOperativo()
+  $('pn-local-label').classList.toggle('oculto', datos.locales.length < 2)
+  limpiarError('pn-error')
+  $('dlg-pago-nuevo').showModal()
+}
+
+function ajustarLocalCuenta() {
+  const tipo = $('cu-tipo').value
+  $('cu-local').value = tipo === 'resguardo' ? (localOperativo() || '') : ''
+}
+
+function abrirCuenta() {
+  $('cu-nombre').value = ''
+  $('cu-tipo').value = 'banco'
+  $('cu-saldo').value = '0'
+  llenarLocales($('cu-local'), true)
+  ajustarLocalCuenta()
+  $('cu-local-label').classList.toggle('oculto', datos.locales.length < 2)
+  limpiarError('cu-error')
+  $('dlg-cuenta').showModal()
+}
+
+function abrirAjuste(id) {
+  const c = datos.resumen.cuentas.find(x => x.id === id)
+  if (!c) return
+  ajusteActual = c
+  $('aj-titulo').textContent = `Ajustar saldo · ${c.nombre}`
+  $('aj-info').textContent = `Saldo registrado: ${fmt(c.saldo)}. Cargá el saldo real y la diferencia queda como ajuste.`
+  $('aj-saldo').value = String(redondear2(c.saldo))
+  $('aj-motivo').value = ''
+  limpiarError('aj-error')
+  $('dlg-ajuste').showModal()
+}
+
+const AYUDA_MOVIMIENTO = {
+  gasto: 'Plata que sale del negocio: un servicio, un proveedor, algo puntual.',
+  traslado: 'La plata cambia de lugar y el total no cambia: un depósito, un retiro, pasar a una billetera.',
+  aporte: 'Plata que entra y no es una venta: por ejemplo, un aporte tuyo.'
+}
+
+function elegirTipoMovimiento(tipo) {
+  tipoMovimiento = tipo
+  document.querySelectorAll('.fin-tipo').forEach(b => b.classList.toggle('activa', b.dataset.tipo === tipo))
+  $('mv-ayuda').textContent = AYUDA_MOVIMIENTO[tipo]
+  $('mv-concepto').required = tipo !== 'traslado'
+  $('mv-concepto-texto').textContent = tipo === 'traslado' ? 'Concepto (opcional)' : 'Concepto'
+  $('mv-origen-label').classList.toggle('oculto', tipo === 'aporte')
+  $('mv-destino-label').classList.toggle('oculto', tipo === 'gasto')
+  $('mv-origen-texto').textContent = tipo === 'traslado' ? 'Desde' : 'Pagar con'
+  $('mv-destino-texto').textContent = tipo === 'traslado' ? 'Hacia' : 'Entra a'
+}
+
+function abrirMovimiento() {
+  const cuentas = datos.resumen.cuentas
+  const caja = cuentas.find(c => c.tipo === 'caja' && c.local_id === localOperativo()) || cuentas.find(c => c.tipo === 'caja')
+  llenarCuentas($('mv-origen'), cuentas, caja?.id)
+  llenarCuentas($('mv-destino'), cuentas, cuentas.find(c => c.id !== caja?.id)?.id)
+  $('mv-concepto').value = ''
+  $('mv-monto').value = ''
+  limpiarError('mv-error')
+  elegirTipoMovimiento('gasto')
+  $('dlg-movimiento').showModal()
+}
+
+function cuentaPorId(id) {
+  return datos.resumen.cuentas.find(c => c.id === id)
+}
+
+// ---------- acciones ----------
+async function ejecutar(rpc, parametros, errorId, dialogoId) {
+  const { error } = await supabase.rpc(rpc, parametros)
+  if (error) {
+    mostrarError(errorId, error.message)
+    return false
+  }
+  $(dialogoId).close()
+  await cargarFinanzas()
+  return true
+}
+
+$('form-pagar').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('pagar-error')
+  const monto = redondear2(Number($('pagar-monto').value))
+  if (!(monto > 0)) { mostrarError('pagar-error', 'Ingresá un importe mayor a 0.'); return }
+  if (!pagoActual.monto_es_estimado && monto > redondear2(pagoActual.saldo) + 0.005) {
+    mostrarError('pagar-error', `El pago supera el saldo pendiente (${fmt(pagoActual.saldo)}).`)
+    return
+  }
+  await ejecutar('pagar_compromiso', {
+    p_id: pagoActual.id,
+    p_monto_real: monto,
+    p_cuenta_id: $('pagar-cuenta').value || null,
+    p_fecha: $('pagar-fecha').value || null
+  }, 'pagar-error', 'dlg-pagar')
+})
+
+$('form-pago-nuevo').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('pn-error')
+  const monto = redondear2(Number($('pn-monto').value))
+  if (!(monto > 0)) { mostrarError('pn-error', 'Ingresá un monto estimado mayor a 0.'); return }
+  await ejecutar('crear_compromiso', {
+    p_concepto: $('pn-concepto').value.trim(),
+    p_monto: monto,
+    p_vencimiento: $('pn-vencimiento').value,
+    p_repite: $('pn-repite').value,
+    p_proveedor_id: null,
+    p_local_id: $('pn-local').value || localOperativo()
+  }, 'pn-error', 'dlg-pago-nuevo')
+})
+
+$('form-cuenta').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('cu-error')
+  await ejecutar('crear_cuenta', {
+    p_nombre: $('cu-nombre').value.trim(),
+    p_tipo: $('cu-tipo').value,
+    p_saldo_inicial: Number($('cu-saldo').value) || 0,
+    p_local_id: $('cu-local').value || null
+  }, 'cu-error', 'dlg-cuenta')
+})
+
+$('form-ajuste').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('aj-error')
+  const saldo = Number($('aj-saldo').value)
+  if (Number.isNaN(saldo)) { mostrarError('aj-error', 'Ingresá el saldo real.'); return }
+  await ejecutar('ajustar_saldo', {
+    p_cuenta_id: ajusteActual.id,
+    p_saldo_real: saldo,
+    p_motivo: $('aj-motivo').value.trim() || null
+  }, 'aj-error', 'dlg-ajuste')
+})
+
+$('form-movimiento').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('mv-error')
+  const monto = redondear2(Number($('mv-monto').value))
+  const concepto = $('mv-concepto').value.trim()
+  if (!(monto > 0)) { mostrarError('mv-error', 'Ingresá un importe mayor a 0.'); return }
+
+  if (tipoMovimiento === 'gasto') {
+    const origen = cuentaPorId($('mv-origen').value)
+    await ejecutar('registrar_salida', {
+      p_monto: monto, p_concepto: concepto, p_cuenta_id: origen.id,
+      p_local_id: origen.local_id || localOperativo()
+    }, 'mv-error', 'dlg-movimiento')
+  } else if (tipoMovimiento === 'traslado') {
+    const origen = cuentaPorId($('mv-origen').value)
+    const destino = cuentaPorId($('mv-destino').value)
+    if (origen.id === destino.id) { mostrarError('mv-error', 'El origen y el destino son la misma cuenta.'); return }
+    await ejecutar('registrar_traslado', {
+      p_monto: monto, p_cuenta_destino_id: destino.id, p_cuenta_origen_id: origen.id,
+      p_concepto: concepto || null, p_local_id: origen.local_id || destino.local_id || localOperativo()
+    }, 'mv-error', 'dlg-movimiento')
+  } else {
+    const destino = cuentaPorId($('mv-destino').value)
+    await ejecutar('registrar_ingreso', {
+      p_monto: monto, p_concepto: concepto, p_cuenta_id: destino.id, p_categoria: 'aporte',
+      p_local_id: destino.local_id || localOperativo()
+    }, 'mv-error', 'dlg-movimiento')
+  }
+})
+
+// ---------- eventos de la página ----------
+function elegirPanel(panel) {
+  document.querySelectorAll('.fin-tab').forEach(t => t.classList.toggle('activa', t.dataset.panel === panel))
+  $('fin-panel-cuentas').classList.toggle('oculto', panel !== 'cuentas')
+  $('fin-panel-pagos').classList.toggle('oculto', panel !== 'pagos')
+}
+
+document.querySelectorAll('.fin-tab').forEach(t => t.addEventListener('click', () => elegirPanel(t.dataset.panel)))
+$('btn-ver-pagos').addEventListener('click', () => elegirPanel('pagos'))
+$('btn-nuevo-pago').addEventListener('click', abrirPagoNuevo)
+$('btn-nueva-cuenta').addEventListener('click', abrirCuenta)
+$('btn-registrar-movimiento').addEventListener('click', abrirMovimiento)
+$('cu-tipo').addEventListener('change', ajustarLocalCuenta)
+document.querySelectorAll('.fin-tipo').forEach(b => b.addEventListener('click', () => elegirTipoMovimiento(b.dataset.tipo)))
+document.querySelectorAll('[data-cerrar]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()))
+
+// Botones que se dibujan dinámicamente (se atienden desde el documento).
+document.addEventListener('click', async e => {
+  const pagar = e.target.closest('[data-pagar]')
+  if (pagar) { abrirPagar(pagar.dataset.pagar); return }
+  const ajustar = e.target.closest('[data-ajustar]')
+  if (ajustar) { abrirAjuste(ajustar.dataset.ajustar); return }
+  const anular = e.target.closest('[data-anular]')
+  if (anular) {
+    const motivo = window.prompt('¿Por qué anulás este movimiento? (queda registrado)')
+    if (!motivo || !motivo.trim()) return
+    anular.disabled = true
+    const { error } = await supabase.rpc('anular_movimiento', { p_id: anular.dataset.anular, p_motivo: motivo.trim() })
+    if (error) {
+      anular.disabled = false
+      window.alert(error.message)
+      return
+    }
+    await cargarFinanzas()
+  }
+})
+
+$('btn-salir').addEventListener('click', async () => {
+  await supabase.auth.signOut()
+  window.location.href = 'admin-v2.html'
+})
+
+// ---------- arranque (al final, cuando todo lo de arriba ya está definido) ----------
+sesion = await obtenerSesionActual({ forzarRecarga: true })
+if (!sesion || sesion.rol !== 'dueno') {
+  window.location.href = 'admin-v2.html'
+} else {
+  aplicarVisibilidadSidebarPorRol(sesion.rol)
+  vista.classList.remove('oculto')
+  renderizarSelectorLocal($('contenedor-selector-local'), sesion.rol)
+  cargarFinanzas()
 }
