@@ -217,9 +217,9 @@ const elTotalSesion = document.getElementById('total-sesion-compra')
 const btnFinalizarCarga = document.getElementById('btn-finalizar-carga')
 
 // --- Pago de la compra: una caja de monto por cada forma de pago ---
-// Hoy: Efectivo (sale de la caja) y A pagar (queda como deuda con vencimiento). Las cajas están
-// ligadas: lo que se saca de una pasa a la otra, así siempre suman el total. Cuando Finanzas permita
-// cargar cuentas, "Transferencia" (y otros medios) se suman como una fila más.
+// Efectivo (sale de la caja o del resguardo), una fila por cada cuenta del negocio (banco, billetera)
+// y A pagar (queda como deuda con vencimiento). "A pagar" siempre es lo que falta para llegar al total.
+// Si se escribe en A pagar, se ajusta el efectivo. Así lo que se paga siempre suma el total.
 const elPagoEfectivo = document.getElementById('pago-efectivo')
 const elPagoAPagar = document.getElementById('pago-apagar')
 const elPagoOrigen = document.getElementById('pago-efectivo-origen')
@@ -268,19 +268,31 @@ function reiniciarPanelPago() {
   elPagoEfectivo.value = textoMonto(total)
   elPagoAPagar.value = ''
   elPagoOrigen.value = ''
+  document.querySelectorAll('.pago-cuenta-monto').forEach(i => { i.value = '' })
   elPagoVencimiento.value = fechaMasDias(7)
   elPagoError.classList.add('oculto')
   actualizarVencimientoPago()
 }
 
-elPagoEfectivo.addEventListener('input', () => {
-  elPagoAPagar.value = textoMonto(totalSesion() - (Number(elPagoEfectivo.value) || 0))
+function montoCuentas() {
+  return redondear2([...document.querySelectorAll('.pago-cuenta-monto')]
+    .reduce((acc, i) => acc + (Number(i.value) || 0), 0))
+}
+
+// Al escribir el efectivo, lo que falta pasa a "A pagar".
+function recalcularAPagar() {
+  elPagoAPagar.value = textoMonto(totalSesion() - (Number(elPagoEfectivo.value) || 0) - montoCuentas())
   actualizarVencimientoPago()
-})
-elPagoAPagar.addEventListener('input', () => {
-  elPagoEfectivo.value = textoMonto(totalSesion() - (Number(elPagoAPagar.value) || 0))
+}
+
+// Al escribir una transferencia, el efectivo baja solo (y "A pagar" se respeta tal como está).
+function recalcularEfectivo() {
+  elPagoEfectivo.value = textoMonto(totalSesion() - montoCuentas() - (Number(elPagoAPagar.value) || 0))
   actualizarVencimientoPago()
-})
+}
+
+elPagoEfectivo.addEventListener('input', recalcularAPagar)
+elPagoAPagar.addEventListener('input', recalcularEfectivo)
 
 // El efectivo puede salir de la caja (lo normal) o del efectivo resguardado. Esa opción solo aparece
 // si hay plata resguardada; si no, el panel queda como siempre, sin preguntas.
@@ -296,6 +308,21 @@ async function cargarOrigenesEfectivo() {
     elPagoOrigen.appendChild(opcion)
   })
   elPagoOrigenLabel.classList.toggle('oculto', elPagoOrigen.options.length < 2)
+
+  // Una fila por cada banco o billetera cargada en Finanzas (del local o de todo el negocio).
+  const contenedor = document.getElementById('pago-cuentas')
+  contenedor.innerHTML = ''
+  ;(data.cuentas || [])
+    .filter(c => (c.tipo === 'banco' || c.tipo === 'billetera') && (c.local_id === null || c.local_id === sesion.localId))
+    .forEach(c => {
+      const fila = document.createElement('label')
+      fila.className = 'compra-pago-forma'
+      fila.innerHTML = `
+        <span>${c.tipo === 'banco' ? 'Transferencia' : 'Billetera virtual'} <small>${escaparTextoHTML(c.nombre)}</small></span>
+        <input type="number" class="pago-cuenta-monto" data-cuenta="${c.id}" min="0" step="any" inputmode="decimal" placeholder="0">`
+      fila.querySelector('input').addEventListener('input', recalcularEfectivo)
+      contenedor.appendChild(fila)
+    })
 }
 if (sesion?.rol === 'dueno') cargarOrigenesEfectivo()
 
@@ -366,12 +393,24 @@ btnFinalizarCarga.addEventListener('click', async () => {
   const efectivo = redondear2(Number(elPagoEfectivo.value) || 0)
   const aPagar = redondear2(Number(elPagoAPagar.value) || 0)
   const vencimiento = elPagoVencimiento.value
+  const entradasCuentas = [...document.querySelectorAll('.pago-cuenta-monto')]
+  const cuentasPago = entradasCuentas
+    .map(i => ({
+      id: i.dataset.cuenta,
+      nombre: i.closest('label').querySelector('small').textContent,
+      monto: redondear2(Number(i.value) || 0)
+    }))
+    .filter(c => c.monto > 0)
   elPagoError.classList.add('oculto')
 
   if (!facturaActualId) { mostrarErrorPago('No hay una compra abierta para cerrar.'); return }
-  if (efectivo < 0 || aPagar < 0) { mostrarErrorPago('Los importes no pueden ser negativos.'); return }
-  if (Math.abs(efectivo + aPagar - total) > 0.009) {
-    mostrarErrorPago(`Efectivo y A pagar tienen que sumar el total (${formatoMoneda(total)}).`)
+  if (efectivo < 0 || aPagar < 0 || entradasCuentas.some(i => Number(i.value) < 0)) {
+    mostrarErrorPago('Los importes no pueden ser negativos.')
+    return
+  }
+  const sumaCuentas = redondear2(cuentasPago.reduce((acc, c) => acc + c.monto, 0))
+  if (Math.abs(efectivo + sumaCuentas + aPagar - total) > 0.009) {
+    mostrarErrorPago(`Lo que se paga tiene que sumar el total (${formatoMoneda(total)}).`)
     return
   }
   const cuentaEfectivo = efectivo > 0 ? (elPagoOrigen.value || null) : null
@@ -389,17 +428,19 @@ btnFinalizarCarga.addEventListener('click', async () => {
 
   const partes = []
   if (efectivo > 0) partes.push(`${formatoMoneda(efectivo)} en efectivo${cuentaEfectivo ? ' (del resguardo)' : ''}`)
+  cuentasPago.forEach(c => partes.push(`${formatoMoneda(c.monto)} desde ${c.nombre}`))
   if (aPagar > 0) partes.push(`${formatoMoneda(aPagar)} a pagar el ${textoFecha(vencimiento)}`)
   const detalle = partes.join(' y ')
   if (!confirm(`¿Cerrar esta compra con ${comprasSesion.length} producto(s) por un total de ${elTotalSesion.textContent}?\nPago: ${detalle}.`)) return
 
   btnFinalizarCarga.disabled = true
-  const { data, error } = await supabase.rpc('registrar_pago_compra', {
+  const pagos = []
+  if (efectivo > 0) pagos.push({ forma: 'efectivo', monto: efectivo, ...(cuentaEfectivo ? { cuenta_id: cuentaEfectivo } : {}) })
+  cuentasPago.forEach(c => pagos.push({ forma: 'cuenta', cuenta_id: c.id, monto: c.monto }))
+  if (aPagar > 0) pagos.push({ forma: 'a_pagar', monto: aPagar, vencimiento })
+  const { data, error } = await supabase.rpc('registrar_pago_compra_mixto', {
     p_factura_id: facturaActualId,
-    p_efectivo: efectivo,
-    p_resto_cuenta_id: null,
-    p_vencimiento: aPagar > 0 ? vencimiento : null,
-    p_efectivo_cuenta_id: cuentaEfectivo
+    p_pagos: pagos
   })
   btnFinalizarCarga.disabled = false
 
