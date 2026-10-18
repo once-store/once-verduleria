@@ -622,7 +622,12 @@ function detalleLineaCarrito(key, cantidadEnCarrito) {
 // UNA línea), un combo junta varios productos distintos a un precio cerrado
 // -- por eso no se puede resolver mirando un producto solo, hay que mirar
 // el carrito entero. Se calcula una sola vez acá y lo reusan totalCarrito(),
-// renderCarrito() y confirmarPedido() -- mismo criterio que precioVidriera().
+// y renderCarrito() -- mismo criterio que precioVidriera().
+//
+// OJO: hoy esto solo afecta lo que se MUESTRA en el carrito. El total que se
+// cobra lo calcula la base en checkout_pedido(), y todavía NO conoce los combos.
+// No activar ningún combo hasta que la base los calcule también, o el cliente
+// vería un total y pagaría otro.
 function ajusteCombosCarrito() {
   const cantidadPorProducto = {}
   Object.entries(carrito).forEach(([key, cant]) => {
@@ -687,32 +692,6 @@ function ajusteCombosCarrito() {
     })
 
   return { ahorro, combosArmados, descuentoPorProducto }
-}
-
-// Reparte el descuento de los combos entre las líneas reales de pedido_items
-// que correspondan a cada producto (si un producto tiene más de una línea
-// -- por ejemplo, dos lotes distintos en el carrito -- se reparte entre
-// ellas a prorrata de su propio subtotal).
-function aplicarDescuentoCombosAItems(items) {
-  const { descuentoPorProducto } = ajusteCombosCarrito()
-  if (Object.keys(descuentoPorProducto).length === 0) return items
-
-  return items.map(item => {
-    const descuentoProducto = descuentoPorProducto[item.producto_id]
-    if (!descuentoProducto) return item
-
-    const lineasDelProducto = items.filter(i => i.producto_id === item.producto_id)
-    const totalProducto = lineasDelProducto.reduce((acc, i) => acc + i.subtotal, 0)
-    if (totalProducto === 0) return item
-
-    const parte = descuentoProducto * (item.subtotal / totalProducto)
-    const nuevoSubtotal = Math.max(0, item.subtotal - parte)
-    return {
-      ...item,
-      subtotal: nuevoSubtotal,
-      precio_unitario: item.cantidad > 0 ? nuevoSubtotal / item.cantidad : item.precio_unitario
-    }
-  })
 }
 
 function totalCarrito() {
@@ -831,6 +810,35 @@ document.getElementById('btn-confirmar-combinado').addEventListener('click', () 
 // un segundo click no hace nada.
 let procesandoPago = false
 
+// El navegador solo le dice a la base QUÉ pidió el cliente (qué lote o presentación
+// y cuánta cantidad). Los precios, las promociones, el stock y el total los calcula
+// la base dentro de checkout_pedido(), en una sola operación -- así lo que se
+// muestra, lo que se cobra y lo que queda registrado sale siempre de la misma cuenta,
+// y nadie puede alterar un precio desde el navegador.
+function armarItemsCheckout() {
+  return Object.entries(carrito).map(([key, cant]) => {
+    const d = detalleLineaCarrito(key, cant)
+    if (!d) return null
+    return d.presentacion
+      ? { presentacion_id: d.presentacion.id, cantidad: cant }
+      : { lote_id: d.producto.id, cantidad: cant }
+  }).filter(Boolean)
+}
+
+function mensajeErrorCheckout(error) {
+  const texto = error?.message || ''
+  if (texto.includes('stock')) {
+    return 'Uno de los productos ya no tiene stock suficiente. Ajustá la cantidad y probá de nuevo.'
+  }
+  if (texto.includes('ya fue procesado')) {
+    return 'Este pedido ya fue procesado. Volvé al inicio y armá un pedido nuevo.'
+  }
+  if (texto.includes('monto en efectivo')) {
+    return 'El monto en efectivo tiene que ser mayor a $0 y no superar el total del pedido.'
+  }
+  return 'No se pudo confirmar el pedido. Probá de nuevo.'
+}
+
 async function confirmarPedido(metodo, montoEfectivo) {
   if (!pedidoActualId) {
     alert('Todavía no agregaste nada al carrito.')
@@ -840,50 +848,19 @@ async function confirmarPedido(metodo, montoEfectivo) {
   procesandoPago = true
 
   try {
-    const items = aplicarDescuentoCombosAItems(Object.entries(carrito).map(([key, cant]) => {
-      const d = detalleLineaCarrito(key, cant)
-      if (!d) return null
-      const precioUnitario = d.presentacion
-        ? d.presentacion.precio_venta / d.presentacion.cantidad_unidades
-        : precioPorCantidad(d.producto, cant)
-      return {
-        pedido_id: pedidoActualId,
-        producto_id: d.producto.producto_id,
-        // Las presentaciones (Huevo · Maple, etc.) todavía no vienen de un
-        // lote puntual en el carrito -- por ahora esa parte del stock sigue
-        // sin descontarse sola, igual que antes de este cambio.
-        lote_id: d.presentacion ? null : d.producto.id,
-        cantidad: d.cantidadUnidadesBase,
-        precio_unitario: precioUnitario,
-        subtotal: d.totalLinea
-      }
-    }).filter(Boolean))
-
-    // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
-    // doble click, un método que falló y se probó con otro), primero limpiamos
-    // cualquier item que haya quedado de un intento anterior -- si no, se acumulan
-    // y el pedido termina pidiendo mucho más de lo que el cliente puso en el carrito.
-    await supabase.from('pedido_items').delete().eq('pedido_id', pedidoActualId)
-
-    const { error: errorItems } = await supabase.from('pedido_items').insert(items)
-    if (errorItems) {
-      alert('Hubo un problema al cargar los productos. Probá de nuevo.')
-      console.error(errorItems)
-      return
-    }
-
-    const { data: total, error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
+    // checkout_pedido es seguro de repetir: si el pedido ya quedó confirmado con este
+    // mismo método no vuelve a cargar productos ni a descontar stock (doble click,
+    // reintentos), y si ya estaba esperando Mercado Pago permite cambiar de método.
+    const { data: total, error: errorCheckout } = await supabase.rpc('checkout_pedido', {
       p_pedido_id: pedidoActualId,
+      p_items: armarItemsCheckout(),
       p_metodo: metodo,
       p_monto_efectivo: metodo === 'combinado' ? montoEfectivo : null
     })
 
-    if (errorConfirmar) {
-      const mensaje = errorConfirmar.message?.includes('stock')
-        ? 'Uno de los productos ya no tiene stock suficiente. Ajustá la cantidad y probá de nuevo.'
-        : 'No se pudo confirmar el pedido. Probá de nuevo.'
-      alert(mensaje)
-      console.error(errorConfirmar)
+    if (errorCheckout) {
+      alert(mensajeErrorCheckout(errorCheckout))
+      console.error(errorCheckout)
       return
     }
 
@@ -900,8 +877,9 @@ async function confirmarPedido(metodo, montoEfectivo) {
 // --- Pago con Mercado Pago ---
 // A diferencia de los otros métodos, acá no mostramos la pantalla de "esperando":
 // mandamos al cliente directo a Mercado Pago a pagar, y vuelve a nuestras páginas
-// de éxito/fallo/pendiente. El pedido queda registrado con estado "pendiente_mp"
-// pendiente de confirmación manual desde el panel admin (por ahora).
+// de éxito/fallo/pendiente. El pedido queda con estado "pendiente_mp" y se confirma
+// solo cuando Mercado Pago avisa (función mp-webhook); si algo falla, se puede
+// confirmar a mano desde el panel admin.
 async function pagarConMercadoPago() {
   if (!pedidoActualId) {
     alert('Todavía no agregaste nada al carrito.')
@@ -911,77 +889,21 @@ async function pagarConMercadoPago() {
   procesandoPago = true
 
   try {
-    const items = aplicarDescuentoCombosAItems(Object.entries(carrito).map(([key, cant]) => {
-      const d = detalleLineaCarrito(key, cant)
-      if (!d) return null
-      const precioUnitario = d.presentacion
-        ? d.presentacion.precio_venta / d.presentacion.cantidad_unidades
-        : precioPorCantidad(d.producto, cant)
-      return {
-        pedido_id: pedidoActualId,
-        producto_id: d.producto.producto_id,
-        lote_id: d.presentacion ? null : d.producto.id,
-        cantidad: d.cantidadUnidadesBase,
-        precio_unitario: precioUnitario,
-        subtotal: d.totalLinea
-      }
-    }).filter(Boolean))
-
-    // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
-    // doble click, un método que falló y se probó con otro), primero limpiamos
-    // cualquier item que haya quedado de un intento anterior -- si no, se acumulan
-    // y el pedido termina pidiendo mucho más de lo que el cliente puso en el carrito.
-    await supabase.from('pedido_items').delete().eq('pedido_id', pedidoActualId)
-
-    const { error: errorItems } = await supabase.from('pedido_items').insert(items)
-    if (errorItems) {
-      alert('Hubo un problema al cargar los productos. Probá de nuevo.')
-      console.error(errorItems)
-      return
-    }
-
-    const { error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
+    const { error: errorCheckout } = await supabase.rpc('checkout_pedido', {
       p_pedido_id: pedidoActualId,
-      p_metodo: 'mercado_pago', // <-- CORREGIDO (antes decía 'mercadopago', sin guión bajo)
+      p_items: armarItemsCheckout(),
+      p_metodo: 'mercado_pago',
       p_monto_efectivo: null
     })
 
-    if (errorConfirmar) {
-      const mensaje = errorConfirmar.message?.includes('stock')
-        ? 'Uno de los productos ya no tiene stock suficiente. Ajustá la cantidad y probá de nuevo.'
-        : 'No se pudo confirmar el pedido. Probá de nuevo.'
-      alert(mensaje)
-      console.error(errorConfirmar)
+    if (errorCheckout) {
+      alert(mensajeErrorCheckout(errorCheckout))
+      console.error(errorCheckout)
       return
     }
 
-    // Un solo ítem por línea con cantidad 1 (evita problemas con Mercado Pago
-    // y cantidades fraccionadas, como 1.5 kg de algo)
-    const itemsParaMP = Object.entries(carrito).map(([key, cant]) => {
-      const d = detalleLineaCarrito(key, cant)
-      if (!d) return null
-      const nombre = d.presentacion
-        ? `${d.nombreMostrado} x${cant}`
-        : (d.producto.tipo === 'peso' ? `${d.producto.nombre} (${cant} kg)` : d.producto.nombre)
-      return { nombre, cantidad: 1, precioUnitario: d.totalLinea }
-    }).filter(Boolean)
-
-    // El combo se resuelve mirando el carrito completo, no una línea sola --
-    // acá se ve como un ítem aparte, con el ahorro en negativo, en vez de
-    // repartirse entre las líneas (que ya se hizo para lo que se guarda en
-    // pedido_items, arriba). El recargo de Mercado Pago (hoy 5%) lo calcula
-    // solo la función crear-preferencia-pago del lado del servidor -- no hay
-    // que sumarlo acá, y si algún día cambia el %, se ajusta ahí, no en este
-    // archivo.
-    const { combosArmados } = ajusteCombosCarrito()
-    combosArmados.forEach(c => {
-      itemsParaMP.push({
-        nombre: `Descuento combo: ${c.nombre}${c.veces > 1 ? ` x${c.veces}` : ''}`,
-        cantidad: 1,
-        precioUnitario: -c.ahorro
-      })
-    })
-
+    // A la función de pago solo se le dice qué pedido es: el importe, el recargo
+    // de Mercado Pago (hoy 5%) y el detalle los saca ella misma de la base.
     let initPoint
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/crear-preferencia-pago`, {
@@ -991,7 +913,7 @@ async function pagarConMercadoPago() {
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'apikey': SUPABASE_ANON_KEY
         },
-        body: JSON.stringify({ items: itemsParaMP, pedidoId: pedidoActualId })
+        body: JSON.stringify({ pedidoId: pedidoActualId })
       })
       const data = await resp.json()
       if (!resp.ok || !data.init_point) {
@@ -999,8 +921,11 @@ async function pagarConMercadoPago() {
       }
       initPoint = data.init_point
     } catch (err) {
+      // El carrito se conserva: se puede reintentar (genera otro link para el
+      // mismo pedido, sin volver a cargar productos ni descontar stock) o
+      // elegir otro medio de pago.
       console.error(err)
-      alert('No se pudo generar el link de pago de Mercado Pago. Probá con otro medio.')
+      alert('No se pudo generar el link de pago de Mercado Pago. Probá de nuevo o elegí otro medio.')
       return
     }
 
