@@ -28,12 +28,15 @@
   .icon {
     width: 72px;
     height: 72px;
-    background: #2e7d32;
+    background: #f9a825;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
+  }
+  .icon.ok {
+    background: #2e7d32;
   }
   .icon svg {
     width: 36px;
@@ -50,6 +53,12 @@
     line-height: 1.5;
     margin: 0 0 24px;
   }
+  .acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
   a.btn {
     display: inline-block;
     background: #2e7d32;
@@ -59,19 +68,102 @@
     border-radius: 8px;
     font-weight: 600;
     font-size: 15px;
+    border: 2px solid #2e7d32;
+  }
+  a.btn.secundario {
+    background: #fff;
+    color: #2e7d32;
+  }
+  .oculto {
+    display: none !important;
   }
 </style>
 </head>
 <body>
   <div class="card">
-    <div class="icon">
+    <div class="icon" id="icono">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
+        <circle cx="12" cy="12" r="9"></circle>
+        <polyline points="12 7 12 12 15 14"></polyline>
       </svg>
     </div>
-    <h1>¡Gracias por tu compra!</h1>
-    <p>Recibimos tu pedido en <strong>once</strong>. Estamos verificando tu pago con Mercado Pago y, apenas lo confirmemos, tu pedido va a estar listo.</p>
-    <a class="btn" href="./index.html">Volver al catálogo</a>
+    <h1 id="titulo">¡Gracias por tu compra!</h1>
+    <p id="mensaje">Recibimos tu pedido en <strong>once</strong>. Estamos verificando tu pago con Mercado Pago y, apenas lo confirmemos, tu pedido va a estar listo.</p>
+    <div class="acciones">
+      <a class="btn oculto" id="btn-ticket" href="#">Ver mi ticket</a>
+      <a class="btn secundario" href="./index.html">Volver al catálogo</a>
+    </div>
   </div>
+
+<script>
+(function () {
+  var SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M';
+  var INTERVALO_MS = 3000;
+  var MAX_INTENTOS = 60; // unos 3 minutos
+
+  var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var pedidoId = new URLSearchParams(window.location.search).get('pedido');
+
+  var elIcono = document.getElementById('icono');
+  var elTitulo = document.getElementById('titulo');
+  var elMensaje = document.getElementById('mensaje');
+  var elTicket = document.getElementById('btn-ticket');
+
+  var ICONO_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+  function mostrarConfirmado() {
+    elIcono.className = 'icon ok';
+    elIcono.innerHTML = ICONO_CHECK;
+    elTitulo.textContent = '¡Pago confirmado!';
+    elMensaje.innerHTML = 'Tu pago en <strong>once</strong> se confirmó. En breve tu pedido va a estar listo.';
+    elTicket.href = 'ticket.html?pedido=' + encodeURIComponent(pedidoId);
+    elTicket.classList.remove('oculto');
+  }
+
+  function mostrarCancelado() {
+    elTitulo.textContent = 'Tu pedido figura como cancelado';
+    elMensaje.textContent = 'Si ya pagaste, comunicate con el local para que lo revisemos.';
+  }
+
+  function mostrarSinConfirmar() {
+    elMensaje.innerHTML = 'Todavía estamos verificando tu pago. Puede demorar unos minutos. Si ya pagaste, tu pedido queda registrado y el local lo va a confirmar.';
+  }
+
+  async function estadoDelPedido() {
+    try {
+      var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/obtener_ticket', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ p_pedido_id: pedidoId })
+      });
+      if (!resp.ok) return null;
+      var filas = await resp.json();
+      return filas && filas.length ? filas[0].estado : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function vigilar() {
+    elMensaje.innerHTML = 'Recibimos tu pedido en <strong>once</strong>. Estamos verificando tu pago con Mercado Pago; esta pantalla se actualiza sola cuando se confirme.';
+    for (var i = 0; i < MAX_INTENTOS; i++) {
+      var estado = await estadoDelPedido();
+      if (estado === 'pagado') { mostrarConfirmado(); return; }
+      if (estado === 'cancelado') { mostrarCancelado(); return; }
+      await new Promise(function (r) { setTimeout(r, INTERVALO_MS); });
+    }
+    mostrarSinConfirmar();
+  }
+
+  if (pedidoId && UUID.test(pedidoId)) {
+    vigilar();
+  }
+})();
+</script>
 </body>
 </html>
