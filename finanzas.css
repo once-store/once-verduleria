@@ -68,6 +68,7 @@
   text-decoration: underline;
 }
 #vista-finanzas .fin-link-peligro { color: #B2472F; }
+#vista-finanzas .fin-pago-monto .fin-link { margin: 0; white-space: nowrap; }
 
 /* --- Resumen --- */
 #vista-finanzas .fin-kpis {
