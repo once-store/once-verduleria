@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-14">
-<link rel="stylesheet" href="finanzas.css?v=finanzas-ui-1">
+<link rel="stylesheet" href="finanzas.css?v=finanzas-ui-2">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -193,16 +193,34 @@
       <label><span id="pagar-etiqueta-monto">Monto a pagar ahora</span>
         <input type="number" id="pagar-monto" min="0" step="any" inputmode="decimal" required>
       </label>
+      <label id="pagar-resto-label" class="oculto"><span id="pagar-resto-texto">El resto vence</span>
+        <input type="date" id="pagar-resto-fecha">
+      </label>
       <label>Pagar con
         <select id="pagar-cuenta"></select>
       </label>
-      <label>Fecha
+      <label>Fecha del pago
         <input type="date" id="pagar-fecha" required>
       </label>
       <p id="pagar-error" class="error oculto"></p>
       <div class="fin-dialogo-acciones">
         <button type="button" class="fin-btn" data-cerrar>Cancelar</button>
         <button type="submit" class="fin-btn fin-btn-primario">Pagar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-fecha" class="fin-dialogo">
+    <form id="form-fecha">
+      <h4 id="fe-titulo">Cambiar vencimiento</h4>
+      <p id="fe-info" class="fin-sub"></p>
+      <label>Nueva fecha de vencimiento
+        <input type="date" id="fe-fecha" required>
+      </label>
+      <p id="fe-error" class="error oculto"></p>
+      <div class="fin-dialogo-acciones">
+        <button type="button" class="fin-btn" data-cerrar>Cancelar</button>
+        <button type="submit" class="fin-btn fin-btn-primario">Guardar fecha</button>
       </div>
     </form>
   </dialog>
