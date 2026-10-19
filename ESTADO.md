@@ -19,9 +19,9 @@
 - Leer SOLO este archivo al empezar. No releer ni re-verificar lo marcado ✅.
 - Hacer solo lo pedido. Nada de auditorías ni investigaciones extra sin preguntar antes.
 - Verificar a fondo SOLO si toca dinero, seguridad o la base de datos. Lo demás: un chequeo corto.
-- Un chat nuevo por tarea, empezando con el texto de "ARRANQUE" (sección 8). Los chats larguísimos gastan más límite.
+- Un chat nuevo por tarea, empezando con el texto de "ARRANQUE" (sección 9). Los chats larguísimos gastan más límite.
 - Respuestas cortas. No narrar cada paso ("voy a revisar…"): hacerlo y dar el resultado.
-- Antes de trabajar, mirar la BITÁCORA: si otra cuenta tocó el mismo archivo hace poco, avisar al dueño.
+- Antes de trabajar, mirar EN CURSO y la BITÁCORA: si otra cuenta reservó o tocó lo mismo hace poco, avisar al dueño. Después, anotar la propia reserva en EN CURSO.
 
 **Técnicas:**
 - Cambios en la base: probarlos primero en una transacción que se deshace sola, después aplicar.
@@ -77,7 +77,23 @@
 
 ---
 
-## 5. PRÓXIMO PASO
+## 5. EN CURSO (quién está trabajando en qué AHORA)
+
+> **Antes de empezar una tarea, anotá una línea acá** ("estoy trabajando en esto"). Es una reserva provisional.
+> Al terminar, cambiá el estado a **TERMINADA (falta OK del dueño)**. Cuando el dueño la acepta,
+> borrá la línea de acá y agregala a la BITÁCORA (y a "Hecho y verificado" si corresponde).
+> Si una línea lleva más de 12 horas sin novedades, considerala abandonada y preguntale al dueño antes de retomarla.
+> Si ya hay una línea sobre el mismo archivo o tema, NO empieces: avisale al dueño.
+
+| Cuenta | Tarea | Archivos que toca | Desde | Estado |
+|---|---|---|---|---|
+| (ninguna por ahora) | | | | |
+
+Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a la BITÁCORA).
+
+---
+
+## 6. PRÓXIMO PASO
 
 **Elegir UNA tarea**, en este orden, según lo que el dueño pueda hacer ahora:
 - Si tiene una persona para pagar: pendiente 1 (prueba real de MP).
@@ -85,15 +101,16 @@
 
 ---
 
-## 6. BITÁCORA (más reciente arriba; una línea por trabajo)
+## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
+- **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
 - **19/10** — Revisión de seguridad de la base (solo lectura): hallazgos anotados en pendiente 2. Se pidió este archivo para sincronizar las 3 cuentas.
 - **18/10** — Verificado en producción el `app.js` nuevo (pedido #93). Las pruebas anteriores (#90, #91, #92) habían usado el `app.js` viejo por caché del navegador.
 - **17/10** — Credenciales de producción de MP activadas y token cargado. Compra real #88 aprobada. Creada y desplegada `checkout_pedido` (columnas `mp_monto_cobrado` y `mp_payment_id`). Desplegadas `crear-preferencia-pago` v5/v6 y `mp-webhook`. Nueva `pago-exitoso.html` (hubo un error del botón visible; corregido). Nuevo `app.js`.
 
 ---
 
-## 7. REPARTO DE TAREAS (PROPUESTA: falta confirmación del dueño)
+## 8. REPARTO DE TAREAS (PROPUESTA: falta confirmación del dueño)
 
 | Cuenta | Se ocupa de | Archivos típicos |
 |---|---|---|
@@ -108,7 +125,7 @@ Reglas del reparto:
 
 ---
 
-## 8. ARRANQUE (texto para pegar al empezar un chat nuevo, en cualquier cuenta)
+## 9. ARRANQUE (texto para pegar al empezar un chat nuevo, en cualquier cuenta)
 
 ```
 Trabajamos en el proyecto "once". Leé https://raw.githubusercontent.com/once-store/once-verduleria/master/ESTADO.md
