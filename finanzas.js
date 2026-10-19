@@ -15,6 +15,7 @@ const filtroLocal = obtenerLocalFiltroActivo() // null = todos los locales
 let datos = { resumen: null, movimientos: [], locales: [] }
 let sesion = null
 let pagoActual = null
+let fechaActual = null
 let ajusteActual = null
 let tipoMovimiento = 'gasto'
 
@@ -64,6 +65,11 @@ function textoVence(dias) {
   if (dias === 0) return 'Vence hoy'
   if (dias === 1) return 'Vence mañana'
   return `Vence en ${dias} días`
+}
+
+function textoPostergado(c) {
+  return c.vencimiento_original && c.vencimiento_original !== c.vencimiento
+    ? `antes vencía el ${textoFecha(c.vencimiento_original)}` : null
 }
 
 function nombreLocal(id) {
@@ -216,7 +222,7 @@ function dibujarVencimientos() {
       ${htmlFecha(c.vencimiento)}
       <div>
         <strong>${escapar(c.concepto)}</strong>
-        <small>${textoVence(diasHasta(c.vencimiento))}${c.monto_es_estimado ? ' · estimado' : c.pagado > 0 ? ' · pago parcial' : ''}</small>
+        <small>${textoVence(diasHasta(c.vencimiento))}${c.monto_es_estimado ? ' · estimado' : c.pagado > 0 ? ' · pago parcial' : ''}${textoPostergado(c) ? ' · ' + textoPostergado(c) : ''}</small>
       </div>
       <span class="fin-venc-monto">${fmt(c.saldo)}</span>
     </div>`).join('')
@@ -233,6 +239,7 @@ function dibujarPagos() {
         c.proveedor ? escapar(c.proveedor) : null,
         datos.locales.length > 1 ? escapar(nombreLocal(c.local_id)) : null,
         c.monto_es_estimado ? 'monto estimado' : (c.pagado > 0 ? `pagaste ${fmt(c.pagado)} de ${fmt(c.monto)}` : null),
+        textoPostergado(c),
         c.repite === 'mensual' ? 'se repite todos los meses' : null
       ].filter(Boolean).join(' · ')
       return `
@@ -244,6 +251,7 @@ function dibujarPagos() {
           </div>
           <div class="fin-pago-monto">
             <strong>${fmt(c.saldo)}</strong>
+            <button type="button" class="fin-link" data-fecha="${c.id}">Cambiar fecha</button>
             <button type="button" class="fin-btn fin-btn-primario" data-pagar="${c.id}">Pagar</button>
           </div>
         </div>`
@@ -282,8 +290,39 @@ function abrirPagar(id) {
   const cuentas = cuentasDeLocal(c.local_id)
   llenarCuentas($('pagar-cuenta'), cuentas, cuentas.find(x => x.tipo === 'caja')?.id)
   $('pagar-fecha').value = hoyAR()
+  $('pagar-resto-fecha').min = hoyAR()
+  $('pagar-resto-fecha').value = c.vencimiento >= hoyAR() ? c.vencimiento : fechaMasDias(7)
+  actualizarRestoPago()
   limpiarError('pagar-error')
   $('dlg-pagar').showModal()
+}
+
+// Si se paga solo una parte de una deuda, se pregunta cuándo vence el resto.
+function hayRestoPorPagar() {
+  if (!pagoActual || pagoActual.monto_es_estimado) return false
+  const monto = redondear2(Number($('pagar-monto').value) || 0)
+  return monto > 0 && redondear2(pagoActual.saldo - monto) > 0.005
+}
+
+function actualizarRestoPago() {
+  const hay = hayRestoPorPagar()
+  $('pagar-resto-label').classList.toggle('oculto', !hay)
+  if (hay) {
+    const resto = redondear2(pagoActual.saldo - (Number($('pagar-monto').value) || 0))
+    $('pagar-resto-texto').textContent = `El resto (${fmt(resto)}) vence`
+  }
+}
+
+function abrirFecha(id) {
+  const c = datos.resumen.compromisos.find(x => x.id === id)
+  if (!c) return
+  fechaActual = c
+  $('fe-titulo').textContent = c.concepto
+  $('fe-info').textContent = `Hoy vence el ${textoFecha(c.vencimiento)}${textoPostergado(c) ? ` (${textoPostergado(c)})` : ''}. Si el proveedor te dio más plazo, cargá la fecha nueva.`
+  $('fe-fecha').min = hoyAR()
+  $('fe-fecha').value = c.vencimiento >= hoyAR() ? c.vencimiento : hoyAR()
+  limpiarError('fe-error')
+  $('dlg-fecha').showModal()
 }
 
 function abrirPagoNuevo() {
@@ -381,12 +420,27 @@ $('form-pagar').addEventListener('submit', async e => {
     mostrarError('pagar-error', `El pago supera el saldo pendiente (${fmt(pagoActual.saldo)}).`)
     return
   }
+  let proximo = null
+  if (hayRestoPorPagar()) {
+    proximo = $('pagar-resto-fecha').value || null
+    if (!proximo) { mostrarError('pagar-error', 'Elegí cuándo vence el resto.'); return }
+  }
   await ejecutar('pagar_compromiso', {
     p_id: pagoActual.id,
     p_monto_real: monto,
     p_cuenta_id: $('pagar-cuenta').value || null,
-    p_fecha: $('pagar-fecha').value || null
+    p_fecha: $('pagar-fecha').value || null,
+    p_proximo_vencimiento: proximo
   }, 'pagar-error', 'dlg-pagar')
+})
+
+$('form-fecha').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('fe-error')
+  await ejecutar('cambiar_vencimiento', {
+    p_id: fechaActual.id,
+    p_nuevo: $('fe-fecha').value
+  }, 'fe-error', 'dlg-fecha')
 })
 
 $('form-pago-nuevo').addEventListener('submit', async e => {
@@ -469,6 +523,7 @@ $('btn-ver-pagos').addEventListener('click', () => elegirPanel('pagos'))
 $('btn-nuevo-pago').addEventListener('click', abrirPagoNuevo)
 $('btn-nueva-cuenta').addEventListener('click', abrirCuenta)
 $('btn-registrar-movimiento').addEventListener('click', abrirMovimiento)
+$('pagar-monto').addEventListener('input', actualizarRestoPago)
 $('cu-tipo').addEventListener('change', ajustarLocalCuenta)
 document.querySelectorAll('.fin-tipo').forEach(b => b.addEventListener('click', () => elegirTipoMovimiento(b.dataset.tipo)))
 document.querySelectorAll('[data-cerrar]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()))
@@ -477,6 +532,8 @@ document.querySelectorAll('[data-cerrar]').forEach(b => b.addEventListener('clic
 document.addEventListener('click', async e => {
   const pagar = e.target.closest('[data-pagar]')
   if (pagar) { abrirPagar(pagar.dataset.pagar); return }
+  const fecha = e.target.closest('[data-fecha]')
+  if (fecha) { abrirFecha(fecha.dataset.fecha); return }
   const ajustar = e.target.closest('[data-ajustar]')
   if (ajustar) { abrirAjuste(ajustar.dataset.ajustar); return }
   const anular = e.target.closest('[data-anular]')
