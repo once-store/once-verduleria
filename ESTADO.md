@@ -76,6 +76,24 @@
 - **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Claude está terminando o puede haber terminado su revisión; confirmar el resultado antes de marcarla como cerrada. El punto a resolver es cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas.
 - **Procedimiento acordado**: los bocetos no significan que la lógica esté aprobada ni que los cambios estén publicados. Claude revisa cada propuesta contra el código y los datos reales; Martin sube los cambios después de esa revisión. En cambios solo visuales, no tocar archivos `.js` ni eliminar o renombrar `id`, `class` o `data-roles` existentes. Las páginas tienen copias independientes del sidebar, por lo que los cambios de menú deben propagarse a las páginas correspondientes.
 
+
+#### Imágenes de los bocetos
+
+Las capturas son referencias visuales; no representan pantallas conectadas a datos reales.
+
+- [Números](docs/bocetos-visuales/numeros.jpg)
+- [Pedidos por armar](docs/bocetos-visuales/pedidos-por-armar.jpg)
+- [Compras — Compra](docs/bocetos-visuales/compras-compra.jpg)
+- [Compras — Merma](docs/bocetos-visuales/compras-merma.jpg)
+- [Compras — Depósito](docs/bocetos-visuales/compras-deposito.jpg)
+- [Compras — Maduración](docs/bocetos-visuales/compras-maduracion.jpg)
+- [Compras — Precio por lote](docs/bocetos-visuales/compras-precio-por-lote.jpg)
+- [Inventario](docs/bocetos-visuales/inventario.jpg)
+- [Caja — boceto en revisión](docs/bocetos-visuales/caja-revision.jpg)
+- [Clientes](docs/bocetos-visuales/clientes.jpg)
+- [Conversaciones](docs/bocetos-visuales/conversaciones.jpg)
+- [Promociones](docs/bocetos-visuales/promociones.jpg)
+
 ## 4. PENDIENTE (por prioridad)
 
 1. **[ALTA] Prueba real de Mercado Pago** con otra persona (valida link, webhook y página; cada prueba cuesta la comisión de MP). Esperado: sale solo de "Pendientes" y la página pasa a "Pago confirmado".
@@ -115,6 +133,7 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
+- **20/10** [GPT] — Se agregaron capturas de los bocetos visuales en `docs/bocetos-visuales/` y enlaces desde esta sección.
 - **20/10** [GPT] — Se ajustó el estado del rediseño con la aclaración de Martin: Compra está revisada, subida y funcionando; las otras pestañas de Compras funcionan y quedan a la espera de observaciones de Claude; Caja requiere confirmar si la revisión de Claude concluyó.
 - **20/10** [GPT] — Se añadió a ESTADO ACTUAL el progreso de los rediseños visuales, separando lo publicado de los bocetos aceptados y lo que aún requiere revisión de Claude.
 - **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
