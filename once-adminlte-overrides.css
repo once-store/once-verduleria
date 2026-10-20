@@ -2283,3 +2283,31 @@
 @media (max-width: 560px) {
   #panel-compra .compra-pago-forma { grid-template-columns: 1fr; gap: 6px; }
 }
+
+/* --- Caja: pagar a un proveedor (cuando viene el cobrador). Acotado a #vista-caja. --- */
+#vista-caja .caja-proveedor .caja-salida-campos { grid-template-columns: 1fr; margin-top: 14px; }
+#vista-caja .caja-salida-campos select {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 7px;
+  padding: 9px 12px;
+  border: 1px solid #D6E1D7;
+  border-radius: 8px;
+  background: #fff;
+  color: #26342B;
+  font-size: 13px;
+}
+#vista-caja .caja-proveedor .btn-confirmar,
+#vista-caja .caja-proveedor .error { margin-top: 14px; }
+#vista-caja .caja-proveedor .btn-confirmar {
+  display: block;
+  margin-left: auto;
+  min-height: 42px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: #287448;
+  font-size: 12px;
+  font-weight: 650;
+}
+#vista-caja .caja-proveedor .btn-confirmar:disabled { opacity: .6; }
