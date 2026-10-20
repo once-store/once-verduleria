@@ -2,7 +2,7 @@
 
 > **Para cualquier IA (Claude, GPT) o persona:** este archivo es la fuente de verdad.
 > Leelo ENTERO antes de hacer nada, trabajá desde "PRÓXIMO PASO" y, al terminar,
-> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [C?, fusionado con GPT y C2].
+> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [C1, sobre la versión fusionada de GPT y C2].
 > **Repo público: nunca escribir acá claves, tokens, ni datos de clientes.**
 
 ---
@@ -57,6 +57,7 @@
 - **Edge Function de pago v6:** recibe SOLO el `pedidoId`; el importe sale de la base + recargo; guarda el importe exacto en `pedidos.mp_monto_cobrado`; manda una sola línea "Pedido #N - once" a MP.
 - **Mercado Pago en producción:** token de producción cargado. Verificado con compra real (#88, $315 = $300 + 5%, aprobada).
 - **`pago-exitoso.html` nueva:** consulta el estado del pedido; cuando está `pagado` muestra "¡Pago confirmado!" con botón "Ver mi ticket" (el botón está oculto hasta entonces). Publicada.
+- **Vistas internas cerradas al público [C1, 20/10]:** `clientes_saldo`, `lotes_legible`, `lotes_venta` y `sugerencias_maduracion` ya no son legibles sin login (antes mostraban DNI/WhatsApp/saldos de clientes y costos de lotes). La tienda sigue leyendo `catalogo_disponible`; el personal con login conserva la lectura. Migración `cerrar_lectura_publica_vistas_internas`, verificada tras aplicar.
 - **Webhook `mp-webhook` desplegado:** marca el pedido `pagado` solo si MP confirma pago aprobado, el pedido está en `pendiente_mp` y el importe coincide con `mp_monto_cobrado`. Guarda el N.º de operación en `pedidos.mp_payment_id`.
 
 ### 🟡 Hecho pero SIN probar con datos reales (el dueño lo hará "en unos días")
@@ -102,7 +103,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 ## 4. PENDIENTE (por prioridad)
 
 1. 🔔 **[ALTA] Prueba real de Mercado Pago** con otra persona (valida link, webhook y página; cada prueba cuesta la comisión de MP). Esperado: sale solo de "Pendientes" y la página pasa a "Pago confirmado". **El dueño la hará en unos días: recordársela en cada chat.** De paso, esa operación sirve para ver la comisión real con acreditación instantánea (ver pendiente 5).
-2. **[ALTA] Revisión de seguridad de la base:** cerrar los permisos de lectura pública en vistas internas. **OK del dueño DADO el 20/10.** Falta aplicarlo: el SQL ya probado en transacción que se deshace está en el chat de la cuenta C1 (no está en el repo por ser público). Quien lo tenga lo aplica; si no está a mano, se regenera inspeccionando la base y probándolo en transacción, explicándole antes al dueño qué se cierra. Después, revisar el acceso a funciones de dinero, **incluyendo las nuevas de [C2]** (ver BITÁCORA 13–17/10): son `SECURITY DEFINER`, chequean el rol con `_puede_finanzas()`, tienen RLS sin políticas y revocan a `anon` y `public`; además reemplazaron `abrir_caja`, `cerrar_caja` y `obtener_estado_caja_hoy`, y `caja_turnos` ahora lleva `local_id`.
+2. **[ALTA] Revisión de seguridad de la base:** la parte de **vistas internas está hecha** (ver BITÁCORA 20/10 [C1]). **Falta:** revisar el acceso a funciones de dinero, **incluyendo las nuevas de [C2]** (ver BITÁCORA 13–17/10): son `SECURITY DEFINER`, chequean el rol con `_puede_finanzas()`, tienen RLS sin políticas y revocan a `anon` y `public`; además reemplazaron `abrir_caja`, `cerrar_caja` y `obtener_estado_caja_hoy`, y `caja_turnos` ahora lleva `local_id`. Antes de tocar nada, explicarle al dueño qué se cierra.
 3. **Paso 4 (EN ESPERA por decisión del dueño):** cerrar el INSERT/DELETE público sobre `pedido_items` y el acceso público a `confirmar_metodo_pago` (función vieja). **Solo después** de probar todo (pendiente 1 y los flujos sin probar de la sección 3) y de dejar pasar varias horas desde el último cambio de `app.js` (hay pestañas abiertas con el código viejo). **Antes de cerrar `confirmar_metodo_pago`, verificar si el bot de WhatsApp (código fuera del repo) la usa con la clave pública para cerrar pedidos; si es así, adaptarlo primero.**
 4. **Combos (más adelante):** la base NO los calcula todavía. **NO activar ningún combo** hasta resolverlo (el cliente vería un total y pagaría otro).
 5. **Recargo de MP (decisión en curso):** el recargo actual de 5% no cubre el costo real. Con acreditación a 18 días se observó ~7,2% (4,2% de MP + 3% de retención de IIBB). El dueño pasó la acreditación a "al instante" y quiere ver si se puede cobrar al cliente **6,5% + IVA + 3% de IIBB**; si el total da aprox. 7,2%, deja 7,2%.
@@ -142,7 +143,7 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 ## 6. PRÓXIMO PASO
 
 **Elegir UNA tarea**, en este orden:
-1. Pendiente 2: aplicar el cierre de lecturas públicas en vistas internas (OK del dueño ya dado el 20/10; falta el SQL, ver detalle en el pendiente).
+1. Pendiente 2 (lo que falta): revisar el acceso a funciones de dinero, incluidas las de [C2]. Las vistas internas ya están cerradas.
 2. Recordarle al dueño los 🔔: prueba real de MP (pendiente 1) y aviso de `pago-pendiente` (pendiente 6).
 3. Para [C2] (pantallas): lista de chequeo del 1/12 (pendiente 11) o revisar los bocetos de GPT, uno por chat (pendiente 12).
 4. Cuando el dueño haga la prueba real de MP: mirar la comisión real y resolver el recargo (pendiente 5); después, destrabar el Paso 4 (pendiente 3).
@@ -151,6 +152,7 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
+- **20/10** [C1] — Pendiente 2, parte vistas: el rol anónimo leía `clientes_saldo` (DNI, WhatsApp, límite de fiado, saldo), `lotes_legible` y `sugerencias_maduracion` (costo por lote) y `lotes_venta`. Probado primero en transacción que se deshace sola; aplicado con OK del dueño como migración `cerrar_lectura_publica_vistas_internas` (`revoke all ... from anon, public` sobre las 4 vistas). Verificado después: el anónimo queda bloqueado en las 4, sigue leyendo `catalogo_disponible` (16 filas) y con login se leen sin problema. Logs de 24 h: solo el panel de compras (`compras.js`, con login) usa `sugerencias_maduracion`. No se pudo revisar el código del bot de WhatsApp (fuera del repo). Observado, sin tocar: `pedidos`, `pedido_items` y `conversaciones_bot` aceptan INSERT público sin restricción (relacionado con el Paso 4, en espera).
 - **20/10** [GPT] — Se sincronizó ESTADO.md con la versión más reciente de Martin, conservando sus actualizaciones y agregando el estado del rediseño y los enlaces a los 12 bocetos visuales ya subidos.
 - **20/10** [C?] — Se fusionó la versión del repo (con la sección de rediseño de GPT) con lo informado por C2 (bitácora 13–17/10, pendientes 10 a 12, nota sobre sus funciones de dinero en el pendiente 2). Nueva regla en la sección 1: leer siempre la versión actual del repo antes de editar este archivo.
 - **20/10** [C?] — Decisiones del dueño: prueba real de MP "en unos días" (recordarla); OK para cerrar lecturas públicas de vistas; Paso 4 en espera; combos más adelante; recargo de MP en evaluación con acreditación ya cambiada a "al instante"; avisos de `pago-pendiente` y menores se dejan sin olvidar; flujos sin probar "en unos días". README reescrito (reflejaba el sistema viejo). Agregado el pendiente 9 (precio por local).
