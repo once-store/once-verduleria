@@ -115,7 +115,8 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
-- **20/10** [GPT] — Se ajustó el estado del rediseño con la aclaración de Martin: Compra está revisada, subida y funcionando; las otras pestañas de Compras funcionan y quedan a la espera de observaciones de Claude; Caja requiere confirmar si la revisión de Claude concluyó.\n- **20/10** [GPT] — Se añadió a ESTADO ACTUAL el progreso de los rediseños visuales, separando lo publicado de los bocetos aceptados y lo que aún requiere revisión de Claude.
+- **20/10** [GPT] — Se ajustó el estado del rediseño con la aclaración de Martin: Compra está revisada, subida y funcionando; las otras pestañas de Compras funcionan y quedan a la espera de observaciones de Claude; Caja requiere confirmar si la revisión de Claude concluyó.
+- **20/10** [GPT] — Se añadió a ESTADO ACTUAL el progreso de los rediseños visuales, separando lo publicado de los bocetos aceptados y lo que aún requiere revisión de Claude.
 - **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
 - **19/10** — Revisión de seguridad de la base (solo lectura): hallazgos anotados en pendiente 2. Se pidió este archivo para sincronizar las 3 cuentas.
 - **18/10** — Verificado en producción el `app.js` nuevo (pedido #93). Las pruebas anteriores (#90, #91, #92) habían usado el `app.js` viejo por caché del navegador.
