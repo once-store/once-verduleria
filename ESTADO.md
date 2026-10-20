@@ -2,7 +2,7 @@
 
 > **Para cualquier IA (Claude, GPT) o persona:** este archivo es la fuente de verdad.
 > Leelo ENTERO antes de hacer nada, trabajá desde "PRÓXIMO PASO" y, al terminar,
-> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [GPT].
+> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [C?, fusionado con GPT y C2].
 > **Repo público: nunca escribir acá claves, tokens, ni datos de clientes.**
 
 ---
@@ -22,6 +22,7 @@
 - Verificar a fondo SOLO si toca dinero, seguridad o la base de datos. Lo demás: un chequeo corto.
 - Un chat nuevo por tarea, empezando con el texto de "ARRANQUE" (sección 9). Los chats larguísimos gastan más límite.
 - Respuestas cortas. No narrar cada paso ("voy a revisar…"): hacerlo y dar el resultado.
+- **Antes de editar este archivo, leer SIEMPRE la versión actual del repo** (la dirección de raw de la sección 9), nunca una copia vieja pegada en un chat. Si el dueño te pasa una versión y la del repo es más nueva, fusioná las dos conservando lo de las otras cuentas. Al entregar el archivo, avisar qué líneas agregaste.
 - Antes de trabajar, mirar EN CURSO y la BITÁCORA: si otra cuenta reservó o tocó lo mismo hace poco, avisar al dueño. Después, anotar la propia reserva en EN CURSO.
 
 **Técnicas:**
@@ -63,6 +64,7 @@
 - `pago-exitoso` con un pago real de MP.
 - Flujos de **transferencia** y **pago combinado** con el `app.js` nuevo.
 - **Reintento de MP** tras un link fallido (probado solo con simulación).
+- **Caja, Finanzas y pago de compras [C2, 13–17/10]:** hechas y aplicadas (pantallas + base), sin probar de punta a punta con cada rol (Dueño, Encargado, Mostrador). Detalle en la BITÁCORA.
 
 ---
 
@@ -74,8 +76,8 @@
 - **Números (`metricas.html`)**: boceto aceptado como dirección visual: tres tarjetas (meta diaria, semanal y mensual) con gráficos de líneas y referencias comunes de niveles. Falta revisión de Claude e implementación.
 - **Pedidos por armar, Clientes, Conversaciones y Promociones**: bocetos aceptados como referencia visual. Falta revisar cada uno con Claude contra el código y los datos reales antes de implementar o publicar.
 - **Compras y mermas — Merma, Depósito, Maduración y Precio**: la página actual funciona bien. También hay bocetos visuales aceptados para estas pestañas; Precio se planteó por lote y Maduración incluye un aviso cuando un lote requiere atención. Queda la línea de revisión con Claude para escuchar sus observaciones y dejar confirmado el estado de cada propuesta. Depósito y Maduración tenían pocos o ningún dato de ejemplo para evaluar el boceto.
-- **Inventario (`inventario.html`/`inventario.js`)**: página nueva y diseño aceptados como propuesta. Debe permitir revisar existencias en detalle y de un vistazo, incluyendo el margen porcentual junto al precio. Falta revisión de Claude antes de subirla; luego habrá que propagar el enlace de Inventario en las copias del sidebar.
-- **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Claude está terminando o puede haber terminado su revisión; confirmar el resultado antes de marcarla como cerrada. El punto a resolver es cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas.
+- **Inventario (`inventario.html`/`inventario.js`)**: página nueva y diseño aceptados como propuesta. Debe permitir revisar existencias en detalle y de un vistazo, incluyendo el margen porcentual junto al precio. Falta revisión de Claude antes de subirla; luego habrá que propagar el enlace de Inventario en las copias del sidebar. **Nota [C2]:** el enlace podría propagarse desde `sesion.js` (que ya agrega el link Finanzas al menú del Dueño) en vez de editar cada copia del sidebar a mano; verificar si alcanza antes de elegir.
+- **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Claude está terminando o puede haber terminado su revisión; confirmar el resultado antes de marcarla como cerrada. El punto a resolver es cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas. **Nota [C2]:** la Caja funcional ya está implementada y aplicada (ver BITÁCORA 13–17/10); según C2 siguen faltando las ventas por transferencia/otros medios y el historial por local (pendiente 10). Confirmar con C2 si cerró la revisión del boceto.
 - **Procedimiento acordado**: los bocetos no significan que la lógica esté aprobada ni que los cambios estén publicados. Claude revisa cada propuesta contra el código y los datos reales; Martin sube los cambios después de esa revisión. En cambios solo visuales, no tocar archivos `.js` ni eliminar o renombrar `id`, `class` o `data-roles` existentes. Las páginas tienen copias independientes del sidebar, por lo que los cambios de menú deben propagarse a las páginas correspondientes.
 
 #### Imágenes de los bocetos
@@ -95,10 +97,12 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 - [Conversaciones](docs/bocetos-visuales/conversaciones.jpg)
 - [Promociones](docs/bocetos-visuales/promociones.jpg)
 
+---
+
 ## 4. PENDIENTE (por prioridad)
 
 1. 🔔 **[ALTA] Prueba real de Mercado Pago** con otra persona (valida link, webhook y página; cada prueba cuesta la comisión de MP). Esperado: sale solo de "Pendientes" y la página pasa a "Pago confirmado". **El dueño la hará en unos días: recordársela en cada chat.** De paso, esa operación sirve para ver la comisión real con acreditación instantánea (ver pendiente 5).
-2. **[ALTA] Revisión de seguridad de la base:** cerrar los permisos de lectura pública en vistas internas. **OK del dueño DADO el 20/10.** Falta aplicarlo: el SQL ya probado en transacción que se deshace está en el chat de la cuenta C1 (no está en el repo por ser público). Quien lo tenga lo aplica; si no está a mano, se regenera inspeccionando la base y probándolo en transacción, explicándole antes al dueño qué se cierra. Después, revisar el acceso a funciones de dinero.
+2. **[ALTA] Revisión de seguridad de la base:** cerrar los permisos de lectura pública en vistas internas. **OK del dueño DADO el 20/10.** Falta aplicarlo: el SQL ya probado en transacción que se deshace está en el chat de la cuenta C1 (no está en el repo por ser público). Quien lo tenga lo aplica; si no está a mano, se regenera inspeccionando la base y probándolo en transacción, explicándole antes al dueño qué se cierra. Después, revisar el acceso a funciones de dinero, **incluyendo las nuevas de [C2]** (ver BITÁCORA 13–17/10): son `SECURITY DEFINER`, chequean el rol con `_puede_finanzas()`, tienen RLS sin políticas y revocan a `anon` y `public`; además reemplazaron `abrir_caja`, `cerrar_caja` y `obtener_estado_caja_hoy`, y `caja_turnos` ahora lleva `local_id`.
 3. **Paso 4 (EN ESPERA por decisión del dueño):** cerrar el INSERT/DELETE público sobre `pedido_items` y el acceso público a `confirmar_metodo_pago` (función vieja). **Solo después** de probar todo (pendiente 1 y los flujos sin probar de la sección 3) y de dejar pasar varias horas desde el último cambio de `app.js` (hay pestañas abiertas con el código viejo). **Antes de cerrar `confirmar_metodo_pago`, verificar si el bot de WhatsApp (código fuera del repo) la usa con la clave pública para cerrar pedidos; si es así, adaptarlo primero.**
 4. **Combos (más adelante):** la base NO los calcula todavía. **NO activar ningún combo** hasta resolverlo (el cliente vería un total y pagaría otro).
 5. **Recargo de MP (decisión en curso):** el recargo actual de 5% no cubre el costo real. Con acreditación a 18 días se observó ~7,2% (4,2% de MP + 3% de retención de IIBB). El dueño pasó la acreditación a "al instante" y quiere ver si se puede cobrar al cliente **6,5% + IVA + 3% de IIBB**; si el total da aprox. 7,2%, deja 7,2%.
@@ -112,6 +116,9 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
    - Requisitos: (a) precio general opcional + precio propio por local que lo reemplaza; (b) el catálogo de cada local muestra el precio de ese local; (c) permisos: el Dueño edita todos; qué puede editar el Encargado de cada local, a definir con el dueño.
    - Estado: no hecho, hasta donde consta. Dato de trabajo anterior, **a verificar en la base**: `catalogo_disponible` no filtra por local, y hoy el precio vive en cada lote.
    - Necesita diseño antes de implementar (base primero, pantalla después, según el reparto de la sección 8). Prioridad media: no bloquea la apertura si abre con un solo local.
+10. **Caja [C2]:** falta mostrar las ventas por transferencia y otros medios, y el historial por local (ver también la nota de Caja en "Rediseño de apariencia").
+11. **Lista de chequeo antes del 1/12 [C2]:** probar Caja, Finanzas y pago de compras de punta a punta con cada rol (Dueño, Encargado, Mostrador) y dejar la lista armada.
+12. **Revisión de bocetos de GPT contra código y datos reales [C2]:** Números, Pedidos por armar, Clientes, Conversaciones, Promociones, Merma/Depósito/Maduración/Precio, Inventario y Caja (estado de cada uno en "Rediseño de apariencia"). Nada se sube sin esa revisión y el OK del dueño. Un boceto por chat.
 
 ---
 
@@ -126,6 +133,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 | Cuenta | Tarea | Archivos que toca | Desde | Estado |
 |---|---|---|---|---|
 | GPT | Ninguna por ahora | — | — | — |
+| C2 | Sin reserva: se quedó sin límite el 20/10; no se sabe si terminó la revisión del boceto de Caja | `caja.html`, `caja.js` | 20/10 | A CONFIRMAR con el dueño |
 
 Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a la BITÁCORA).
 
@@ -136,17 +144,21 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 **Elegir UNA tarea**, en este orden:
 1. Pendiente 2: aplicar el cierre de lecturas públicas en vistas internas (OK del dueño ya dado el 20/10; falta el SQL, ver detalle en el pendiente).
 2. Recordarle al dueño los 🔔: prueba real de MP (pendiente 1) y aviso de `pago-pendiente` (pendiente 6).
-3. Cuando el dueño haga la prueba real de MP: mirar la comisión real y resolver el recargo (pendiente 5); después, destrabar el Paso 4 (pendiente 3).
+3. Para [C2] (pantallas): lista de chequeo del 1/12 (pendiente 11) o revisar los bocetos de GPT, uno por chat (pendiente 12).
+4. Cuando el dueño haga la prueba real de MP: mirar la comisión real y resolver el recargo (pendiente 5); después, destrabar el Paso 4 (pendiente 3).
 
 ---
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
 - **20/10** [GPT] — Se sincronizó ESTADO.md con la versión más reciente de Martin, conservando sus actualizaciones y agregando el estado del rediseño y los enlaces a los 12 bocetos visuales ya subidos.
+- **20/10** [C?] — Se fusionó la versión del repo (con la sección de rediseño de GPT) con lo informado por C2 (bitácora 13–17/10, pendientes 10 a 12, nota sobre sus funciones de dinero en el pendiente 2). Nueva regla en la sección 1: leer siempre la versión actual del repo antes de editar este archivo.
 - **20/10** [C?] — Decisiones del dueño: prueba real de MP "en unos días" (recordarla); OK para cerrar lecturas públicas de vistas; Paso 4 en espera; combos más adelante; recargo de MP en evaluación con acreditación ya cambiada a "al instante"; avisos de `pago-pendiente` y menores se dejan sin olvidar; flujos sin probar "en unos días". README reescrito (reflejaba el sistema viejo). Agregado el pendiente 9 (precio por local).
 - **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
 - **19/10** — Revisión de seguridad de la base (solo lectura): hallazgos anotados en pendiente 2. Se pidió este archivo para sincronizar las 3 cuentas.
 - **18/10** — Verificado en producción el `app.js` nuevo (pedido #93). Las pruebas anteriores (#90, #91, #92) habían usado el `app.js` viejo por caché del navegador.
+- **13–17/10** [C2] — Pantallas: Caja (apertura con fondo sugerido, gastos, retiro a resguardo, movimientos del día con anulación solo Dueño, pago a proveedor en efectivo y de a partes, cierre). Compras: panel de pago al finalizar (efectivo / transferencia / "A pagar" con vencimiento). Finanzas nueva (solo Dueño): cuentas, movimientos, pagos y vencimientos, pagos parciales, postergar vencimientos. `sesion.js`: agrega el link Finanzas al menú del Dueño.
+- **13–17/10** [C2] — BASE (fuera del reparto, con OK del dueño, probado en transacción y aplicado de forma atómica): tablas `cuentas`, `movimientos_financieros`, `compromisos_pago`; caja por local (`caja_turnos.local_id`); funciones de caja, pagos y Finanzas. 8 migraciones, `20261014010900` a `20261014080000`, registradas en el historial de la base con el informe de cada prueba.
 - **17/10** — Credenciales de producción de MP activadas y token cargado. Compra real #88 aprobada. Creada y desplegada `checkout_pedido` (columnas `mp_monto_cobrado` y `mp_payment_id`). Desplegadas `crear-preferencia-pago` v5/v6 y `mp-webhook`. Nueva `pago-exitoso.html` (hubo un error del botón visible; corregido). Nuevo `app.js`.
 
 ---
