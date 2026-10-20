@@ -46,10 +46,11 @@ function formatoHora(iso) {
 }
 
 async function cargarEstadoCaja(opciones = {}) {
-  const [estado, movimientos, conceptos] = await Promise.all([
+  const [estado, movimientos, conceptos, deudas] = await Promise.all([
     supabase.rpc('obtener_estado_caja_hoy'),
     supabase.rpc('obtener_movimientos_caja_hoy'),
-    supabase.rpc('obtener_conceptos_gasto')
+    supabase.rpc('obtener_conceptos_gasto'),
+    supabase.rpc('obtener_deudas_pendientes_caja')
   ])
   if (estado.error) {
     console.error(estado.error)
@@ -58,7 +59,8 @@ async function cargarEstadoCaja(opciones = {}) {
   }
   if (movimientos.error) console.error(movimientos.error)
   if (conceptos.error) console.error(conceptos.error)
-  dibujarCaja(estado.data, movimientos.data || [], conceptos.data || [], opciones)
+  if (deudas.error) console.error(deudas.error)
+  dibujarCaja(estado.data, movimientos.data || [], conceptos.data || [], deudas.data || [], opciones)
 }
 
 function tarjetaDato(titulo, detalle, valor) {
@@ -119,6 +121,36 @@ function htmlFormularioSalida(estado, conceptos) {
       <p class="caja-ayuda">${ayuda}</p>
       <button type="button" id="btn-registrar-salida" class="btn-confirmar">Registrar salida</button>
       <p id="caja-salida-error" class="error oculto"></p>
+    </section>
+  `
+}
+
+function textoVencimiento(iso) {
+  const [anio, mes, dia] = iso.split('-')
+  return `${dia}/${mes}`
+}
+
+// Cuando viene el cobrador: se paga en efectivo de la caja, total o una parte. Lo que falta queda pendiente
+// y el dueño lo paga después desde Finanzas. Solo aparece si hay deudas de compras pendientes.
+function htmlPagoProveedor(deudas) {
+  if (!deudas.length) return ''
+  const opciones = deudas.map(d => `
+    <option value="${d.id}" data-saldo="${d.saldo}">${escaparTexto(d.proveedor || 'Sin proveedor')} · debe ${formatoMoneda(d.saldo)} · vence ${textoVencimiento(d.vencimiento)}</option>`).join('')
+  return `
+    <section class="caja-tarjeta caja-proveedor">
+      <h4>Pagar a un proveedor</h4>
+      <p>Para cuando viene el cobrador. Se paga solo con efectivo de la caja; si no alcanza, pagá una parte y avisale al dueño: el resto queda pendiente.</p>
+      <div class="caja-salida-campos">
+        <label>Deuda
+          <select id="caja-deuda">${opciones}</select>
+        </label>
+        <label>Importe a pagar
+          <input type="number" id="caja-deuda-monto" min="0" step="any" inputmode="decimal" placeholder="0">
+        </label>
+      </div>
+      <p class="caja-ayuda" id="caja-deuda-ayuda"></p>
+      <button type="button" id="btn-pagar-deuda" class="btn-confirmar">Pagar en efectivo</button>
+      <p id="caja-deuda-error" class="error oculto"></p>
     </section>
   `
 }
@@ -201,7 +233,7 @@ function htmlCierre(estado) {
   return ''
 }
 
-function dibujarCaja(estado, movimientos, conceptos, opciones = {}) {
+function dibujarCaja(estado, movimientos, conceptos, deudas, opciones = {}) {
   const info = ESTADOS_CAJA[estado.estado]
   let fondo = SIN_DATO
   let ventas = SIN_DATO
@@ -218,6 +250,8 @@ function dibujarCaja(estado, movimientos, conceptos, opciones = {}) {
     monto: document.getElementById('caja-salida-monto')?.value,
     contado: document.getElementById('caja-efectivo-contado')?.value,
     fondo: document.getElementById('caja-fondo-inicial')?.value,
+    deuda: document.getElementById('caja-deuda')?.value,
+    deudaMonto: document.getElementById('caja-deuda-monto')?.value,
     tipo: document.querySelector('.caja-tipo.activa')?.dataset.tipo
   } : null
 
@@ -239,7 +273,7 @@ function dibujarCaja(estado, movimientos, conceptos, opciones = {}) {
       ${tarjetaDato('Efectivo esperado', 'Antes del arqueo', esperado)}
     </div>
     <div class="caja-columnas">
-      <div class="caja-col">${htmlFormularioSalida(estado, conceptos)}</div>
+      <div class="caja-col">${htmlFormularioSalida(estado, conceptos)}${htmlPagoProveedor(deudas)}</div>
       <div class="caja-col">${htmlMovimientos(estado, movimientos)}${htmlCierre(estado)}</div>
     </div>
   `
@@ -250,6 +284,8 @@ function dibujarCaja(estado, movimientos, conceptos, opciones = {}) {
     poner('caja-salida-monto', guardado.monto)
     poner('caja-efectivo-contado', guardado.contado)
     poner('caja-fondo-inicial', guardado.fondo)
+    poner('caja-deuda', guardado.deuda)
+    poner('caja-deuda-monto', guardado.deudaMonto)
     if (guardado.tipo === 'retiro') elegirTipoSalida('retiro')
   }
 
@@ -336,6 +372,44 @@ function conectarEventosCaja() {
     }
     cargarEstadoCaja()
   })
+
+  const selDeuda = document.getElementById('caja-deuda')
+  if (selDeuda) {
+    const saldoElegido = () => Number(selDeuda.selectedOptions[0].dataset.saldo)
+    const actualizarAyudaDeuda = () => {
+      const saldo = saldoElegido()
+      const monto = Number(document.getElementById('caja-deuda-monto').value) || 0
+      document.getElementById('caja-deuda-ayuda').textContent = monto > 0 && monto < saldo
+        ? `Quedan ${formatoMoneda(saldo - monto)} pendientes: avisale al dueño para que pague el resto.`
+        : `Saldo pendiente: ${formatoMoneda(saldo)}.`
+    }
+    selDeuda.addEventListener('change', () => {
+      document.getElementById('caja-deuda-monto').value = String(saldoElegido())
+      actualizarAyudaDeuda()
+    })
+    document.getElementById('caja-deuda-monto').addEventListener('input', actualizarAyudaDeuda)
+    if (!document.getElementById('caja-deuda-monto').value) document.getElementById('caja-deuda-monto').value = String(saldoElegido())
+    actualizarAyudaDeuda()
+
+    document.getElementById('btn-pagar-deuda').addEventListener('click', async e => {
+      const boton = e.currentTarget
+      const monto = Number(document.getElementById('caja-deuda-monto').value)
+      document.getElementById('caja-deuda-error').classList.add('oculto')
+      if (!(monto > 0)) { mostrarError('caja-deuda-error', 'Ingresá un importe mayor a 0.'); return }
+      if (monto > saldoElegido() + 0.005) {
+        mostrarError('caja-deuda-error', `Esa deuda es de ${formatoMoneda(saldoElegido())}.`)
+        return
+      }
+      boton.disabled = true
+      const { error } = await supabase.rpc('pagar_deuda_en_caja', { p_id: selDeuda.value, p_monto: monto })
+      if (error) {
+        boton.disabled = false
+        mostrarError('caja-deuda-error', error.message)
+        return
+      }
+      cargarEstadoCaja()
+    })
+  }
 
   document.querySelectorAll('.caja-anular').forEach(b => {
     b.addEventListener('click', async () => {
