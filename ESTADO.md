@@ -125,7 +125,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 
 | Cuenta | Tarea | Archivos que toca | Desde | Estado |
 |---|---|---|---|---|
-| (ninguna por ahora) | | | | |
+| GPT | Ninguna por ahora | — | — | — |
 
 Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a la BITÁCORA).
 
