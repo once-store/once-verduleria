@@ -14,6 +14,7 @@
 - Explicar en lenguaje simple QUÉ cambia y POR QUÉ, antes de aplicar.
 - Directo, sin disculpas, sin condescendencia. No suponer: mirar logs/datos reales.
 - Sube los cambios editando en la web de GitHub (no usa git en la PC). No subir ni aplicar nada sin su OK.
+- 🔔 **Recordatorios:** al empezar cada chat, recordarle al dueño los pendientes marcados con 🔔 en la sección 4. Él lo pidió expresamente.
 
 **MODO ECONÓMICO (el dueño llega al límite de uso cada ~4 h; hay 3 cuentas trabajando casi a la vez):**
 - Leer SOLO este archivo al empezar. No releer ni re-verificar lo marcado ✅.
@@ -37,12 +38,13 @@
 - **Repo:** https://github.com/once-store/once-verduleria (público)
 - **Supabase:** proyecto "once", id `meekevxxjirvgsuppvij`
 - **Edge Functions:** `crear-preferencia-pago` (v6) y `mp-webhook` (v1, sin verificación JWT A PROPÓSITO: Mercado Pago no puede mandarla; la seguridad es consultar el pago a MP con el token)
-- **Mercado Pago:** app "once", credenciales de PRODUCCIÓN activas. El token está en el secreto `MP_ACCESS_TOKEN` de Supabase. Nunca en el repo ni en chats.
+- **Mercado Pago:** app "once", credenciales de PRODUCCIÓN activas. El token está en el secreto `MP_ACCESS_TOKEN` de Supabase. Nunca en el repo ni en chats. El dueño cambió la acreditación de la plata a **"al instante"** (20/10); antes era a ~18 días.
 - **Páginas públicas (sin login):** `index.html`, `ticket.html`, `pago-exitoso.html`, `pago-pendiente.html`, `pago-fallido.html`
 - **Panel del personal (con login):** `admin-v2.html` (usa `admin.js`, refresca "Pendientes" cada 5 s), caja, armado, compras, finanzas, clientes, promociones, horario, métricas, conversaciones
 - **Apertura prevista del negocio: 1/12/2026**
-- **Reglas de negocio:** recargo de MP en la tabla `configuracion` (`recargo_mp_porcentaje` = 5). El total del pedido se redondea a múltiplos de $50. Al confirmar, el panel abre el ticket en pestaña nueva (diseño actual, no es un error).
+- **Reglas de negocio:** recargo de MP en la tabla `configuracion` (`recargo_mp_porcentaje` = 5; en revisión, ver pendiente 5). El total del pedido se redondea a múltiplos de $50. Al confirmar, el panel abre el ticket en pestaña nueva (diseño actual, no es un error).
 - **Estados de pedido:** `pendiente_pago`, `pendiente_mp`, `pendiente_efectivo`, `pendiente_transferencia`, `pendiente_combinado`, `pagado`, `cancelado`
+- **README.md** actualizado el 20/10: describe cómo está armado el sistema. Las prioridades viven acá.
 
 ---
 
@@ -56,7 +58,7 @@
 - **`pago-exitoso.html` nueva:** consulta el estado del pedido; cuando está `pagado` muestra "¡Pago confirmado!" con botón "Ver mi ticket" (el botón está oculto hasta entonces). Publicada.
 - **Webhook `mp-webhook` desplegado:** marca el pedido `pagado` solo si MP confirma pago aprobado, el pedido está en `pendiente_mp` y el importe coincide con `mp_monto_cobrado`. Guarda el N.º de operación en `pedidos.mp_payment_id`.
 
-### 🟡 Hecho pero SIN probar con datos reales
+### 🟡 Hecho pero SIN probar con datos reales (el dueño lo hará "en unos días")
 - El **webhook** con un pago real de MP (probado solo con simulaciones, 32 casos OK). No se sabe si MP acepta la `notification_url` ni el formato exacto del aviso.
 - `pago-exitoso` con un pago real de MP.
 - Flujos de **transferencia** y **pago combinado** con el `app.js` nuevo.
@@ -75,7 +77,6 @@
 - **Inventario (`inventario.html`/`inventario.js`)**: página nueva y diseño aceptados como propuesta. Debe permitir revisar existencias en detalle y de un vistazo, incluyendo el margen porcentual junto al precio. Falta revisión de Claude antes de subirla; luego habrá que propagar el enlace de Inventario en las copias del sidebar.
 - **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Claude está terminando o puede haber terminado su revisión; confirmar el resultado antes de marcarla como cerrada. El punto a resolver es cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas.
 - **Procedimiento acordado**: los bocetos no significan que la lógica esté aprobada ni que los cambios estén publicados. Claude revisa cada propuesta contra el código y los datos reales; Martin sube los cambios después de esa revisión. En cambios solo visuales, no tocar archivos `.js` ni eliminar o renombrar `id`, `class` o `data-roles` existentes. Las páginas tienen copias independientes del sidebar, por lo que los cambios de menú deben propagarse a las páginas correspondientes.
-
 
 #### Imágenes de los bocetos
 
@@ -96,14 +97,21 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 
 ## 4. PENDIENTE (por prioridad)
 
-1. **[ALTA] Prueba real de Mercado Pago** con otra persona (valida link, webhook y página; cada prueba cuesta la comisión de MP). Esperado: sale solo de "Pendientes" y la página pasa a "Pago confirmado".
-2. **[ALTA] Revisión de seguridad de la base:** hay permisos de lectura pública para cerrar en vistas internas (SQL ya probado en transacción que se deshace; **falta OK del dueño para aplicarlo**) y revisar el acceso a funciones de dinero. Detalle fuera del repo por ser público.
-3. **Paso 4:** cerrar el INSERT/DELETE público sobre `pedido_items` y el acceso público a `confirmar_metodo_pago` (función vieja). **Solo después** de probar todo y de dejar pasar varias horas desde el último cambio de `app.js` (hay pestañas abiertas con el código viejo).
-4. **Combos:** la base NO los calcula todavía. **NO activar ningún combo** hasta resolverlo (el cliente vería un total y pagaría otro).
-5. **Decisión del dueño:** el recargo de 5% no cubre el costo real de MP (observado ~7,2%: 4,2% de MP + 3% de retención de IIBB). Y la plata de MP se acredita a ~18 días en su cuenta: si necesita cobro inmediato, evalúa quitar MP y dejar transferencia con confirmación manual.
-6. `pago-pendiente.html` dice "Te vamos a avisar apenas se acredite": no existe ningún mecanismo de aviso.
+1. 🔔 **[ALTA] Prueba real de Mercado Pago** con otra persona (valida link, webhook y página; cada prueba cuesta la comisión de MP). Esperado: sale solo de "Pendientes" y la página pasa a "Pago confirmado". **El dueño la hará en unos días: recordársela en cada chat.** De paso, esa operación sirve para ver la comisión real con acreditación instantánea (ver pendiente 5).
+2. **[ALTA] Revisión de seguridad de la base:** cerrar los permisos de lectura pública en vistas internas. **OK del dueño DADO el 20/10.** Falta aplicarlo: el SQL ya probado en transacción que se deshace está en el chat de la cuenta C1 (no está en el repo por ser público). Quien lo tenga lo aplica; si no está a mano, se regenera inspeccionando la base y probándolo en transacción, explicándole antes al dueño qué se cierra. Después, revisar el acceso a funciones de dinero.
+3. **Paso 4 (EN ESPERA por decisión del dueño):** cerrar el INSERT/DELETE público sobre `pedido_items` y el acceso público a `confirmar_metodo_pago` (función vieja). **Solo después** de probar todo (pendiente 1 y los flujos sin probar de la sección 3) y de dejar pasar varias horas desde el último cambio de `app.js` (hay pestañas abiertas con el código viejo). **Antes de cerrar `confirmar_metodo_pago`, verificar si el bot de WhatsApp (código fuera del repo) la usa con la clave pública para cerrar pedidos; si es así, adaptarlo primero.**
+4. **Combos (más adelante):** la base NO los calcula todavía. **NO activar ningún combo** hasta resolverlo (el cliente vería un total y pagaría otro).
+5. **Recargo de MP (decisión en curso):** el recargo actual de 5% no cubre el costo real. Con acreditación a 18 días se observó ~7,2% (4,2% de MP + 3% de retención de IIBB). El dueño pasó la acreditación a "al instante" y quiere ver si se puede cobrar al cliente **6,5% + IVA + 3% de IIBB**; si el total da aprox. 7,2%, deja 7,2%.
+   - Cuenta con los números del dueño: 6,5% + IVA (6,5 × 1,21 ≈ 7,87%) + 3% de IIBB ≈ **10,9%** de lo cobrado, no 7,2% (el 7,2% era con la acreditación lenta).
+   - Como la comisión se calcula sobre el total ya con recargo, para recibir lo que vale el precio de lista el recargo debe ser `1 / (1 − costo) − 1`: ≈ 12,2% si el costo es 10,9%; ≈ 7,8% si fuera 7,2%.
+   - **Primero verificar con una operación real** (detalle de la operación en MP: comisión, IVA y retenciones con acreditación instantánea). No cambiar `recargo_mp_porcentaje` hasta tener ese dato. Decidir también si un recargo de ese tamaño sobre el precio de lista es aceptable para el cliente.
+6. 🔔 **`pago-pendiente.html`** dice "Te vamos a avisar apenas se acredite": no existe ningún mecanismo de aviso. Se deja así por ahora, **pero no olvidarlo** (recordárselo al dueño).
 7. **A revisar:** pedidos de MP abandonados (el cliente nunca paga) retienen stock; falta vencimiento automático.
 8. Avisos menores de seguridad: `search_path` en 17 funciones, extensión `pg_net` en schema público, protección de contraseñas filtradas apagada (puede requerir plan pago).
+9. **[NUEVO, pedido del dueño 20/10] Precio por local.** Cada local debe poder fijar y actualizar sus propios precios. Lo más probable es que a futuro exista un precio general para todos los locales, pero cada local tiene que poder modificarlo según su zona (estratos sociales distintos), sus gastos fijos, etc.
+   - Requisitos: (a) precio general opcional + precio propio por local que lo reemplaza; (b) el catálogo de cada local muestra el precio de ese local; (c) permisos: el Dueño edita todos; qué puede editar el Encargado de cada local, a definir con el dueño.
+   - Estado: no hecho, hasta donde consta. Dato de trabajo anterior, **a verificar en la base**: `catalogo_disponible` no filtra por local, y hoy el precio vive en cada lote.
+   - Necesita diseño antes de implementar (base primero, pantalla después, según el reparto de la sección 8). Prioridad media: no bloquea la apertura si abre con un solo local.
 
 ---
 
@@ -125,17 +133,16 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 6. PRÓXIMO PASO
 
-**Elegir UNA tarea**, en este orden, según lo que el dueño pueda hacer ahora:
-- Si tiene una persona para pagar: pendiente 1 (prueba real de MP).
-- Si no: pendiente 2 (aplicar el cierre de vistas, tras el OK del dueño) y dejar el pendiente 3 preparado.
+**Elegir UNA tarea**, en este orden:
+1. Pendiente 2: aplicar el cierre de lecturas públicas en vistas internas (OK del dueño ya dado el 20/10; falta el SQL, ver detalle en el pendiente).
+2. Recordarle al dueño los 🔔: prueba real de MP (pendiente 1) y aviso de `pago-pendiente` (pendiente 6).
+3. Cuando el dueño haga la prueba real de MP: mirar la comisión real y resolver el recargo (pendiente 5); después, destrabar el Paso 4 (pendiente 3).
 
 ---
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
-- **20/10** [GPT] — Se agregaron capturas de los bocetos visuales en `docs/bocetos-visuales/` y enlaces desde esta sección.
-- **20/10** [GPT] — Se ajustó el estado del rediseño con la aclaración de Martin: Compra está revisada, subida y funcionando; las otras pestañas de Compras funcionan y quedan a la espera de observaciones de Claude; Caja requiere confirmar si la revisión de Claude concluyó.
-- **20/10** [GPT] — Se añadió a ESTADO ACTUAL el progreso de los rediseños visuales, separando lo publicado de los bocetos aceptados y lo que aún requiere revisión de Claude.
+- **20/10** [GPT] — Se sincronizó ESTADO.md con la versión más reciente de Martin, conservando sus actualizaciones y agregando el estado del rediseño y los enlaces a los 12 bocetos visuales ya subidos.\n- **20/10** [C?] — Decisiones del dueño: prueba real de MP "en unos días" (recordarla); OK para cerrar lecturas públicas de vistas; Paso 4 en espera; combos más adelante; recargo de MP en evaluación con acreditación ya cambiada a "al instante"; avisos de `pago-pendiente` y menores se dejan sin olvidar; flujos sin probar "en unos días". README reescrito (reflejaba el sistema viejo). Agregado el pendiente 9 (precio por local).
 - **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
 - **19/10** — Revisión de seguridad de la base (solo lectura): hallazgos anotados en pendiente 2. Se pidió este archivo para sincronizar las 3 cuentas.
 - **18/10** — Verificado en producción el `app.js` nuevo (pedido #93). Las pruebas anteriores (#90, #91, #92) habían usado el `app.js` viejo por caché del navegador.
