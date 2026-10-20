@@ -142,7 +142,8 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
-- **20/10** [GPT] — Se sincronizó ESTADO.md con la versión más reciente de Martin, conservando sus actualizaciones y agregando el estado del rediseño y los enlaces a los 12 bocetos visuales ya subidos.\n- **20/10** [C?] — Decisiones del dueño: prueba real de MP "en unos días" (recordarla); OK para cerrar lecturas públicas de vistas; Paso 4 en espera; combos más adelante; recargo de MP en evaluación con acreditación ya cambiada a "al instante"; avisos de `pago-pendiente` y menores se dejan sin olvidar; flujos sin probar "en unos días". README reescrito (reflejaba el sistema viejo). Agregado el pendiente 9 (precio por local).
+- **20/10** [GPT] — Se sincronizó ESTADO.md con la versión más reciente de Martin, conservando sus actualizaciones y agregando el estado del rediseño y los enlaces a los 12 bocetos visuales ya subidos.
+- **20/10** [C?] — Decisiones del dueño: prueba real de MP "en unos días" (recordarla); OK para cerrar lecturas públicas de vistas; Paso 4 en espera; combos más adelante; recargo de MP en evaluación con acreditación ya cambiada a "al instante"; avisos de `pago-pendiente` y menores se dejan sin olvidar; flujos sin probar "en unos días". README reescrito (reflejaba el sistema viejo). Agregado el pendiente 9 (precio por local).
 - **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
 - **19/10** — Revisión de seguridad de la base (solo lectura): hallazgos anotados en pendiente 2. Se pidió este archivo para sincronizar las 3 cuentas.
 - **18/10** — Verificado en producción el `app.js` nuevo (pedido #93). Las pruebas anteriores (#90, #91, #92) habían usado el `app.js` viejo por caché del navegador.
