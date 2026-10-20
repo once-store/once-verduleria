@@ -2,7 +2,7 @@
 
 > **Para cualquier IA (Claude, GPT) o persona:** este archivo es la fuente de verdad.
 > Leelo ENTERO antes de hacer nada, trabajá desde "PRÓXIMO PASO" y, al terminar,
-> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 19/10/2026 [C1].
+> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [GPT].
 > **Repo público: nunca escribir acá claves, tokens, ni datos de clientes.**
 
 ---
@@ -64,6 +64,18 @@
 
 ---
 
+
+### Rediseño de apariencia (actualizado 20/10/2026)
+
+- **Panel (`admin-v2.html`)**: rediseño visual aprobado y publicado; `admin.js` quedó intacto.
+- **Compras y mermas — Compra**: el rediseño de esta pestaña figura publicado. Luego se preparó una propuesta visual más completa del formulario, con detalle por bulto y tara; antes de reemplazar lo publicado hay que revisar con Claude cuál es la copia correcta y comprobar que el comportamiento actual siga funcionando.
+- **Números (`metricas.html`)**: boceto aceptado como dirección visual: tres tarjetas (meta diaria, semanal y mensual) con gráficos de líneas y referencias comunes de niveles. Falta revisión de Claude e implementación.
+- **Pedidos por armar, Clientes, Conversaciones y Promociones**: bocetos aceptados como referencia visual. Falta revisar cada uno con Claude contra el código y los datos reales antes de implementar o publicar.
+- **Compras y mermas — Merma, Depósito, Maduración y Precio**: bocetos aceptados como referencia visual; Precio se planteó por lote y Maduración incluye una alerta visible cuando un lote requiere atención. Falta revisión de Claude. Depósito y Maduración tenían pocos o ningún dato de ejemplo para evaluar el resultado.
+- **Inventario (`inventario.html`/`inventario.js`)**: página nueva y diseño aceptados como propuesta. Debe permitir revisar existencias en detalle y de un vistazo, incluyendo el margen porcentual junto al precio. Falta revisión de Claude antes de subirla; luego habrá que propagar el enlace de Inventario en las copias del sidebar.
+- **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Falta definir cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas; revisar esta propuesta con Claude.
+- **Procedimiento acordado**: los bocetos no significan que la lógica esté aprobada ni que los cambios estén publicados. Claude revisa cada propuesta contra el código y los datos reales; Martin sube los cambios después de esa revisión. En cambios solo visuales, no tocar archivos `.js` ni eliminar o renombrar `id`, `class` o `data-roles` existentes. Las páginas tienen copias independientes del sidebar, por lo que los cambios de menú deben propagarse a las páginas correspondientes.
+
 ## 4. PENDIENTE (por prioridad)
 
 1. **[ALTA] Prueba real de Mercado Pago** con otra persona (valida link, webhook y página; cada prueba cuesta la comisión de MP). Esperado: sale solo de "Pendientes" y la página pasa a "Pago confirmado".
@@ -103,6 +115,7 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
+- **20/10** [GPT] — Se añadió a ESTADO ACTUAL el progreso de los rediseños visuales, separando lo publicado de los bocetos aceptados y lo que aún requiere revisión de Claude.
 - **19/10** [C1] — ESTADO.md subido al repo por el dueño. Se agregó la sección EN CURSO para reservar tareas y evitar que dos cuentas trabajen en lo mismo.
 - **19/10** — Revisión de seguridad de la base (solo lectura): hallazgos anotados en pendiente 2. Se pidió este archivo para sincronizar las 3 cuentas.
 - **18/10** — Verificado en producción el `app.js` nuevo (pedido #93). Las pruebas anteriores (#90, #91, #92) habían usado el `app.js` viejo por caché del navegador.
