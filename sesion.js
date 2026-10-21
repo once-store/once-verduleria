@@ -98,7 +98,35 @@ export function aplicarVisibilidadSidebarPorRol(rol) {
       if (li) li.classList.add('oculto')
     }
   })
+  // Caja va primero: así queda antes de Finanzas y de Números.
+  agregarLinkCaja(rol)
   agregarLinkFinanzas(rol)
+  renombrarMercaderia()
+}
+
+/**
+ * Caja la usan Dueño, Encargado y Mostrador. Hay páginas (ej. Compras) cuyo sidebar
+ * quedó sin el link; en vez de copiarlo a mano en cada una, se agrega acá si falta.
+ * Se ubica después de "Conversaciones" y antes de "Números", igual que en el Panel.
+ */
+function agregarLinkCaja(rol) {
+  if (!['dueno', 'encargado', 'mostrador'].includes(rol)) return
+  const menu = document.querySelector('.sidebar-menu')
+  if (!menu || menu.querySelector('a[href="caja.html"]')) return
+
+  const li = document.createElement('li')
+  li.className = 'nav-item'
+  li.innerHTML = `
+    <a href="caja.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+      <i class="nav-icon bi bi-cash-coin"></i>
+      <p>Caja</p>
+    </a>`
+
+  const numeros = menu.querySelector('a[href="metricas.html"]')?.closest('li')
+  const salir = menu.querySelector('#btn-salir')?.closest('li')
+  const referencia = numeros || salir
+  if (referencia) referencia.before(li)
+  else menu.appendChild(li)
 }
 
 /**
@@ -124,4 +152,34 @@ function agregarLinkFinanzas(rol) {
   const referencia = numeros || salir
   if (referencia) referencia.before(li)
   else menu.appendChild(li)
+}
+
+/**
+ * "Compras y mermas" pasó a llamarse "Mercadería". En vez de editar el texto a mano en cada
+ * página, se cambia acá: el link del menú (conservando el aviso de maduración), el atajo del
+ * Panel, el título de la pestaña y el encabezado de la propia página de Mercadería.
+ * Solo toca textos que digan exactamente "compras y mermas"; si ya dicen otra cosa, no hace nada.
+ */
+function renombrarMercaderia() {
+  const NUEVO = 'Mercadería'
+  const VIEJO = /compras y mermas/i
+
+  document.querySelectorAll('a[href="compras.html"]').forEach(a => {
+    const p = a.querySelector('p')
+    if (p) {
+      p.childNodes.forEach(nodo => {
+        if (nodo.nodeType === Node.TEXT_NODE && VIEJO.test(nodo.textContent)) {
+          nodo.textContent = nodo.textContent.replace(VIEJO, NUEVO)
+        }
+      })
+    }
+    const fuerte = a.querySelector('strong')
+    if (fuerte && VIEJO.test(fuerte.textContent)) fuerte.textContent = NUEVO
+  })
+
+  document.querySelectorAll('.app-content-header h3').forEach(h => {
+    if (h.textContent.trim().toLowerCase() === 'compras y mermas') h.textContent = NUEVO
+  })
+
+  if (VIEJO.test(document.title)) document.title = document.title.replace(VIEJO, 'mercadería')
 }
