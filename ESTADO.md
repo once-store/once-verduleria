@@ -2,7 +2,7 @@
 
 > **Para cualquier IA (Claude, GPT) o persona:** este archivo es la fuente de verdad.
 > Leelo ENTERO antes de hacer nada, trabajá desde "PRÓXIMO PASO" y, al terminar,
-> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [C1, sobre la versión fusionada de GPT y C2].
+> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [C2, sobre la versión de C1].
 > **Repo público: nunca escribir acá claves, tokens, ni datos de clientes.**
 
 ---
@@ -65,7 +65,7 @@
 - `pago-exitoso` con un pago real de MP.
 - Flujos de **transferencia** y **pago combinado** con el `app.js` nuevo.
 - **Reintento de MP** tras un link fallido (probado solo con simulación).
-- **Caja, Finanzas y pago de compras [C2, 13–17/10]:** hechas y aplicadas (pantallas + base), sin probar de punta a punta con cada rol (Dueño, Encargado, Mostrador). Detalle en la BITÁCORA.
+- **Caja, Finanzas y pago de compras [C2, 13–17/10]:** hechas y aplicadas (pantallas + base), sin probar de punta a punta con cada rol (Dueño, Encargado, Mostrador). Detalle en la BITÁCORA. Lista de chequeo armada: `docs/lista-chequeo-1-12.md`.
 
 ---
 
@@ -78,7 +78,7 @@
 - **Pedidos por armar, Clientes, Conversaciones y Promociones**: bocetos aceptados como referencia visual. Falta revisar cada uno con Claude contra el código y los datos reales antes de implementar o publicar.
 - **Compras y mermas — Merma, Depósito, Maduración y Precio**: la página actual funciona bien. También hay bocetos visuales aceptados para estas pestañas; Precio se planteó por lote y Maduración incluye un aviso cuando un lote requiere atención. Queda la línea de revisión con Claude para escuchar sus observaciones y dejar confirmado el estado de cada propuesta. Depósito y Maduración tenían pocos o ningún dato de ejemplo para evaluar el boceto.
 - **Inventario (`inventario.html`/`inventario.js`)**: página nueva y diseño aceptados como propuesta. Debe permitir revisar existencias en detalle y de un vistazo, incluyendo el margen porcentual junto al precio. Falta revisión de Claude antes de subirla; luego habrá que propagar el enlace de Inventario en las copias del sidebar. **Nota [C2]:** el enlace podría propagarse desde `sesion.js` (que ya agrega el link Finanzas al menú del Dueño) en vez de editar cada copia del sidebar a mano; verificar si alcanza antes de elegir.
-- **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Claude está terminando o puede haber terminado su revisión; confirmar el resultado antes de marcarla como cerrada. El punto a resolver es cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas. **Nota [C2]:** la Caja funcional ya está implementada y aplicada (ver BITÁCORA 13–17/10); según C2 siguen faltando las ventas por transferencia/otros medios y el historial por local (pendiente 10). Confirmar con C2 si cerró la revisión del boceto.
+- **Caja (`caja.html`)**: hay un boceto inicial centrado en el efectivo físico. Claude está terminando o puede haber terminado su revisión; confirmar el resultado antes de marcarla como cerrada. El punto a resolver es cómo mostrar ventas por transferencia y otros medios, y el historial de ventas/movimientos por local para el personal y para el dueño con varios locales. El arqueo de billetes debe distinguirse del resumen de ventas. **Nota [C2]:** la Caja funcional ya está implementada y aplicada (ver BITÁCORA 13–17/10); según C2 siguen faltando las ventas por transferencia/otros medios y el historial por local (pendiente 10). **[C2, 20/10]:** no se pudo confirmar que C2 cerrara la revisión del boceto; se considera SIN REVISAR.
 - **Procedimiento acordado**: los bocetos no significan que la lógica esté aprobada ni que los cambios estén publicados. Claude revisa cada propuesta contra el código y los datos reales; Martin sube los cambios después de esa revisión. En cambios solo visuales, no tocar archivos `.js` ni eliminar o renombrar `id`, `class` o `data-roles` existentes. Las páginas tienen copias independientes del sidebar, por lo que los cambios de menú deben propagarse a las páginas correspondientes.
 
 #### Imágenes de los bocetos
@@ -118,8 +118,8 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
    - Estado: no hecho, hasta donde consta. Dato de trabajo anterior, **a verificar en la base**: `catalogo_disponible` no filtra por local, y hoy el precio vive en cada lote.
    - Necesita diseño antes de implementar (base primero, pantalla después, según el reparto de la sección 8). Prioridad media: no bloquea la apertura si abre con un solo local.
 10. **Caja [C2]:** falta mostrar las ventas por transferencia y otros medios, y el historial por local (ver también la nota de Caja en "Rediseño de apariencia").
-11. **Lista de chequeo antes del 1/12 [C2]:** probar Caja, Finanzas y pago de compras de punta a punta con cada rol (Dueño, Encargado, Mostrador) y dejar la lista armada.
-12. **Revisión de bocetos de GPT contra código y datos reales [C2]:** Números, Pedidos por armar, Clientes, Conversaciones, Promociones, Merma/Depósito/Maduración/Precio, Inventario y Caja (estado de cada uno en "Rediseño de apariencia"). Nada se sube sin esa revisión y el OK del dueño. Un boceto por chat.
+11. **Lista de chequeo antes del 1/12 [C2]:** ARMADA el 20/10 en `docs/lista-chequeo-1-12.md` (Mostrador, Encargado, Dueño y cruce de roles). **Falta que el dueño la ejecute** y anote los resultados. Los fallos conocidos son los del pendiente 10.
+12. **Revisión de bocetos de GPT contra código y datos reales [C2]:** Números, Pedidos por armar, Clientes, Conversaciones, Promociones, Merma/Depósito/Maduración/Precio, Inventario y Caja (estado de cada uno en "Rediseño de apariencia"). Nada se sube sin esa revisión y el OK del dueño. Un boceto por chat. El boceto de Caja cuenta como sin revisar (C2 no confirmó haberlo cerrado).
 
 ---
 
@@ -134,7 +134,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 | Cuenta | Tarea | Archivos que toca | Desde | Estado |
 |---|---|---|---|---|
 | GPT | Ninguna por ahora | — | — | — |
-| C2 | Sin reserva: se quedó sin límite el 20/10; no se sabe si terminó la revisión del boceto de Caja | `caja.html`, `caja.js` | 20/10 | A CONFIRMAR con el dueño |
+| C2 | Lista de chequeo del 1/12 (pendiente 11). Boceto de Caja: revisión NO confirmada, queda para pendiente 12 | `docs/lista-chequeo-1-12.md` (solo documento) | 20/10 | TERMINADA (falta OK del dueño) |
 
 Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a la BITÁCORA).
 
@@ -145,13 +145,14 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 **Elegir UNA tarea**, en este orden:
 1. Pendiente 2 (lo que falta): revisar el acceso a funciones de dinero, incluidas las de [C2]. Las vistas internas ya están cerradas.
 2. Recordarle al dueño los 🔔: prueba real de MP (pendiente 1) y aviso de `pago-pendiente` (pendiente 6).
-3. Para [C2] (pantallas): lista de chequeo del 1/12 (pendiente 11) o revisar los bocetos de GPT, uno por chat (pendiente 12).
+3. Para [C2] (pantallas): la lista de chequeo del 1/12 ya está armada (pendiente 11; falta que el dueño la ejecute). Seguir con la revisión de los bocetos de GPT, uno por chat (pendiente 12).
 4. Cuando el dueño haga la prueba real de MP: mirar la comisión real y resolver el recargo (pendiente 5); después, destrabar el Paso 4 (pendiente 3).
 
 ---
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
+- **20/10** [C2] — Chequeo de estado: C2 sin memoria del chat anterior, el boceto de Caja pasa a "sin revisar". Armada la lista de chequeo del 1/12 por rol (pendiente 11) y guardada en `docs/lista-chequeo-1-12.md`. No se tocó código ni base.
 - **20/10** [C1] — Pendiente 2, parte vistas: el rol anónimo leía `clientes_saldo` (DNI, WhatsApp, límite de fiado, saldo), `lotes_legible` y `sugerencias_maduracion` (costo por lote) y `lotes_venta`. Probado primero en transacción que se deshace sola; aplicado con OK del dueño como migración `cerrar_lectura_publica_vistas_internas` (`revoke all ... from anon, public` sobre las 4 vistas). Verificado después: el anónimo queda bloqueado en las 4, sigue leyendo `catalogo_disponible` (16 filas) y con login se leen sin problema. Logs de 24 h: solo el panel de compras (`compras.js`, con login) usa `sugerencias_maduracion`. No se pudo revisar el código del bot de WhatsApp (fuera del repo). Observado, sin tocar: `pedidos`, `pedido_items` y `conversaciones_bot` aceptan INSERT público sin restricción (relacionado con el Paso 4, en espera).
 - **20/10** [GPT] — Se sincronizó ESTADO.md con la versión más reciente de Martin, conservando sus actualizaciones y agregando el estado del rediseño y los enlaces a los 12 bocetos visuales ya subidos.
 - **20/10** [C?] — Se fusionó la versión del repo (con la sección de rediseño de GPT) con lo informado por C2 (bitácora 13–17/10, pendientes 10 a 12, nota sobre sus funciones de dinero en el pendiente 2). Nueva regla en la sección 1: leer siempre la versión actual del repo antes de editar este archivo.
