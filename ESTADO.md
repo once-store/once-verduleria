@@ -2,7 +2,7 @@
 
 > **Para cualquier IA (Claude, GPT) o persona:** este archivo es la fuente de verdad.
 > Leelo ENTERO antes de hacer nada, trabajá desde "PRÓXIMO PASO" y, al terminar,
-> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 20/10/2026 [C2, sobre la versión de C1].
+> actualizá "ESTADO", "PENDIENTE" y "BITÁCORA". Última actualización: 21/10/2026 [C2, sobre la versión de C1].
 > **Repo público: nunca escribir acá claves, tokens, ni datos de clientes.**
 
 ---
@@ -129,6 +129,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 12. **Revisión de bocetos de GPT contra código y datos reales [C2]:** Números, Pedidos por armar, Clientes, Conversaciones, Promociones, Merma/Depósito/Maduración/Precio, Inventario y Caja (estado de cada uno en "Rediseño de apariencia"). Nada se sube sin esa revisión y el OK del dueño. Un boceto por chat. El boceto de Caja cuenta como sin revisar (C2 no confirmó haberlo cerrado).
 13. **[NUEVO, pedido del dueño 21/10] Avisos en el panel del bot de WhatsApp (campanita) [diseño: C2].** Que el panel avise sin tener que entrar a la pantalla cuando (a) hay una conversación nueva o en curso con el bot y (b) hay un pedido nuevo en "Pedidos por armar". Se asume que el panel casi siempre está abierto. Base [C1] solo si hace falta una consulta o dato nuevo; no hay que tocar permisos.
 14. **[NUEVO, pedido del dueño 21/10] Mensaje final del bot y delivery.** Hoy, al confirmar el pago, el bot dice solo "quedó registrado... ¡Gracias!". Falta decir que el pedido lo espera o que puede pasar a retirarlo (por ahora sin delivery). El dueño cree que las conversaciones serán sobre todo por **delivery** y no por consultas de productos: el delivery hay que diseñarlo (zona, costo, cómo se pide y cómo se avisa), todavía sin armar. El texto del bot está en `pedido.js` (fuera del repo).
+15. **[C2] Nombre "Mercadería" y botón Caja en Compras:** `compras.html` no tenía el link a Caja en el menú (el Panel y Pedidos por armar sí). Se resolvió desde `sesion.js`: agrega el link Caja si falta (Dueño, Encargado, Mostrador) y cambia "Compras y mermas" por "Mercadería" en el menú, el atajo del Panel, el título de la pestaña y el encabezado de la página. **Verificado 21/10 con el rol Dueño:** Caja aparece en Mercadería y el nombre nuevo se ve bien. **Falta:** (a) comprobar lo mismo con Encargado y Mostrador (incluirlo al ejecutar la lista de chequeo del pendiente 11); (b) el cambio de nombre es provisorio y por JS, los HTML siguen diciendo "Compras y mermas": cuando se toquen las páginas, escribir el nombre nuevo directo y sacar `renombrarMercaderia()`. El texto del pendiente 12 y de "Rediseño de apariencia" sigue usando el nombre viejo.
 
 ---
 
@@ -143,7 +144,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 | Cuenta | Tarea | Archivos que toca | Desde | Estado |
 |---|---|---|---|---|
 | GPT | Ninguna por ahora | — | — | — |
-| C2 | Lista de chequeo del 1/12 (pendiente 11). Boceto de Caja: revisión NO confirmada, queda para pendiente 12 | `docs/lista-chequeo-1-12.md` (solo documento) | 20/10 | TERMINADA (falta OK del dueño) |
+| C2 | Lista de chequeo del 1/12 (pendiente 11) | `docs/lista-chequeo-1-12.md` (solo documento) | 20/10 | TERMINADA (falta OK del dueño) |
 
 Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a la BITÁCORA).
 
@@ -161,6 +162,7 @@ Estados: `EN CURSO` → `TERMINADA (falta OK del dueño)` → (aceptada: pasa a 
 
 ## 7. BITÁCORA (más reciente arriba; una línea por trabajo)
 
+- **21/10** [C2] — El dueño notó que en Compras desaparecía el botón Caja. Causa: el menú de `compras.html` no tiene el link (el Panel y `armado.html` sí; solo se leyeron esos tres). Cambio solo en `sesion.js`, ya subido por el dueño: nueva `agregarLinkCaja()` (agrega el link si falta, antes de Finanzas y Números) y `renombrarMercaderia()` ("Compras y mermas" pasa a "Mercadería", conservando el aviso amarillo de maduración). Clave pública de Supabase verificada idéntica. No se tocó base. Verificado por el dueño en pantalla (21/10, rol Dueño): Caja aparece en Mercadería y el nombre nuevo se ve en el menú, el atajo del Panel, la pestaña y el encabezado. Falta probarlo con Encargado y Mostrador (pendiente 15).
 - **21/10** [C1] — Bot de WhatsApp. Se vio que el bot usa la clave pública para casi todo y que su clave de servicio estaba mal cargada en el `.env` (llevaba un `<` pegado delante, así que `/armado` no podía guardar pesos). El dueño la corrigió. Se agregó al bot un cliente interno con la clave de servicio para 5 llamadas (guardar/borrar carrito, recuperar carritos, recuperar pedidos pendientes) y el dueño lo reinició. Los logs muestran todas las llamadas del bot con respuesta correcta; con eso se cerró `obtener_pedidos_whatsapp_pendientes` al público (migración `cerrar_pedidos_whatsapp_pendientes_a_anon`, verificada: `anon` no, `authenticated` y servicio sí). Pedido #94 verificado en la base: 2 ítems, armado listo, pago por transferencia. **Hallazgo y arreglo:** el bot le dijo al cliente $1529 pero la base registró $1550, porque `confirmar_metodo_pago` redondea el total al múltiplo de $50 más cercano; `pedido.js` ahora aplica el mismo redondeo antes de avisar y, tras el pago, usa el total que devuelve la base (entregado, el dueño lo aplica en el bot). Pendiente de comprobar en una prueba nueva. Notas: el README del bot está desactualizado (dice que solo hace charla general); fuera de horario el bot no arma carritos ni crea pedidos (comportamiento intencional); si el dueño escribe a mano a un contacto, el bot lo pausa 180 minutos (se borra reiniciando o con `/bot activar <número>`).
 - **20/10** [C1] — Pendiente 2, parte funciones: revisadas todas las funciones de `public`. Las de [C2] están bien (sin acceso `anon`, con chequeo de rol). Las 4 funciones de "Números" no chequeaban rol: se les agregó "solo Dueño" (migración `solo_dueno_funciones_numeros`). Probado antes en transacción con un usuario de cada rol (Dueño permitido; Encargado, Mostrador y Vendedor bloqueados) y verificado después (sin acceso `anon`, chequeo presente). Ninguna otra función, vista ni tarea programada las usaba. Anotados sin tocar: `obtener_items_pedido`, `cancelar_pedido` sin chequeo de local, `evaluar_*` abiertas a `anon` y las funciones `*_whatsapp` abiertas al público (ver pendiente 2).
 - **20/10** [C2] — Chequeo de estado: C2 sin memoria del chat anterior, el boceto de Caja pasa a "sin revisar". Armada la lista de chequeo del 1/12 por rol (pendiente 11) y guardada en `docs/lista-chequeo-1-12.md`. No se tocó código ni base.
