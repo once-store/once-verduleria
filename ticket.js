@@ -50,7 +50,7 @@ async function cargarTicket() {
   const cabecera = data[0]
 
   if (cabecera.estado !== 'pagado') {
-    mostrarMensaje('Este pedido todavía no fue pagado, no hay ticket disponible.')
+    mostrarMensaje('Todavía no confirmamos el pago de este pedido. Volvé a abrir este link cuando te avisemos.')
     return
   }
 
@@ -67,6 +67,20 @@ async function cargarTicket() {
       </div>
     </div>
   `).join('')
+
+  // El total del pedido se redondea, así que puede no ser igual a la suma de los ítems.
+  // Se muestra la diferencia para que el ticket cierre. (El recargo de Mercado Pago NO está
+  // en este total: se agrega recién al cobrar en MP.)
+  const sumaItems = data.reduce((acc, item) => acc + Number(item.subtotal), 0)
+  const ajuste = Number(cabecera.monto_total) - sumaItems
+  if (Math.abs(ajuste) >= 0.5) {
+    document.getElementById('t-subtotal').textContent = formatoMoneda(sumaItems)
+    document.getElementById('t-ajuste-label').textContent =
+      (cabecera.metodo_pago === 'efectivo' || cabecera.metodo_pago === 'combinado') ? 'Redondeo en efectivo' : 'Redondeo'
+    document.getElementById('t-ajuste').textContent = (ajuste > 0 ? '+' : '-') + formatoMoneda(Math.abs(ajuste))
+    document.getElementById('t-subtotal-fila').style.display = ''
+    document.getElementById('t-ajuste-fila').style.display = ''
+  }
 
   document.getElementById('t-total').textContent = formatoMoneda(cabecera.monto_total)
   document.getElementById('t-metodo').textContent = NOMBRES_METODO[cabecera.metodo_pago] || cabecera.metodo_pago
