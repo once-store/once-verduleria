@@ -257,7 +257,7 @@ function dibujarDetalle(p) {
       : `<span class="inv-etiqueta inv-etiqueta-regular">REGULAR</span><small>Precio sin rebaja</small>`
     const estado = esSalon(l)
       ? '<span class="inv-estado">En venta</span>'
-      : '<span class="inv-estado inv-estado-dep">No está en venta</span>'
+      : '<span class="inv-estado inv-estado-dep">En espera</span>'
 
     return `
       <div class="inv-lote ${conCosto ? '' : 'inv-sin-costo'}">
