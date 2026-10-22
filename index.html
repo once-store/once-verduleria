@@ -2,177 +2,145 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>once · inventario</title>
-<link rel="preload" href="adminlte.min.css" as="style">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="adminlte.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E7D52">
+<title>once · verdulería</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-14">
-<link rel="stylesheet" href="inventario.css?v=inventario-ui-2">
 </head>
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
+<body>
 
-<div id="vista-inventario" class="app-wrapper oculto">
+<header class="topbar">
+  <div class="brand-wrap">
+    <span class="brand">once</span>
+    <span class="brand-sub">verdulería autoservicio</span>
+  </div>
+  <div class="topbar-right">
+    <span class="fresh-pill"><span class="leaf-dot">✦</span> fresco todos los días</span>
+    <span id="badge-pedido" class="badge-pedido oculto"></span>
+  </div>
+</header>
 
-  <nav class="app-header navbar navbar-expand bg-body">
-    <div class="container-fluid">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Mostrar/ocultar menú">
-            <i class="bi bi-list"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-
-  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
-    <div class="sidebar-brand">
-      <a href="admin-v2.html" class="brand-link">
-        <span class="brand-text fw-bold">once · panel</span>
-      </a>
-    </div>
-    <div class="sidebar-wrapper">
-      <nav class="mt-2" aria-label="Navegación principal">
-        <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false">
-          <li class="nav-item">
-            <a href="admin-v2.html" class="nav-link">
-              <i class="nav-icon bi bi-speedometer"></i>
-              <p>Panel</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="armado.html" class="nav-link" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-basket"></i>
-              <p>Pedidos por armar</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="compras.html" class="nav-link" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-box-seam"></i>
-              <p>Compras y mermas</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="promociones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-tags"></i>
-              <p>Promociones</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="clientes.html" class="nav-link" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-people"></i>
-              <p>Clientes</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="conversaciones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-whatsapp"></i>
-              <p>Conversaciones</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="caja.html" class="nav-link" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-cash-coin"></i>
-              <p>Caja</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="finanzas.html" class="nav-link" data-roles="dueno">
-              <i class="nav-icon bi bi-bank"></i>
-              <p>Finanzas</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="metricas.html" class="nav-link" data-roles="dueno">
-              <i class="nav-icon bi bi-graph-up"></i>
-              <p>Números</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="inventario.html" class="nav-link active" data-roles="dueno,encargado,mostrador">
-              <i class="nav-icon bi bi-clipboard-data"></i>
-              <p>Inventario</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="horario.html" class="nav-link" data-roles="dueno">
-              <i class="nav-icon bi bi-clock"></i>
-              <p>Editar horario</p>
-            </a>
-          </li>
-          <li class="nav-item mt-3">
-            <button id="btn-salir" class="nav-link btn btn-link text-start w-100">
-              <i class="nav-icon bi bi-box-arrow-left"></i>
-              <p>Cerrar sesión</p>
-            </button>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
-
-  <main class="app-main">
-    <div class="app-content-header">
-      <div class="container-fluid">
-        <div class="inv-cabecera">
-          <div>
-            <p class="inv-eyebrow">ONCE · STOCK DEL LOCAL</p>
-            <h3 class="mb-0">Inventario</h3>
-            <p class="inv-descripcion">Un vistazo al stock que tenés, dónde está y qué hay en cada lote.</p>
-          </div>
-          <div id="contenedor-selector-local"></div>
-        </div>
+<main id="vista-catalogo" class="catalogo">
+  <section class="hero">
+    <div class="hero-media">
+      <img src="productos/manzana.png" alt="" class="hero-photo" id="hero-img-principal">
+      <div class="hero-overlay"></div>
+      <div class="hero-dots" id="hero-dots"></div>
+      <div class="hero-content">
+        <span class="hero-badge" id="hero-eyebrow">BUENO · FRESCO · SIMPLE</span>
+        <h1 id="hero-titulo">Elegí lo que querés</h1>
+        <p id="hero-subtitulo">Nosotros hacemos el resto</p>
+        <span class="hero-note" id="hero-nota"><span>⚖</span> Pesaje rápido en cada producto por kilo</span>
       </div>
     </div>
+  </section>
 
-    <div class="app-content">
-      <div class="container-fluid">
-        <div class="inv-pagina">
-          <p id="inv-error" class="error oculto"></p>
-
-          <div id="inv-kpis" class="inv-kpis"><p class="muted">Cargando…</p></div>
-
-          <section class="inv-seccion">
-            <div class="inv-seccion-cabecera">
-              <h4>Stock por producto</h4>
-              <span id="inv-contador" class="inv-sub"></span>
-            </div>
-            <div class="inv-herramientas">
-              <input type="search" id="inv-buscar" class="inv-buscar" placeholder="Buscar producto…" autocomplete="off">
-              <div class="inv-filtro" role="tablist">
-                <button type="button" class="inv-filtro-btn activa" data-ubicacion="todos">Todos</button>
-                <button type="button" class="inv-filtro-btn" data-ubicacion="salon">Salón</button>
-                <button type="button" class="inv-filtro-btn" data-ubicacion="deposito">Depósito</button>
-              </div>
-              <button type="button" id="inv-btn-control" class="inv-btn-control oculto">
-                <i class="bi bi-clipboard-check"></i> <span>Hacer control</span>
-              </button>
-            </div>
-            <div id="inv-control-barra" class="inv-control-barra oculto">
-              <p class="inv-control-aviso"><i class="bi bi-exclamation-triangle"></i> Hacé el control cuando no haya pedidos por armar: lo ya vendido se descontó del sistema, pero puede seguir físicamente en el cajón y mostrarte un sobrante que no es real.</p>
-              <div class="inv-control-acciones">
-                <span id="inv-control-resumen" class="inv-sub"></span>
-                <button type="button" id="inv-btn-confirmar-todos" class="inv-btn-confirmar" disabled>Confirmar todos los cargados</button>
-              </div>
-            </div>
-            <p id="inv-ok" class="inv-ok oculto"></p>
-            <div id="inv-tabla"></div>
-          </section>
-
-          <div class="inv-nota">
-            <span class="inv-nota-icono">i</span>
-            <span>El total se muestra por producto y en su unidad. Desplegá una fila para ver código, ubicación, fecha, costo, precio, estado y margen sobre costo. Los lotes en oferta muestran el precio regular y el margen puede ser negativo o 0%. Dueño y Encargado pueden usar "Hacer control" para contar y ajustar el stock.</span>
-          </div>
-          <p id="inv-aviso-costos" class="inv-aviso-costos oculto">Costos y margen visibles solo para Dueño y Encargado.</p>
-        </div>
-      </div>
+  <section class="catalog-head">
+    <div>
+      <span class="section-kicker">FRESCO PARA VOS</span>
+      <h2>Elegí tus productos</h2>
     </div>
-  </main>
-</div>
+    <div class="catalog-tip"><span>☝</span> Tocá una fruta o verdura para pesarla</div>
+  </section>
 
-<script src="adminlte.min.js"></script>
-<script type="module" src="inventario.js?v=inventario-ui-2"></script>
+  <div class="category-pills" aria-label="Categorías">
+    <button class="category-pill active" data-categoria="">Todo</button>
+    <button class="category-pill" data-categoria="Frutas">🍎 Frutas</button>
+    <button class="category-pill" data-categoria="Verduras">🥬 Verduras</button>
+    <button class="category-pill" data-categoria="Papas y raíces">🥔 Papas y raíces</button>
+    <button class="category-pill" data-categoria="Aromáticas">🌿 Aromáticas</button>
+    <button class="category-pill" data-categoria="Otros">🥚 Otros</button>
+  </div>
+
+  <div id="lista-productos" class="grid-productos">
+    <p class="muted">Cargando productos…</p>
+  </div>
+
+  <section class="bottom-promise">
+    <div class="promise-icon">✓</div>
+    <div>
+      <strong>Tu compra, simple y transparente</strong>
+      <span>Vas a ver el peso y el precio antes de agregar cada producto.</span>
+    </div>
+  </section>
+</main>
+
+<footer id="barra-carrito" class="barra-carrito oculto">
+  <button id="btn-ver-carrito" class="btn-primario cart-bar-button">
+    <span class="cart-bar-left"><span class="cart-icon">🛒</span><span><b id="carrito-cantidad">0</b> productos</span></span>
+    <span class="cart-bar-right"><span id="carrito-total">$0</span><span class="cart-arrow">→</span></span>
+  </button>
+</footer>
+
+<section id="vista-carrito" class="panel oculto">
+  <div class="panel-shell">
+    <div class="panel-header">
+      <div class="panel-title-wrap"><span class="panel-icon">🛒</span><div><span class="section-kicker">TU COMPRA</span><h2>Tu changuito</h2></div></div>
+      <button class="btn-texto" id="btn-cerrar-carrito">Volver</button>
+    </div>
+    <div id="lista-carrito"></div>
+    <div class="total-card"><span>Total de tu compra</span><strong id="carrito-total-2">$0</strong></div>
+    <button id="btn-ir-pago" class="btn-primario btn-ancho">Pagar <span>→</span></button>
+  </div>
+</section>
+
+<section id="vista-pago" class="panel oculto">
+  <div class="panel-shell narrow-shell">
+    <div class="panel-header">
+      <div class="panel-title-wrap"><span class="panel-icon">💳</span><div><span class="section-kicker">ÚLTIMO PASO</span><h2>¿Cómo pagás?</h2></div></div>
+      <button class="btn-texto" id="btn-cerrar-pago">Volver</button>
+    </div>
+    <p class="panel-lead">Elegí la forma que te resulte más cómoda.</p>
+    <div class="metodos-pago">
+      <button class="metodo-pago" data-metodo="efectivo"><span class="pay-icon">💵</span><span><span class="metodo-titulo">Efectivo</span><span class="metodo-sub">Pagás en el mostrador</span></span><span class="pay-arrow">→</span></button>
+      <button class="metodo-pago" data-metodo="transferencia"><span class="pay-icon">🏦</span><span><span class="metodo-titulo">Transferencia</span><span class="metodo-sub">Por alias, confirmamos al ver el ingreso</span></span><span class="pay-arrow">→</span></button>
+      <button class="metodo-pago" id="btn-metodo-combinado"><span class="pay-icon">🔄</span><span><span class="metodo-titulo">Pago combinado</span><span class="metodo-sub">Parte efectivo, parte transferencia</span></span><span class="pay-arrow">→</span></button>
+      <button class="metodo-pago mercadopago" data-metodo="mercadopago"><span class="pay-icon">MP</span><span><span class="metodo-titulo">Mercado Pago</span><span class="metodo-sub">Con un pequeño recargo por el costo del servicio</span></span><span class="pay-arrow">→</span></button>
+    </div>
+    <div id="panel-combinado" class="panel-combinado oculto">
+      <label>¿Cuánto pagás en efectivo?
+        <input type="number" id="input-combinado-efectivo" min="0" step="1" inputmode="decimal">
+      </label>
+      <p class="muted">Transferencia: <strong id="combinado-transferencia">$0</strong></p>
+      <button class="btn-primario" id="btn-confirmar-combinado">Confirmar pago combinado</button>
+    </div>
+  </div>
+</section>
+
+<section id="vista-espera" class="panel oculto">
+  <div class="espera-contenido panel-shell narrow-shell">
+    <div class="success-orbit">✓</div>
+    <p class="espera-numero" id="espera-numero-pedido">Pedido</p>
+    <p class="espera-monto" id="espera-monto">$0</p>
+    <p id="espera-estado" class="espera-estado">Esperando confirmación</p>
+    <p class="muted espera-copy" id="espera-instrucciones"></p>
+    <a id="link-ticket" href="#" target="_blank" class="btn-texto oculto">Ver ticket</a>
+    <button id="btn-nuevo-pedido" class="btn-texto oculto">Hacer otro pedido</button>
+  </div>
+</section>
+
+<section id="vista-pesaje" class="panel oculto">
+  <div class="panel-shell weigh-shell">
+    <div class="panel-header">
+      <div class="panel-title-wrap"><span class="panel-icon">⚖</span><div><span class="section-kicker">PESAJE</span><h2 id="pesaje-nombre">Producto</h2></div></div>
+      <button class="btn-texto" id="btn-cerrar-pesaje">Cancelar</button>
+    </div>
+    <div class="weigh-hint"><span>⚖</span><div><strong>Colocá el producto en la balanza</strong><small>Por ahora podés ingresar el peso manualmente. La balanza automática se conectará más adelante.</small></div></div>
+    <div class="pesaje-contenido">
+      <div class="pesaje-input-fila"><input type="number" id="pesaje-input" class="input-pesaje-grande" min="0.1" step="0.1" inputmode="decimal" value="0.0"><span class="pesaje-unidad">kg</span></div>
+      <p class="pesaje-precio-kg" id="pesaje-precio-kg"></p>
+      <p class="pesaje-subtotal" id="pesaje-subtotal">$0</p>
+    </div>
+    <button id="btn-agregar-pesaje" class="btn-primario btn-ancho">Agregar al carrito <span>→</span></button>
+  </div>
+</section>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
