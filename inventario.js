@@ -6,8 +6,9 @@ import {
   obtenerLocalFiltroActivo
 } from './sesion.js'
 
-// --- Inventario: solo lectura. Todo sale de la vista `inventario_lotes`; la base ya filtra por local
-// y oculta el costo a quien no es Dueño/Encargado. La pantalla solo agrupa y muestra. ---
+// --- Inventario. Lectura: vista `inventario_lotes` (ya filtra por local y oculta el costo a Mostrador).
+// Control de stock: solo Dueño y Encargado, vía la función de base `registrar_control_lote`
+// (la base valida rol, local, stock vigente y motivo; la pantalla solo ayuda a cargar). ---
 
 const $ = id => document.getElementById(id)
 const vista = $('vista-inventario')
@@ -17,6 +18,13 @@ let lotes = []
 let ubicacionActiva = 'todos'
 let textoBusqueda = ''
 const abiertos = new Set()
+
+// Control de stock
+let modoControl = false
+let taraCajon = 3
+let tolerancia = 5
+const controles = new Map() // lote_id -> { bruto, cajones, motivo }
+let confirmando = false
 
 // ---------- utilidades ----------
 function escapar(valor) {
@@ -35,6 +43,10 @@ function fmtPrecio(n) {
 
 function fmtCantidad(n) {
   return (Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 3 })
+}
+
+function redondear3(n) {
+  return Math.round(n * 1000) / 1000
 }
 
 function unidad(tipo) {
@@ -66,7 +78,39 @@ function mostrarError(mensaje) {
   el.classList.remove('oculto')
 }
 
+function mostrarOk(mensaje) {
+  const el = $('inv-ok')
+  if (!mensaje) { el.classList.add('oculto'); return }
+  el.textContent = mensaje
+  el.classList.remove('oculto')
+}
+
+function puedeControlar() {
+  return sesion && (sesion.rol === 'dueno' || sesion.rol === 'encargado')
+}
+
+// Acepta "14,5" o "14.5". Devuelve null si está vacío o no es válido.
+function leerNumero(texto) {
+  const t = String(texto ?? '').trim().replace(',', '.')
+  if (t === '') return null
+  const n = Number(t)
+  return Number.isFinite(n) && n >= 0 ? n : null
+}
+
 // ---------- carga ----------
+async function cargarConfiguracion() {
+  const { data, error } = await supabase
+    .from('configuracion').select('clave, valor')
+    .in('clave', ['tara_cajon_kg', 'control_tolerancia_pct'])
+  if (error || !data) return // se quedan los valores por defecto (3 kg y 5 %)
+  for (const fila of data) {
+    const n = Number(fila.valor)
+    if (!Number.isFinite(n)) continue
+    if (fila.clave === 'tara_cajon_kg') taraCajon = n
+    if (fila.clave === 'control_tolerancia_pct') tolerancia = n
+  }
+}
+
 async function cargar() {
   $('inv-error').classList.add('oculto')
   let consulta = supabase.from('inventario_lotes').select('*').order('producto').order('fecha_ingreso')
@@ -82,6 +126,9 @@ async function cargar() {
     return
   }
   lotes = data || []
+  // Si un lote ya no existe (se agotó), se descarta lo que se había cargado para él.
+  const vigentes = new Set(lotes.map(l => l.lote_id ?? l.id))
+  for (const id of [...controles.keys()]) if (!vigentes.has(id)) controles.delete(id)
   dibujar()
 }
 
@@ -100,6 +147,8 @@ function agruparPorProducto(lista) {
 function sumar(lista) {
   return lista.reduce((acc, l) => acc + (Number(l.cantidad_restante) || 0), 0)
 }
+
+function idLote(l) { return l.lote_id ?? l.id }
 
 // ---------- dibujo ----------
 function dibujar() {
@@ -143,6 +192,7 @@ function dibujarTabla() {
     $('inv-tabla').innerHTML = `<p class="inv-vacio">${
       lotes.length ? 'No hay productos que coincidan con la búsqueda.' : 'No hay stock cargado en este local.'
     }</p>`
+    actualizarBarraControl()
     return
   }
 
@@ -172,6 +222,11 @@ function dibujarTabla() {
       </div>
       ${filas}
     </div>`
+
+  if (modoControl) {
+    document.querySelectorAll('.inv-control').forEach(panel => actualizarPanel(panel.dataset.lote))
+  }
+  actualizarBarraControl()
 }
 
 function dibujarDetalle(p) {
@@ -212,14 +267,188 @@ function dibujarDetalle(p) {
         <div><small>PRECIO ACTUAL</small>${fmtPrecio(precio)} / ${u}</div>
         ${columnaMargen}
         <div>${etiqueta}${estado}</div>
+        ${modoControl ? dibujarPanelControl(l, p.tipo) : ''}
       </div>`
   }).join('')
 
   return `<div class="inv-detalle"><p class="inv-detalle-titulo">DETALLE DE LOTES</p>${filas}</div>`
 }
 
+// ---------- control de stock ----------
+function estadoControl(id) {
+  if (!controles.has(id)) controles.set(id, { bruto: '', cajones: '1', motivo: '' })
+  return controles.get(id)
+}
+
+function dibujarPanelControl(l, tipo) {
+  const id = idLote(l)
+  const est = estadoControl(id)
+  const esPeso = tipo === 'peso'
+  return `
+    <div class="inv-control" data-lote="${escapar(id)}">
+      <label>${esPeso ? 'PESO EN BALANZA (kg)' : 'CANTIDAD CONTADA (un.)'}
+        <input type="text" inputmode="decimal" autocomplete="off" data-campo="bruto" value="${escapar(est.bruto)}">
+      </label>
+      ${esPeso ? `<label>CAJONES
+        <input type="text" inputmode="numeric" autocomplete="off" data-campo="cajones" value="${escapar(est.cajones)}">
+      </label>` : ''}
+      <div class="inv-control-calc" data-calc="resumen"></div>
+      <label data-bloque="motivo" hidden>MOTIVO
+        <input type="text" autocomplete="off" maxlength="120" data-campo="motivo" value="${escapar(est.motivo)}">
+      </label>
+      <button type="button" class="inv-btn-confirmar" data-confirmar="${escapar(id)}" disabled>Confirmar</button>
+      <p class="inv-control-error" data-calc="error"></p>
+    </div>`
+}
+
+function buscarLote(id) {
+  return lotes.find(l => idLote(l) === id)
+}
+
+// Cálculo en vivo. Es solo ayuda visual: la base vuelve a calcular y validar todo.
+function calcular(l, est) {
+  const bruto = leerNumero(est.bruto)
+  if (bruto === null) return null
+  const esPeso = l.tipo === 'peso'
+  const cajones = esPeso ? (leerNumero(est.cajones) ?? 0) : 0
+  const tara = esPeso ? redondear3(cajones * taraCajon) : 0
+  const neto = redondear3(bruto - tara)
+  const restante = Number(l.cantidad_restante)
+  const dif = redondear3(neto - restante)
+  const pct = restante > 0 ? (Math.abs(dif) / restante) * 100 : 0
+  const pideMotivo = dif !== 0 && (dif > 0 || pct > tolerancia)
+  const error = neto < 0 ? 'La tara es mayor que el peso.' : null
+  const motivoOk = !pideMotivo || est.motivo.trim() !== ''
+  return { bruto, cajones, tara, neto, dif, pct, pideMotivo, error, listo: !error && motivoOk }
+}
+
+function actualizarPanel(id) {
+  const panel = document.querySelector(`.inv-control[data-lote="${CSS.escape(id)}"]`)
+  const l = buscarLote(id)
+  if (!panel || !l) return
+  const est = estadoControl(id)
+  const c = calcular(l, est)
+  const u = unidad(l.tipo)
+  const resumen = panel.querySelector('[data-calc="resumen"]')
+  const bloqueMotivo = panel.querySelector('[data-bloque="motivo"]')
+  const boton = panel.querySelector('[data-confirmar]')
+  const error = panel.querySelector('[data-calc="error"]')
+
+  if (!c) {
+    resumen.innerHTML = `Sistema: <b>${fmtCantidad(l.cantidad_restante)} ${u}</b>`
+    bloqueMotivo.hidden = true
+    boton.disabled = true
+    error.textContent = ''
+    return
+  }
+
+  const clase = c.dif < 0 ? 'inv-dif-neg' : c.dif > 0 ? 'inv-dif-pos' : 'inv-dif-cero'
+  const signo = c.dif < 0 ? '−' : c.dif > 0 ? '+' : ''
+  const partes = [`Sistema: <b>${fmtCantidad(l.cantidad_restante)} ${u}</b>`]
+  if (l.tipo === 'peso') partes.push(`Tara: <b>${fmtCantidad(c.tara)} kg</b>`)
+  partes.push(`Contado: <b>${fmtCantidad(c.neto)} ${u}</b>`)
+  partes.push(`Diferencia: <b class="${clase}">${signo}${fmtCantidad(Math.abs(c.dif))} ${u}${c.dif !== 0 ? ` (${c.pct.toLocaleString('es-AR', { maximumFractionDigits: 1 })}%)` : ''}</b>`)
+  resumen.innerHTML = partes.join(' · ')
+
+  bloqueMotivo.hidden = !c.pideMotivo
+  boton.disabled = !c.listo || confirmando
+  error.textContent = c.error || ''
+}
+
+function lotesListos() {
+  const listos = []
+  for (const l of lotes) {
+    const est = controles.get(idLote(l))
+    if (!est) continue
+    const c = calcular(l, est)
+    if (c && c.listo) listos.push({ l, c, est })
+  }
+  return listos
+}
+
+function actualizarBarraControl() {
+  $('inv-control-barra').classList.toggle('oculto', !modoControl)
+  const boton = $('inv-btn-control')
+  boton.classList.toggle('activo', modoControl)
+  boton.querySelector('span').textContent = modoControl ? 'Salir del control' : 'Hacer control'
+  if (!modoControl) return
+  const n = lotesListos().length
+  $('inv-control-resumen').textContent = n
+    ? `${n} ${n === 1 ? 'lote cargado' : 'lotes cargados'} para confirmar`
+    : 'Cargá el peso de un lote para ver la diferencia.'
+  $('inv-btn-confirmar-todos').disabled = n === 0 || confirmando
+}
+
+async function enviarControl(l, c, est) {
+  const { error } = await supabase.rpc('registrar_control_lote', {
+    p_lote_id: idLote(l),
+    p_cantidad_vista: Number(l.cantidad_restante),
+    p_peso_bruto: c.bruto,
+    p_tara: c.tara,
+    p_motivo: est.motivo.trim() || null
+  })
+  return error ? error.message : null
+}
+
+async function confirmarUno(id) {
+  const l = buscarLote(id)
+  if (!l || confirmando) return
+  const c = calcular(l, estadoControl(id))
+  if (!c || !c.listo) return
+  confirmando = true
+  mostrarOk('')
+  const mensaje = await enviarControl(l, c, estadoControl(id))
+  confirmando = false
+  if (mensaje) {
+    const panel = document.querySelector(`.inv-control[data-lote="${CSS.escape(id)}"]`)
+    if (panel) panel.querySelector('[data-calc="error"]').textContent = mensaje
+    if (mensaje.includes('cambió')) { controles.delete(id); await cargar() }
+    actualizarBarraControl()
+    return
+  }
+  controles.delete(id)
+  mostrarOk(`Control guardado: ${l.codigo} ${c.dif === 0 ? 'sin diferencia' : `ajustado ${c.dif > 0 ? '+' : '−'}${fmtCantidad(Math.abs(c.dif))} ${unidad(l.tipo)}`}.`)
+  await cargar()
+}
+
+async function confirmarTodos() {
+  if (confirmando) return
+  const listos = lotesListos()
+  if (!listos.length) return
+  confirmando = true
+  $('inv-btn-confirmar-todos').disabled = true
+  mostrarOk('')
+  const resultados = []
+  for (const { l, c, est } of listos) {
+    const mensaje = await enviarControl(l, c, est)
+    if (mensaje) {
+      resultados.push(`${l.codigo}: no se guardó (${mensaje})`)
+      if (mensaje.includes('cambió')) controles.delete(idLote(l))
+    } else {
+      controles.delete(idLote(l))
+      resultados.push(`${l.codigo}: ${c.dif === 0 ? 'sin diferencia' : `ajustado ${c.dif > 0 ? '+' : '−'}${fmtCantidad(Math.abs(c.dif))} ${unidad(l.tipo)}`}`)
+    }
+  }
+  confirmando = false
+  mostrarOk(`Resultado del control:\n${resultados.join('\n')}`)
+  await cargar()
+}
+
+function alternarControl() {
+  modoControl = !modoControl
+  mostrarOk('')
+  if (modoControl) {
+    // Se abren todos los productos para ver sus lotes.
+    for (const p of agruparPorProducto(lotesVisibles())) abiertos.add(p.id)
+  }
+  dibujarTabla()
+}
+
 // ---------- eventos ----------
 document.addEventListener('click', e => {
+  const confirmar = e.target.closest('[data-confirmar]')
+  if (confirmar) { confirmarUno(confirmar.dataset.confirmar); return }
+
   const fila = e.target.closest('[data-producto]')
   if (fila) {
     const id = fila.dataset.producto
@@ -236,10 +465,23 @@ document.addEventListener('click', e => {
   }
 })
 
+// Se actualiza solo el panel que se está tocando, para no perder el foco del campo.
+document.addEventListener('input', e => {
+  const campo = e.target.dataset?.campo
+  const panel = e.target.closest?.('.inv-control')
+  if (!campo || !panel) return
+  estadoControl(panel.dataset.lote)[campo] = e.target.value
+  actualizarPanel(panel.dataset.lote)
+  actualizarBarraControl()
+})
+
 $('inv-buscar').addEventListener('input', e => {
   textoBusqueda = e.target.value
   dibujarTabla()
 })
+
+$('inv-btn-control').addEventListener('click', alternarControl)
+$('inv-btn-confirmar-todos').addEventListener('click', confirmarTodos)
 
 $('btn-salir').addEventListener('click', async () => {
   await supabase.auth.signOut()
@@ -254,5 +496,9 @@ if (!sesion || !sesion.rol) {
   aplicarVisibilidadSidebarPorRol(sesion.rol)
   vista.classList.remove('oculto')
   renderizarSelectorLocal($('contenedor-selector-local'), sesion.rol)
+  if (puedeControlar()) {
+    $('inv-btn-control').classList.remove('oculto')
+    await cargarConfiguracion()
+  }
   cargar()
 }
