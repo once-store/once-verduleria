@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-14">
-<link rel="stylesheet" href="inventario.css?v=inventario-ui-1">
+<link rel="stylesheet" href="inventario.css?v=inventario-ui-2">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -146,13 +146,24 @@
                 <button type="button" class="inv-filtro-btn" data-ubicacion="salon">Salón</button>
                 <button type="button" class="inv-filtro-btn" data-ubicacion="deposito">Depósito</button>
               </div>
+              <button type="button" id="inv-btn-control" class="inv-btn-control oculto">
+                <i class="bi bi-clipboard-check"></i> <span>Hacer control</span>
+              </button>
             </div>
+            <div id="inv-control-barra" class="inv-control-barra oculto">
+              <p class="inv-control-aviso"><i class="bi bi-exclamation-triangle"></i> Hacé el control cuando no haya pedidos por armar: lo ya vendido se descontó del sistema, pero puede seguir físicamente en el cajón y mostrarte un sobrante que no es real.</p>
+              <div class="inv-control-acciones">
+                <span id="inv-control-resumen" class="inv-sub"></span>
+                <button type="button" id="inv-btn-confirmar-todos" class="inv-btn-confirmar" disabled>Confirmar todos los cargados</button>
+              </div>
+            </div>
+            <p id="inv-ok" class="inv-ok oculto"></p>
             <div id="inv-tabla"></div>
           </section>
 
           <div class="inv-nota">
             <span class="inv-nota-icono">i</span>
-            <span>El total se muestra por producto y en su unidad. Desplegá una fila para ver código, ubicación, fecha, costo, precio, estado y margen sobre costo. Los lotes en oferta muestran el precio regular y el margen puede ser negativo o 0%.</span>
+            <span>El total se muestra por producto y en su unidad. Desplegá una fila para ver código, ubicación, fecha, costo, precio, estado y margen sobre costo. Los lotes en oferta muestran el precio regular y el margen puede ser negativo o 0%. Dueño y Encargado pueden usar "Hacer control" para contar y ajustar el stock.</span>
           </div>
           <p id="inv-aviso-costos" class="inv-aviso-costos oculto">Costos y margen visibles solo para Dueño y Encargado.</p>
         </div>
@@ -162,6 +173,6 @@
 </div>
 
 <script src="adminlte.min.js"></script>
-<script type="module" src="inventario.js?v=inventario-ui-1"></script>
+<script type="module" src="inventario.js?v=inventario-ui-2"></script>
 </body>
 </html>
