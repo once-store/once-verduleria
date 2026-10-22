@@ -101,6 +101,7 @@ export function aplicarVisibilidadSidebarPorRol(rol) {
   // Caja va primero: así queda antes de Finanzas y de Números.
   agregarLinkCaja(rol)
   agregarLinkFinanzas(rol)
+  agregarLinkInventario(rol)
   renombrarMercaderia()
 }
 
@@ -151,6 +152,33 @@ function agregarLinkFinanzas(rol) {
   const salir = menu.querySelector('#btn-salir')?.closest('li')
   const referencia = numeros || salir
   if (referencia) referencia.before(li)
+  else menu.appendChild(li)
+}
+
+/**
+ * Inventario lo ven Dueño, Encargado y Mostrador (la base ya oculta el costo al Mostrador).
+ * Igual que Caja y Finanzas, se agrega acá si la página todavía no tiene el link. Se ubica
+ * después de "Números" y antes de "Editar horario" (o, si no está, antes de "Cerrar sesión").
+ */
+function agregarLinkInventario(rol) {
+  if (!['dueno', 'encargado', 'mostrador'].includes(rol)) return
+  const menu = document.querySelector('.sidebar-menu')
+  if (!menu || menu.querySelector('a[href="inventario.html"]')) return
+
+  const li = document.createElement('li')
+  li.className = 'nav-item'
+  li.innerHTML = `
+    <a href="inventario.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+      <i class="nav-icon bi bi-clipboard-data"></i>
+      <p>Inventario</p>
+    </a>`
+
+  const numeros = menu.querySelector('a[href="metricas.html"]')?.closest('li')
+  const horario = menu.querySelector('a[href="horario.html"]')?.closest('li')
+  const salir = menu.querySelector('#btn-salir')?.closest('li')
+  if (numeros) numeros.after(li)
+  else if (horario) horario.before(li)
+  else if (salir) salir.before(li)
   else menu.appendChild(li)
 }
 
