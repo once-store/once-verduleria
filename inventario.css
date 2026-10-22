@@ -82,3 +82,13 @@
 .inv-dif-cero { color: #28784b; }
 .inv-control-error { flex-basis: 100%; margin: 0; font-size: 12px; color: #b74737; }
 .inv-control .inv-btn-confirmar { margin-bottom: 2px; }
+
+/* ---------- Marco: menú verde, igual que Compras, Caja y Finanzas ---------- */
+#vista-inventario .app-sidebar { background: #183D2E !important; }
+#vista-inventario .sidebar-brand .brand-link { color: #fff; }
+#vista-inventario .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-inventario .sidebar-menu .nav-link.active {
+  color: #fff;
+  background: #2B5942;
+  border-left: 3px solid #91CFA5;
+}
