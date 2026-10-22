@@ -59,3 +59,26 @@
 
 /* Sin costo (Mostrador): se ocultan costo y margen, quedan 4 columnas */
 .inv-lote.inv-sin-costo { grid-template-columns: minmax(150px, 1.6fr) 1fr 1.2fr 1fr; }
+
+/* ---------- Control de stock ---------- */
+.inv-btn-control { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700; color: #28784b; background: #e7f2e9; border: 1px solid #c7dec9; border-radius: 9px; cursor: pointer; }
+.inv-btn-control.activo { background: #28784b; color: #fff; border-color: #28784b; }
+.inv-control-barra { margin-bottom: 14px; padding: 12px 14px; background: #fbf5e8; border: 1px solid #efe0b8; border-radius: 10px; }
+.inv-control-aviso { margin: 0 0 10px; font-size: 12px; color: #7a5e1c; }
+.inv-control-acciones { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.inv-btn-confirmar { padding: 7px 16px; font-size: 12px; font-weight: 700; color: #fff; background: #28784b; border: 0; border-radius: 8px; cursor: pointer; }
+.inv-btn-confirmar:disabled { background: #b9c9bd; cursor: not-allowed; }
+.inv-ok { margin: 0 0 12px; padding: 10px 14px; font-size: 12px; color: #1f5d3a; background: #e7f2e9; border-radius: 8px; white-space: pre-line; }
+
+.inv-control { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-top: 4px; padding-top: 12px; border-top: 1px dashed #dfe7e0; }
+.inv-control label { display: flex; flex-direction: column; gap: 3px; font-size: 10px; font-weight: 700; letter-spacing: .5px; color: #718078; }
+.inv-control input { width: 120px; padding: 7px 10px; font-size: 13px; border: 1px solid #dbe4dc; border-radius: 7px; background: #fff; }
+.inv-control input[data-campo="cajones"] { width: 70px; }
+.inv-control input[data-campo="motivo"] { width: 240px; }
+.inv-control-calc { font-size: 12px; color: #4a5a50; padding-bottom: 8px; }
+.inv-control-calc b { color: #1f3026; }
+.inv-dif-neg { color: #b74737; }
+.inv-dif-pos { color: #927025; }
+.inv-dif-cero { color: #28784b; }
+.inv-control-error { flex-basis: 100%; margin: 0; font-size: 12px; color: #b74737; }
+.inv-control .inv-btn-confirmar { margin-bottom: 2px; }
