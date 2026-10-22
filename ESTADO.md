@@ -165,7 +165,7 @@ Las capturas son referencias visuales; no representan pantallas conectadas a dat
 
 | Cuenta | Tarea | Archivos que toca | Desde | Estado |
 |---|---|---|---|---|
-| GPT | Ninguna por ahora | — | — | — |
+| GPT | Corregir y subir el boceto de Inventario como página independiente, con sidebar completo | `docs/bocetos-visuales/inventario.jpg`, `ESTADO.md` | 22/10 | EN CURSO |
 | C2 | Lista de chequeo del 1/12 (pendiente 11) | `docs/lista-chequeo-1-12.md` (solo documento) | 20/10 | TERMINADA (falta OK del dueño) |
 | C2 | Revisión del boceto de Inventario (pendiente 12), solo lectura | `inventario.html`/`inventario.js` (todavía no están en el repo), `sesion.js` (solo lectura) | 21/10 | TERMINADA (falta OK del dueño) |
 
