@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · inventario</title>
+<link rel="preload" href="adminlte.min.css" as="style">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="adminlte.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-14">
+<link rel="stylesheet" href="inventario.css?v=inventario-ui-1">
+</head>
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
+
+<div id="vista-inventario" class="app-wrapper oculto">
+
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Mostrar/ocultar menú">
+            <i class="bi bi-list"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="admin-v2.html" class="brand-link">
+        <span class="brand-text fw-bold">once · panel</span>
+      </a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2" aria-label="Navegación principal">
+        <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false">
+          <li class="nav-item">
+            <a href="admin-v2.html" class="nav-link">
+              <i class="nav-icon bi bi-speedometer"></i>
+              <p>Panel</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="armado.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-basket"></i>
+              <p>Pedidos por armar</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="compras.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-box-seam"></i>
+              <p>Compras y mermas</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="promociones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-tags"></i>
+              <p>Promociones</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="clientes.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-people"></i>
+              <p>Clientes</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="conversaciones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-whatsapp"></i>
+              <p>Conversaciones</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="caja.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-cash-coin"></i>
+              <p>Caja</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="finanzas.html" class="nav-link" data-roles="dueno">
+              <i class="nav-icon bi bi-bank"></i>
+              <p>Finanzas</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="metricas.html" class="nav-link" data-roles="dueno">
+              <i class="nav-icon bi bi-graph-up"></i>
+              <p>Números</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="inventario.html" class="nav-link active" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-clipboard-data"></i>
+              <p>Inventario</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="horario.html" class="nav-link" data-roles="dueno">
+              <i class="nav-icon bi bi-clock"></i>
+              <p>Editar horario</p>
+            </a>
+          </li>
+          <li class="nav-item mt-3">
+            <button id="btn-salir" class="nav-link btn btn-link text-start w-100">
+              <i class="nav-icon bi bi-box-arrow-left"></i>
+              <p>Cerrar sesión</p>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="inv-cabecera">
+          <div>
+            <p class="inv-eyebrow">ONCE · STOCK DEL LOCAL</p>
+            <h3 class="mb-0">Inventario</h3>
+            <p class="inv-descripcion">Un vistazo al stock que tenés, dónde está y qué hay en cada lote.</p>
+          </div>
+          <div id="contenedor-selector-local"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-content">
+      <div class="container-fluid">
+        <div class="inv-pagina">
+          <p id="inv-error" class="error oculto"></p>
+
+          <div id="inv-kpis" class="inv-kpis"><p class="muted">Cargando…</p></div>
+
+          <section class="inv-seccion">
+            <div class="inv-seccion-cabecera">
+              <h4>Stock por producto</h4>
+              <span id="inv-contador" class="inv-sub"></span>
+            </div>
+            <div class="inv-herramientas">
+              <input type="search" id="inv-buscar" class="inv-buscar" placeholder="Buscar producto…" autocomplete="off">
+              <div class="inv-filtro" role="tablist">
+                <button type="button" class="inv-filtro-btn activa" data-ubicacion="todos">Todos</button>
+                <button type="button" class="inv-filtro-btn" data-ubicacion="salon">Salón</button>
+                <button type="button" class="inv-filtro-btn" data-ubicacion="deposito">Depósito</button>
+              </div>
+            </div>
+            <div id="inv-tabla"></div>
+          </section>
+
+          <div class="inv-nota">
+            <span class="inv-nota-icono">i</span>
+            <span>El total se muestra por producto y en su unidad. Desplegá una fila para ver código, ubicación, fecha, costo, precio, estado y margen sobre costo. Los lotes en oferta muestran el precio regular y el margen puede ser negativo o 0%.</span>
+          </div>
+          <p id="inv-aviso-costos" class="inv-aviso-costos oculto">Costos y margen visibles solo para Dueño y Encargado.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="adminlte.min.js"></script>
+<script type="module" src="inventario.js?v=inventario-ui-1"></script>
+</body>
+</html>
