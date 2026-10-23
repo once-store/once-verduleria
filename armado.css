@@ -147,3 +147,26 @@
   .armado-contenedor #lista-por-armar .item-armado label { flex-wrap: wrap; }
     .armado-contenedor #lista-por-armar .acciones-pedido .btn-confirmar-armado { width: 100%; }
 }
+
+/* Menú lateral: mismo color que el Panel (en style.css esas reglas valen solo para #vista-panel) */
+#vista-armado .app-sidebar {
+  --lte-sidebar-menu-active-bg: #2a5e3f;
+  --lte-sidebar-menu-active-color: #fff;
+  border-right: 1px solid #244b34;
+  background: #183b2a !important;
+  box-shadow: none !important;
+}
+#vista-armado .sidebar-brand { border-bottom-color: #315641; }
+#vista-armado .sidebar-brand .brand-text { color: #f3faf4; letter-spacing: -.02em; }
+#vista-armado .sidebar-menu .nav-link {
+  margin: 2px 10px;
+  padding: 10px 13px;
+  border-radius: 9px;
+  color: #d0ddd3;
+  font-size: 13px;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+#vista-armado .sidebar-menu .nav-link:hover { background: #244b34; color: #fff; }
+#vista-armado .sidebar-menu .nav-link.active { background: #2a5e3f; color: #fff; font-weight: 650; }
+#vista-armado .sidebar-menu .nav-icon { color: #a9c5b0; opacity: 1; }
+#vista-armado .app-header { border-bottom: 1px solid #e7ece7; background: #fff; box-shadow: none; }
