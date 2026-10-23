@@ -32,3 +32,51 @@ async function actualizarBadgeMaduracion() {
 }
 
 actualizarBadgeMaduracion()
+
+// --- "Pedidos" (antes "Pedidos por armar"): nombre corto + numerito ---
+// Se aplica acá para que valga en todas las páginas que cargan este archivo,
+// sin editar cada copia del sidebar. El número es la misma cuenta que muestra
+// la pantalla de armado: pedidos de WhatsApp con armado pendiente.
+function prepararLinkPedidos() {
+  const p = document.querySelector('.sidebar-menu a[href="armado.html"] p')
+  if (!p) return null
+  let badge = p.querySelector('#badge-armado-sidebar')
+  if (!badge) {
+    p.textContent = 'Pedidos '
+    badge = document.createElement('span')
+    badge.id = 'badge-armado-sidebar'
+    badge.className = 'badge text-bg-warning oculto'
+    badge.textContent = '0'
+    p.appendChild(badge)
+  }
+  return badge
+}
+
+async function actualizarBadgePedidos() {
+  const badge = prepararLinkPedidos()
+  if (!badge || document.hidden) return
+
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return
+
+  const { count, error } = await supabase
+    .from('pedidos')
+    .select('*', { count: 'exact', head: true })
+    .eq('origen', 'whatsapp')
+    .eq('armado_estado', 'pendiente')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  if (!count) {
+    badge.classList.add('oculto')
+  } else {
+    badge.textContent = count
+    badge.classList.remove('oculto')
+  }
+}
+
+actualizarBadgePedidos()
+setInterval(actualizarBadgePedidos, 10000)
