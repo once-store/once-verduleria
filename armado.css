@@ -1,0 +1,165 @@
+/* once · Pedidos por armar — solo apariencia. Usa las clases que ya genera armado.js. */
+
+.armado-contenedor {
+  --ar-verde: #2d7a50;
+  --ar-verde-oscuro: #1f5c3b;
+  --ar-verde-suave: #e8f1ec;
+  --ar-texto-suave: #6b7a72;
+  --ar-borde: #e1e8e3;
+  --ar-ambar-fondo: #fdf0d9;
+  --ar-ambar-texto: #8a5a14;
+  max-width: 1060px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.armado-subtitulo { margin: .35rem 0 0; color: var(--ar-texto-suave); }
+
+/* Encabezado de sección + contador */
+.armado-seccion-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .75rem;
+}
+.armado-seccion-titulo { margin: 0; font-size: 1.15rem; font-weight: 700; }
+.armado-contador {
+  padding: .3rem .8rem;
+  border-radius: 999px;
+  background: var(--ar-verde-suave);
+  color: var(--ar-verde-oscuro);
+  font-size: .8rem;
+  font-weight: 700;
+}
+.armado-contador.oculto { display: none; }
+
+.armado-aviso {
+  margin-bottom: 1rem;
+  padding: .8rem 1rem;
+  border-radius: .5rem;
+  background: var(--ar-verde-suave);
+  color: var(--ar-texto-suave);
+  font-size: .85rem;
+}
+
+/* El contenedor de AdminLTE deja de hacer de "tarjeta grande": las tarjetas son los pedidos */
+.armado-contenedor > .card { background: transparent; border: 0; box-shadow: none; }
+.armado-contenedor > .card > .card-body { padding: 0; }
+
+/* Tarjeta de pedido */
+.armado-contenedor #lista-por-armar .fila-pendiente-wrap { margin-bottom: .75rem; }
+.armado-contenedor #lista-por-armar details.detalle-pedido {
+  background: #fff;
+  border: 1px solid var(--ar-borde);
+  border-radius: .75rem;
+  overflow: hidden;
+}
+
+.armado-contenedor #lista-por-armar details.detalle-pedido > summary {
+  display: grid;
+  grid-template-columns: 1fr auto 1rem;
+  column-gap: .75rem;
+  align-items: center;
+  padding: .8rem 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+.armado-contenedor #lista-por-armar details.detalle-pedido > summary::-webkit-details-marker { display: none; }
+.armado-contenedor #lista-por-armar details.detalle-pedido > summary:focus-visible {
+  outline: 2px solid var(--ar-verde);
+  outline-offset: -2px;
+}
+.armado-contenedor #lista-por-armar summary .fila-titulo { grid-column: 1; grid-row: 1; font-weight: 700; }
+.armado-contenedor #lista-por-armar summary .muted { grid-column: 1; grid-row: 2; font-size: .75rem; }
+.armado-contenedor #lista-por-armar summary .armado-estado {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: .25rem .65rem;
+  border-radius: 999px;
+  background: var(--ar-ambar-fondo);
+  color: var(--ar-ambar-texto);
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* Flecha dibujada con bordes (no depende de ninguna fuente de íconos) */
+.armado-contenedor #lista-por-armar details.detalle-pedido > summary::after {
+  content: "";
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  width: .5rem;
+  height: .5rem;
+  border-right: 2px solid var(--ar-texto-suave);
+  border-bottom: 2px solid var(--ar-texto-suave);
+  transform: rotate(45deg);
+  transition: transform .15s ease;
+}
+.armado-contenedor #lista-por-armar details.detalle-pedido[open] > summary::after { transform: rotate(-135deg); }
+
+/* Productos */
+.armado-contenedor #lista-por-armar .detalle-items { padding: 0 1rem; border-top: 1px solid var(--ar-borde); }
+.armado-contenedor #lista-por-armar .item-detalle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--ar-borde);
+}
+.armado-contenedor #lista-por-armar .item-detalle:last-child { border-bottom: 0; }
+.armado-contenedor #lista-por-armar .item-armado label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  margin: 0;
+  font-weight: 600;
+}
+.armado-contenedor #lista-por-armar .input-peso-real {
+  width: 11rem;
+  max-width: 45%;
+  padding: .55rem .75rem;
+  border: 1px solid var(--ar-borde);
+  border-radius: .5rem;
+  font-size: .9rem;
+  font-weight: 400;
+  background: #fff;
+}
+.armado-contenedor #lista-por-armar .input-peso-real:focus {
+  outline: none;
+  border-color: var(--ar-verde);
+  box-shadow: 0 0 0 3px rgba(45, 122, 80, .18);
+}
+
+.armado-contenedor #lista-por-armar .item-armado-error { margin: .5rem 1rem 0; }
+
+/* Botón */
+.armado-contenedor #lista-por-armar .acciones-pedido {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+.armado-contenedor #lista-por-armar .btn-confirmar-armado {
+  padding: .6rem 1.1rem;
+  border: 0;
+  border-radius: .5rem;
+  background: var(--ar-verde);
+  color: #fff;
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+}
+.armado-contenedor #lista-por-armar .btn-confirmar-armado:hover:not(:disabled) { background: var(--ar-verde-oscuro); }
+.armado-contenedor #lista-por-armar .btn-confirmar-armado:disabled { opacity: .6; cursor: default; }
+
+/* Celular */
+@media (max-width: 575.98px) {
+  .armado-contenedor #lista-por-armar summary .armado-estado { display: none; }
+  .armado-contenedor #lista-por-armar summary { grid-template-columns: 1fr 1rem; }
+  .armado-contenedor #lista-por-armar summary::after { grid-column: 2; }
+  .armado-contenedor #lista-por-armar .item-armado label { flex-wrap: wrap; }
+  .armado-contenedor #lista-por-armar .input-peso-real { width: 100%; max-width: 100%; }
+  .armado-contenedor #lista-por-armar .acciones-pedido .btn-confirmar-armado { width: 100%; }
+}
