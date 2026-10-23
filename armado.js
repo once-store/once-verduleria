@@ -2,6 +2,7 @@ import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from '
 
 const vistaArmado = document.getElementById('vista-armado')
 const listaPorArmar = document.getElementById('lista-por-armar')
+const contadorPorArmar = document.getElementById('contador-por-armar')
 
 // Esta página vive protegida por la sesión que ya abriste en admin-v2.html.
 // Si entrás acá directo sin haber iniciado sesión, o tu cuenta no tiene rol
@@ -63,9 +64,13 @@ async function cargarPorArmar() {
       // no hace falta sonar acá, ya bajó a 0
     }
     ultimaCantidadPedidos = 0
+    contadorPorArmar.classList.add('oculto')
     listaPorArmar.innerHTML = '<p class="muted">No hay pedidos de WhatsApp esperando armado.</p>'
     return
   }
+
+  contadorPorArmar.textContent = data.length + (data.length === 1 ? ' pedido' : ' pedidos')
+  contadorPorArmar.classList.remove('oculto')
 
   if (ultimaCantidadPedidos !== null && data.length > ultimaCantidadPedidos) {
     reproducirAlertaSonora()
@@ -127,6 +132,7 @@ async function cargarPorArmar() {
         <summary>
           <span class="fila-titulo">Pedido #${pedido.numero_corto}</span>
           <span class="muted">WhatsApp · esperando armado</span>
+          <span class="armado-estado">Esperando armado</span>
         </summary>
         <div class="detalle-items">${filaItemsPeso}${filaItemsUnidad}</div>
         <p class="error oculto item-armado-error"></p>
