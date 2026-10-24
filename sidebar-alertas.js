@@ -80,3 +80,16 @@ async function actualizarBadgePedidos() {
 
 actualizarBadgePedidos()
 setInterval(actualizarBadgePedidos, 10000)
+
+// Que el número no quede viejo: se refresca apenas volvés a la pestaña y
+// justo después de apretar "Confirmar armado" (sin esperar al ciclo de 10 s).
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) actualizarBadgePedidos()
+})
+window.addEventListener('focus', actualizarBadgePedidos)
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.btn-confirmar-armado')) {
+    setTimeout(actualizarBadgePedidos, 1500)
+    setTimeout(actualizarBadgePedidos, 4000)
+  }
+})
