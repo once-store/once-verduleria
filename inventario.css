@@ -16,7 +16,7 @@
 .inv-seccion-cabecera h4 { margin: 0; font-size: 15px; font-weight: 700; color: #1f3026; }
 
 .inv-herramientas { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
-.inv-buscar { flex: 1 1 260px; min-width: 0; padding: 9px 14px; font-size: 13px; border: 1px solid #dbe4dc; border-radius: 8px; background: #fff; }
+.inv-buscar { flex: 1 1 260px; min-width: 0; padding: 9px 14px; font-size: 13px; border: 1px solid #dbe4dc; border-radius: 8px; background: #fff; color: #26342B; caret-color: #26342B; color-scheme: light; }
 .inv-filtro { display: inline-flex; padding: 5px; background: #fafcf9; border: 1px solid #dfe7e0; border-radius: 9px; gap: 4px; }
 .inv-filtro-btn { border: 0; background: transparent; padding: 5px 16px; border-radius: 7px; font-size: 12px; color: #718078; cursor: pointer; }
 .inv-filtro-btn.activa { background: #e7f2e9; color: #28784b; font-weight: 700; }
@@ -72,7 +72,7 @@
 
 .inv-control { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-top: 4px; padding-top: 12px; border-top: 1px dashed #dfe7e0; }
 .inv-control label { display: flex; flex-direction: column; gap: 3px; font-size: 10px; font-weight: 700; letter-spacing: .5px; color: #718078; }
-.inv-control input { width: 120px; padding: 7px 10px; font-size: 13px; border: 1px solid #dbe4dc; border-radius: 7px; background: #fff; }
+.inv-control input { width: 120px; padding: 7px 10px; font-size: 13px; border: 1px solid #dbe4dc; border-radius: 7px; background: #fff; color: #26342B; caret-color: #26342B; color-scheme: light; }
 .inv-control input[data-campo="cajones"] { width: 70px; }
 .inv-control input[data-campo="motivo"] { width: 240px; }
 .inv-control-calc { font-size: 12px; color: #4a5a50; padding-bottom: 8px; }
