@@ -12,12 +12,14 @@ const $ = id => document.getElementById(id)
 const vista = $('vista-finanzas')
 
 const filtroLocal = obtenerLocalFiltroActivo() // null = todos los locales
-let datos = { resumen: null, movimientos: [], locales: [] }
+let datos = { resumen: null, movimientos: [], locales: [], tope: null, topeError: null }
 let sesion = null
 let pagoActual = null
 let fechaActual = null
 let ajusteActual = null
+let minimoActual = null
 let tipoMovimiento = 'gasto'
+let verEsperar = false
 
 const TIPOS_CUENTA = {
   caja: 'Efectivo · caja del local',
@@ -25,12 +27,23 @@ const TIPOS_CUENTA = {
   banco: 'Cuenta bancaria',
   billetera: 'Billetera virtual'
 }
+const NIVELES = {
+  imprescindible: 'Imprescindible',
+  conviene: 'Conviene',
+  puede_esperar: 'Puede esperar'
+}
 const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
 
 // ---------- utilidades ----------
 function fmt(n) {
   const v = Math.round(Number(n) || 0)
   return `${v < 0 ? '−' : ''}$${Math.abs(v).toLocaleString('es-AR')}`
+}
+
+function fmtCant(n, tipo) {
+  const v = Number(n) || 0
+  const texto = v.toLocaleString('es-AR', { maximumFractionDigits: 2 })
+  return `${texto} ${tipo === 'peso' ? 'kg' : 'un.'}`
 }
 
 function escapar(valor) {
@@ -95,13 +108,19 @@ function localOperativo() {
   return filtroLocal || sesion?.localId || null
 }
 
+function textoDias(n) {
+  const v = Number(n)
+  return `${v.toLocaleString('es-AR', { maximumFractionDigits: 1 })} ${v === 1 ? 'día' : 'días'}`
+}
+
 // ---------- carga ----------
 async function cargarFinanzas() {
   limpiarError('fin-error')
-  const [resumen, movimientos, locales] = await Promise.all([
+  const [resumen, movimientos, locales, tope] = await Promise.all([
     supabase.rpc('obtener_resumen_finanzas', { p_local_id: filtroLocal }),
     supabase.rpc('obtener_movimientos_recientes', { p_local_id: filtroLocal, p_limite: 40 }),
-    supabase.from('locales').select('id, nombre').order('nombre')
+    supabase.from('locales').select('id, nombre').order('nombre'),
+    supabase.rpc('obtener_tope_compras', { p_local_id: filtroLocal })
   ])
   if (resumen.error) {
     console.error(resumen.error)
@@ -111,10 +130,14 @@ async function cargarFinanzas() {
   }
   if (movimientos.error) console.error(movimientos.error)
   if (locales.error) console.error(locales.error)
+  if (tope.error) console.error(tope.error)
   datos = {
     resumen: resumen.data,
     movimientos: movimientos.data || [],
-    locales: locales.data || []
+    locales: locales.data || [],
+    // Si el tope falla, el resto de Finanzas sigue funcionando.
+    tope: tope.error ? null : tope.data,
+    topeError: tope.error ? `No se pudo calcular el tope: ${tope.error.message}` : null
   }
   dibujar()
 }
@@ -125,6 +148,8 @@ function dibujar() {
   dibujarMovimientos()
   dibujarVencimientos()
   dibujarPagos()
+  dibujarTope()
+  dibujarQueComprar()
 }
 
 // ---------- dibujo ----------
@@ -257,6 +282,151 @@ function dibujarPagos() {
         </div>`
     }).join('')
     : '<p class="fin-vacio">No hay pagos pendientes. Cuando una compra quede "A pagar" o cargues un vencimiento, aparece acá.</p>'
+}
+
+// ---------- tope prudente para compras ----------
+// Los avisos vienen de la base. Los que "bloquean" impiden dar un número confiable.
+function htmlAvisos(avisos, conBoton) {
+  return avisos.map(a => {
+    const boton = conBoton && a.codigo === 'sin_cobertura'
+      ? ' <button type="button" class="fin-link fin-link-linea" data-ajustes-compras>Definirlo</button>' : ''
+    const clase = a.bloquea || a.codigo === 'deficit' ? 'fin-aviso fin-aviso-rojo' : 'fin-aviso'
+    return `<div class="${clase}">${escapar(a.texto)}${boton}</div>`
+  }).join('')
+}
+
+function dibujarTope() {
+  const el = $('fin-tope')
+  const t = datos.tope
+  if (!t) {
+    el.innerHTML = `<h4>Tope prudente para compras</h4>
+      <p class="fin-vacio">${escapar(datos.topeError || 'No se pudo calcular el tope.')}</p>`
+    return
+  }
+  const dias = t.horizonte_dias
+  const imprescindibles = t.productos.filter(p => p.nivel === 'imprescindible').length
+  const valor = t.confiable
+    ? `<strong class="fin-tope-valor">${fmt(t.tope)}</strong>`
+    : '<strong class="fin-tope-valor fin-tope-sin">Sin tope confiable</strong>'
+  const texto = t.confiable
+    ? `Lo prudente para gastar en compras: el dinero de todas las cuentas, menos los pagos y los gastos fijos de los próximos ${dias} días.`
+    : 'Falta información para dar un número en que confiar. Revisá los avisos.'
+  const desglose = t.confiable ? `
+    <div class="fin-tope-desglose">
+      <div><span>Dinero de todas las cuentas</span><strong>${fmt(t.dinero_total)}</strong></div>
+      <div><span>Pagos de los próximos ${dias} días${t.cantidad_pagos ? ` (${t.cantidad_pagos})` : ''}</span><strong>−${fmt(t.pagos_en_ventana).replace('−', '')}</strong></div>
+      <div><span>Gastos fijos estimados (${dias}/30 del mes)</span><strong>−${fmt(t.gastos_fijos_estimados).replace('−', '')}</strong></div>
+    </div>` : ''
+  const omitidos = (t.gastos_fijos_omitidos || []).length
+    ? `<p class="fin-tope-nota">Ya contados como pago, no se repiten como gasto fijo: ${t.gastos_fijos_omitidos.map(escapar).join(', ')}.</p>` : ''
+  const faltante = t.confiable && Number(t.tope_calculado) < 0
+    ? `<div class="fin-aviso fin-aviso-rojo">Los pagos y gastos fijos superan al dinero disponible por ${fmt(-t.tope_calculado)}.</div>` : ''
+  const urgentes = imprescindibles
+    ? `<div class="fin-tope-urgentes">${imprescindibles} ${imprescindibles === 1 ? 'producto imprescindible' : 'productos imprescindibles'} para reponer</div>` : ''
+  const avisos = htmlAvisos(t.avisos.filter(a => a.codigo !== 'deficit'), true)
+  el.innerHTML = `
+    <h4>Tope prudente para compras</h4>
+    ${valor}
+    <p class="fin-tope-texto">${texto}</p>
+    ${desglose}${omitidos}${faltante}${avisos}${urgentes}
+    <button type="button" class="fin-btn fin-btn-primario fin-tope-boton" data-ir-comprar>Qué comprar →</button>`
+}
+
+function filaCompra(p, t) {
+  const sinCobertura = t.cobertura_dias === null || t.cobertura_dias === undefined
+  const ritmo = Number(p.ritmo_diario) > 0 ? `${fmtCant(p.ritmo_diario, p.tipo)} por día` : 'sin ventas'
+  let dura = '—'
+  if (p.dias_stock !== null && p.dias_stock !== undefined) {
+    dura = Number(p.dias_stock) < 1 ? 'menos de 1 día' : textoDias(p.dias_stock)
+  }
+  const minimo = p.minimo !== null && p.minimo !== undefined
+    ? `${fmtCant(p.minimo, p.tipo)} <button type="button" class="fin-link fin-link-linea" data-minimo="${p.producto_id}">cambiar</button>`
+    : `<button type="button" class="fin-link fin-link-linea" data-minimo="${p.producto_id}">fijar</button>`
+  const cantidad = Number(p.sugerida) > 0
+    ? `<strong>${fmtCant(p.sugerida, p.tipo)}</strong>`
+    : `—${sinCobertura && p.nivel === 'imprescindible' ? '<small>definí la cobertura</small>' : ''}`
+  let costo = '—'
+  if (Number(p.sugerida) > 0) costo = p.costo_estimado !== null && p.costo_estimado !== undefined ? fmt(p.costo_estimado) : '<small>sin costo cargado</small>'
+  let acumulado = ''
+  if (Number(p.sugerida) > 0) {
+    acumulado = p.entra_en_tope === false
+      ? `<span class="fin-pasa">${fmt(p.acumulado)}</span><small class="fin-pasa">se pasa del tope</small>`
+      : fmt(p.acumulado)
+  }
+  return `
+    <tr>
+      <td><strong>${escapar(p.nombre)}</strong><small>${ritmo}</small></td>
+      <td class="fin-num">${fmtCant(p.stock, p.tipo)}</td>
+      <td class="fin-num">${dura}</td>
+      <td class="fin-num">${minimo}</td>
+      <td class="fin-num">${cantidad}</td>
+      <td class="fin-num">${costo}</td>
+      <td class="fin-num">${acumulado}</td>
+    </tr>`
+}
+
+function dibujarQueComprar() {
+  const el = $('fin-comprar')
+  const aviso = $('fin-tab-comprar-aviso')
+  const t = datos.tope
+  if (!t) {
+    el.innerHTML = `<p class="fin-vacio">${escapar(datos.topeError || 'No se pudo calcular el tope.')}</p>`
+    aviso.classList.add('oculto')
+    return
+  }
+  const prods = t.productos
+  const imprescindibles = prods.filter(p => p.nivel === 'imprescindible').length
+  aviso.textContent = imprescindibles
+  aviso.classList.toggle('oculto', imprescindibles === 0)
+
+  const sugeridos = prods.filter(p => Number(p.sugerida) > 0)
+  const totalSugerido = sugeridos.reduce((m, p) => Math.max(m, Number(p.acumulado) || 0), 0)
+  const sinCobertura = t.cobertura_dias === null || t.cobertura_dias === undefined
+  const resumen = `
+    <div class="fin-compras-resumen">
+      <div><span>Tope prudente</span><strong>${t.confiable ? fmt(t.tope) : 'Sin tope confiable'}</strong></div>
+      <div><span>Total de lo sugerido</span><strong>${fmt(totalSugerido)}</strong></div>
+      <div><span>Alcanza para</span><strong>${sinCobertura ? 'Sin definir' : textoDias(t.cobertura_dias)}</strong></div>
+    </div>`
+
+  const pasan = sugeridos.filter(p => p.entra_en_tope === false)
+  const pasanUrgentes = pasan.some(p => p.nivel === 'imprescindible')
+  let alerta = ''
+  if (pasanUrgentes) {
+    alerta = '<div class="fin-aviso fin-aviso-rojo">Ni siquiera lo imprescindible entra en el tope. Conviene revisar los pagos o comprar solo lo más urgente.</div>'
+  } else if (pasan.length) {
+    alerta = `<div class="fin-aviso fin-aviso-rojo">Con este tope no alcanza para todo: ${pasan.length} ${pasan.length === 1 ? 'producto se pasa' : 'productos se pasan'} (en rojo). Comprá de arriba hacia abajo y frená donde se pasa.</div>`
+  }
+  const avisos = htmlAvisos(t.avisos.filter(a => a.codigo !== 'deficit'), true)
+
+  const visibles = prods.filter(p => verEsperar || p.nivel !== 'puede_esperar')
+  const esperan = prods.length - prods.filter(p => p.nivel !== 'puede_esperar').length
+  let filas = ''
+  let nivelActual = null
+  for (const p of visibles) {
+    if (p.nivel !== nivelActual) {
+      nivelActual = p.nivel
+      const cuantos = prods.filter(x => x.nivel === nivelActual).length
+      filas += `<tr class="fin-nivel-fila fin-nivel-${nivelActual}"><td colspan="7">${NIVELES[nivelActual]} · ${cuantos}</td></tr>`
+    }
+    filas += filaCompra(p, t)
+  }
+
+  let tabla
+  if (!prods.length) {
+    tabla = '<p class="fin-vacio">Todavía no hay productos con stock ni ventas para sugerir.</p>'
+  } else {
+    tabla = `<div class="fin-tabla-wrap"><table class="fin-tabla fin-tabla-compras">
+      <thead><tr>
+        <th>Producto</th><th class="fin-num">Stock</th><th class="fin-num">Dura</th><th class="fin-num">Mínimo</th>
+        <th class="fin-num">Comprar</th><th class="fin-num">Costo estimado</th><th class="fin-num">Acumulado</th>
+      </tr></thead>
+      <tbody>${filas}</tbody></table></div>
+      ${esperan ? `<button type="button" class="fin-btn fin-esperan" data-ver-esperar>${verEsperar ? 'Ocultar' : 'Mostrar'} los ${esperan} que pueden esperar</button>` : ''}`
+  }
+
+  el.innerHTML = `${resumen}${alerta}${avisos}${tabla}
+    <p class="fin-pie">El ritmo de venta sale de las ventas pagadas de los últimos ${t.ritmo_ventana_dias} días. El costo estimado usa el último costo cargado de cada producto, y las cantidades se redondean a la presentación de compra. Los gastos fijos y los montos estimados son aproximados.</p>`
 }
 
 // ---------- diálogos ----------
@@ -399,6 +569,28 @@ function cuentaPorId(id) {
   return datos.resumen.cuentas.find(c => c.id === id)
 }
 
+function abrirAjustesCompras() {
+  const t = datos.tope
+  if (!t) return
+  $('co-cobertura').value = t.cobertura_dias === null || t.cobertura_dias === undefined ? '' : String(t.cobertura_dias)
+  $('co-horizonte').value = String(t.horizonte_dias)
+  $('co-ritmo').value = String(t.ritmo_ventana_dias)
+  limpiarError('co-error')
+  $('dlg-compras').showModal()
+}
+
+function abrirMinimo(id) {
+  const p = datos.tope?.productos.find(x => x.producto_id === id)
+  if (!p) return
+  minimoActual = p
+  $('mi-titulo').textContent = `Mínimo · ${p.nombre}`
+  $('mi-info').textContent = `Stock actual: ${fmtCant(p.stock, p.tipo)}. ${Number(p.ritmo_diario) > 0 ? `Se vende ${fmtCant(p.ritmo_diario, p.tipo)} por día.` : 'No tuvo ventas en el período mirado.'}`
+  $('mi-etiqueta').textContent = `Mínimo que no tiene que faltar (${p.tipo === 'peso' ? 'kg' : 'unidades'})`
+  $('mi-minimo').value = p.minimo === null || p.minimo === undefined ? '' : String(p.minimo)
+  limpiarError('mi-error')
+  $('dlg-minimo').showModal()
+}
+
 // ---------- acciones ----------
 async function ejecutar(rpc, parametros, errorId, dialogoId) {
   const { error } = await supabase.rpc(rpc, parametros)
@@ -511,11 +703,54 @@ $('form-movimiento').addEventListener('submit', async e => {
   }
 })
 
+// Ajustes del tope: solo se guardan los datos que cambiaron.
+$('form-compras').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('co-error')
+  const t = datos.tope
+  const textoCob = $('co-cobertura').value.trim()
+  const cobertura = textoCob === '' ? null : Number(textoCob)
+  const horizonte = Number($('co-horizonte').value)
+  const ritmo = Number($('co-ritmo').value)
+  if (cobertura !== null && !(cobertura > 0 && cobertura <= 60)) {
+    mostrarError('co-error', 'La cobertura tiene que ser mayor a 0 y hasta 60 días.'); return
+  }
+  if (!Number.isInteger(horizonte) || horizonte < 1 || horizonte > 90) {
+    mostrarError('co-error', 'Los días de pagos van de 1 a 90.'); return
+  }
+  if (!Number.isInteger(ritmo) || ritmo < 3 || ritmo > 90) {
+    mostrarError('co-error', 'Los días de ventas van de 3 a 90.'); return
+  }
+  const cambios = []
+  if (cobertura !== (t.cobertura_dias ?? null)) cambios.push(['cobertura_dias', cobertura])
+  if (horizonte !== t.horizonte_dias) cambios.push(['horizonte_pagos_dias', horizonte])
+  if (ritmo !== t.ritmo_ventana_dias) cambios.push(['ritmo_ventana_dias', ritmo])
+  for (const [clave, valor] of cambios) {
+    const { error } = await supabase.rpc('guardar_parametro_compras', { p_clave: clave, p_valor: valor })
+    if (error) { mostrarError('co-error', error.message); return }
+  }
+  $('dlg-compras').close()
+  if (cambios.length) await cargarFinanzas()
+})
+
+$('form-minimo').addEventListener('submit', async e => {
+  e.preventDefault()
+  limpiarError('mi-error')
+  const texto = $('mi-minimo').value.trim()
+  const minimo = texto === '' ? null : Number(texto)
+  if (minimo !== null && !(minimo >= 0)) { mostrarError('mi-error', 'El mínimo no puede ser negativo.'); return }
+  await ejecutar('guardar_stock_minimo', {
+    p_producto_id: minimoActual.producto_id,
+    p_minimo: minimo
+  }, 'mi-error', 'dlg-minimo')
+})
+
 // ---------- eventos de la página ----------
 function elegirPanel(panel) {
   document.querySelectorAll('.fin-tab').forEach(t => t.classList.toggle('activa', t.dataset.panel === panel))
   $('fin-panel-cuentas').classList.toggle('oculto', panel !== 'cuentas')
   $('fin-panel-pagos').classList.toggle('oculto', panel !== 'pagos')
+  $('fin-panel-comprar').classList.toggle('oculto', panel !== 'comprar')
 }
 
 document.querySelectorAll('.fin-tab').forEach(t => t.addEventListener('click', () => elegirPanel(t.dataset.panel)))
@@ -536,6 +771,12 @@ document.addEventListener('click', async e => {
   if (fecha) { abrirFecha(fecha.dataset.fecha); return }
   const ajustar = e.target.closest('[data-ajustar]')
   if (ajustar) { abrirAjuste(ajustar.dataset.ajustar); return }
+  const minimo = e.target.closest('[data-minimo]')
+  if (minimo) { abrirMinimo(minimo.dataset.minimo); return }
+  if (e.target.closest('[data-ajustes-compras]')) { abrirAjustesCompras(); return }
+  if (e.target.closest('[data-ver-esperar]')) { verEsperar = !verEsperar; dibujarQueComprar(); return }
+  // La tarjeta del tope entera es clicable (los botones de adentro se atienden antes).
+  if (e.target.closest('[data-ir-comprar]')) { elegirPanel('comprar'); return }
   const anular = e.target.closest('[data-anular]')
   if (anular) {
     const motivo = window.prompt('¿Por qué anulás este movimiento? (queda registrado)')

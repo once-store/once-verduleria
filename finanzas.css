@@ -104,6 +104,7 @@
   gap: 4px;
   margin-bottom: 18px;
   border-bottom: 1px solid #E3EAE3;
+  overflow-x: auto;
 }
 #vista-finanzas .fin-tab {
   margin-bottom: -1px;
@@ -114,6 +115,7 @@
   color: #6C766F;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
 #vista-finanzas .fin-tab.activa { color: #2E7D52; border-bottom-color: #2E7D52; }
 #vista-finanzas .fin-tab-aviso {
@@ -289,6 +291,98 @@
 }
 #vista-finanzas .fin-total strong { color: #17291F; font-size: 17px; }
 
+/* --- Tope prudente para compras (tarjeta) --- */
+#vista-finanzas .fin-tope {
+  border-color: #CFE3D3;
+  background: #EAF3EC;
+  cursor: pointer;
+}
+#vista-finanzas .fin-tope h4 { color: #1E6B43; }
+#vista-finanzas .fin-tope-valor {
+  display: block;
+  margin: 10px 0 6px;
+  color: #1E6B43;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+#vista-finanzas .fin-tope-sin { color: #8A5A00; font-size: 20px; }
+#vista-finanzas .fin-tope-texto {
+  margin: 0 0 12px;
+  color: #56705F;
+  font-size: 12px;
+  line-height: 1.5;
+}
+#vista-finanzas .fin-tope-desglose { margin-bottom: 8px; }
+#vista-finanzas .fin-tope-desglose div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #C6DACB;
+  color: #3C5A47;
+  font-size: 11px;
+}
+#vista-finanzas .fin-tope-desglose strong { color: #17291F; white-space: nowrap; }
+#vista-finanzas .fin-tope-nota { margin: 6px 0 0; color: #56705F; font-size: 10px; line-height: 1.5; }
+#vista-finanzas .fin-tope-urgentes {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #F8E1DA;
+  color: #A5412A;
+  font-size: 12px;
+  font-weight: 650;
+}
+#vista-finanzas .fin-tope-boton { margin-top: 14px; width: 100%; }
+
+/* --- Avisos --- */
+#vista-finanzas .fin-aviso {
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #FFF6E0;
+  color: #7A5B1B;
+  font-size: 11px;
+  line-height: 1.5;
+}
+#vista-finanzas .fin-aviso-rojo { background: #FBE9E4; color: #A5412A; }
+#vista-finanzas .fin-link-linea { display: inline; margin: 0 0 0 6px; font-size: inherit; }
+
+/* --- Qué comprar --- */
+#vista-finanzas .fin-compras-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 4px;
+}
+#vista-finanzas .fin-compras-resumen div {
+  padding: 12px 14px;
+  border: 1px solid #E3EAE3;
+  border-radius: 10px;
+  background: #F7F9F7;
+}
+#vista-finanzas .fin-compras-resumen span { display: block; color: #728078; font-size: 11px; }
+#vista-finanzas .fin-compras-resumen strong { display: block; margin-top: 6px; color: #17291F; font-size: 18px; }
+#vista-finanzas .fin-tabla-compras { margin-top: 14px; }
+#vista-finanzas .fin-tabla-compras th.fin-num,
+#vista-finanzas .fin-tabla-compras td.fin-num { text-align: right; white-space: nowrap; }
+#vista-finanzas .fin-tabla-compras td.fin-num small { margin-top: 3px; }
+#vista-finanzas .fin-nivel-fila td {
+  padding: 9px 10px;
+  border-bottom: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+#vista-finanzas .fin-nivel-imprescindible td { background: #F8E1DA; color: #A5412A; }
+#vista-finanzas .fin-nivel-conviene td { background: #FBE7C2; color: #8A5A00; }
+#vista-finanzas .fin-nivel-puede_esperar td { background: #EEF2EE; color: #66756C; }
+#vista-finanzas .fin-pasa { color: #B2472F; font-weight: 700; }
+#vista-finanzas .fin-esperan { margin-top: 14px; }
+#vista-finanzas .fin-pie { margin: 16px 0 0; color: #8C9A91; font-size: 10px; line-height: 1.6; }
+
 /* --- Diálogos --- */
 #vista-finanzas .fin-dialogo {
   width: min(480px, calc(100vw - 32px));
@@ -321,6 +415,7 @@
   color: #26342B;
   font-size: 13px;
 }
+#vista-finanzas .fin-ayuda { margin: 8px 0 0; color: #728078; font-size: 11px; line-height: 1.5; }
 #vista-finanzas .fin-fila {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -370,4 +465,5 @@
   #vista-finanzas .fin-pago { flex-wrap: wrap; }
   #vista-finanzas .fin-pago-monto { width: 100%; justify-content: space-between; }
   #vista-finanzas .fin-cabecera-acciones { width: 100%; }
+  #vista-finanzas .fin-compras-resumen { grid-template-columns: 1fr; }
 }
