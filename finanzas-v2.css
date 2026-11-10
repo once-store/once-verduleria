@@ -1,0 +1,800 @@
+/* ==========================================================================
+   Finanzas v2 · estilos propios de la página (no se toca el CSS compartido).
+   Todo acotado a #vista-finanzas. Sistema definido con variables (ver DESIGN.md).
+   ========================================================================== */
+
+#vista-finanzas {
+  /* Color: crema cálida de fondo, tinta verde muy oscura, verde bosque como acento */
+  --f-suelo: #F4F1E6;
+  --f-superficie: #FFFEFA;
+  --f-hundido: #F0EDE1;
+  --f-linea: #E2DDCC;
+  --f-linea-fuerte: #CFC9B4;
+  --f-tinta: #15271D;
+  --f-tinta-2: #4A5A4F;
+  --f-tinta-3: #5F6E64;
+  --f-verde: #1F6B43;
+  --f-verde-sobre: #17583A;
+  --f-verde-hondo: #183D2E;
+  --f-verde-medio: #2B5942;
+  --f-verde-claro: #E1EDE2;
+  --f-verde-texto: #1A5C39;
+  --f-ambar-fondo: #FBEBC8;
+  --f-ambar-texto: #6E4700;
+  --f-ambar-aviso: #F2B84B;
+  --f-rojo: #A8412A;
+  --f-rojo-fondo: #F8E2DA;
+  --f-rojo-suave: #FCF0EB;
+  --f-crema-sobre-verde: #F3EFE2;
+  --f-claro-sobre-verde: #C5D8CB;
+
+  /* Tipografía: la del sistema (liviana, sin descargas). Escala fija, razón ~1.2 */
+  --f-fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-t-xs: .75rem;      /* 12 */
+  --f-t-s: .8125rem;     /* 13 */
+  --f-t-m: .9375rem;     /* 15 */
+  --f-t-l: 1.0625rem;    /* 17 */
+  --f-t-xl: 1.25rem;     /* 20 */
+  --f-t-num: 1.75rem;    /* 28 */
+  --f-t-hero: 2.25rem;   /* 36 */
+
+  /* Espacios */
+  --f-e1: 4px; --f-e2: 8px; --f-e3: 12px; --f-e4: 16px; --f-e5: 24px; --f-e6: 32px;
+  /* Radios */
+  --f-r-s: 8px; --f-r-m: 12px; --f-r-l: 16px;
+  /* Tocable */
+  --f-toque: 44px;
+  --f-rapido: 150ms;
+
+  font-family: var(--f-fuente);
+  background: var(--f-suelo);
+  color: var(--f-tinta);
+  accent-color: var(--f-verde);
+  caret-color: var(--f-verde);
+}
+#vista-finanzas *, #vista-finanzas *::before, #vista-finanzas *::after { box-sizing: border-box; }
+#vista-finanzas .oculto { display: none !important; }
+#vista-finanzas ::selection { background: #CFE5D3; color: var(--f-tinta); }
+#vista-finanzas :is(button, a, input, select, summary):focus-visible {
+  outline: 2px solid var(--f-verde);
+  outline-offset: 2px;
+}
+#vista-finanzas .fin-tabla-wrap { scrollbar-color: var(--f-linea-fuerte) transparent; }
+
+/* --- Marco: menú verde y fondo crema --- */
+#vista-finanzas .app-sidebar { background: var(--f-verde-hondo) !important; }
+#vista-finanzas .sidebar-brand .brand-link { color: #fff; }
+#vista-finanzas .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-finanzas .sidebar-menu .nav-link.active {
+  color: #fff;
+  background: var(--f-verde-medio);
+}
+#vista-finanzas .app-main { background: var(--f-suelo); }
+#vista-finanzas .app-content-header { padding-top: var(--f-e5); }
+
+/* --- Encabezado --- */
+#vista-finanzas .fin-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--f-e4);
+  flex-wrap: wrap;
+}
+#vista-finanzas .app-content-header h3 {
+  margin: 0;
+  font-size: var(--f-t-num);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--f-tinta);
+}
+#vista-finanzas .fin-descripcion {
+  margin: var(--f-e1) 0 0;
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-m);
+}
+#vista-finanzas .fin-cabecera-acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--f-e3);
+  flex-wrap: wrap;
+}
+#vista-finanzas #contenedor-selector-local select {
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: var(--f-t-s);
+}
+#vista-finanzas .fin-pagina { max-width: 1120px; margin-top: var(--f-e3); }
+
+/* --- Botones --- */
+#vista-finanzas .fin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: var(--f-t-s);
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--f-rapido) ease-out, border-color var(--f-rapido) ease-out;
+}
+#vista-finanzas .fin-btn:hover { background: var(--f-hundido); }
+#vista-finanzas .fin-btn:active { background: var(--f-linea); }
+#vista-finanzas .fin-btn:disabled { opacity: .5; cursor: default; }
+#vista-finanzas .fin-btn-primario {
+  border-color: var(--f-verde);
+  background: var(--f-verde);
+  color: #fff;
+}
+#vista-finanzas .fin-btn-primario:hover { background: var(--f-verde-sobre); border-color: var(--f-verde-sobre); }
+#vista-finanzas .fin-btn-primario:active { background: var(--f-verde-hondo); }
+
+/* Enlaces chicos (Ajustar saldo, Anular, Cambiar fecha...). Con zona de toque cómoda. */
+#vista-finanzas .fin-link {
+  display: block;
+  margin: 0 0 0 auto;
+  padding: var(--f-e2) var(--f-e1);
+  border: 0;
+  background: none;
+  color: var(--f-verde-texto);
+  font: inherit;
+  font-size: var(--f-t-xs);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+#vista-finanzas .fin-link:hover { color: var(--f-verde-hondo); }
+#vista-finanzas .fin-link:disabled { opacity: .5; cursor: default; }
+#vista-finanzas .fin-link-peligro { color: var(--f-rojo); }
+#vista-finanzas .fin-link-peligro:hover { color: #7E2E1C; }
+#vista-finanzas .fin-link-linea { display: inline; margin: 0 0 0 var(--f-e1); padding: var(--f-e1); font-size: inherit; }
+
+/* --- Resumen: una cuenta que se lee de arriba hacia abajo ---
+   Disponible (y de eso, efectivo) − Pagos pendientes = Disponible luego de pagos */
+#vista-finanzas .fin-kpis {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+  background: var(--f-superficie);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-l);
+  margin-bottom: var(--f-e5);
+  overflow: hidden;
+}
+#vista-finanzas .fin-kpis:empty { display: none; }
+#vista-finanzas .fin-kpis > p { grid-column: 1 / -1; margin: 0; padding: var(--f-e5); color: var(--f-tinta-2); }
+#vista-finanzas .fin-kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--f-e5) var(--f-e5) var(--f-e4);
+}
+#vista-finanzas .fin-kpi span { color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 600; }
+#vista-finanzas .fin-kpi strong {
+  margin-top: var(--f-e2);
+  color: var(--f-tinta);
+  font-size: var(--f-t-num);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#vista-finanzas .fin-kpi small { margin-top: var(--f-e2); color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.4; }
+#vista-finanzas .fin-kpi:nth-child(1) { grid-column: 1; grid-row: 1; padding-bottom: var(--f-e3); }
+#vista-finanzas .fin-kpi:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+  padding-top: var(--f-e3);
+  border-top: 1px dashed var(--f-linea-fuerte);
+}
+#vista-finanzas .fin-kpi:nth-child(2) strong { font-size: var(--f-t-xl); }
+#vista-finanzas .fin-kpi:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; border-left: 1px solid var(--f-linea); }
+#vista-finanzas .fin-kpi:nth-child(4) {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  border-left: 1px solid var(--f-linea);
+  background: var(--f-verde-claro);
+}
+#vista-finanzas .fin-kpi:nth-child(4):has(.fin-neg) { background: var(--f-rojo-fondo); }
+#vista-finanzas .fin-kpi:nth-child(4) span { color: var(--f-verde-texto); font-weight: 700; }
+#vista-finanzas .fin-kpi:nth-child(4):has(.fin-neg) span { color: var(--f-rojo); }
+#vista-finanzas .fin-kpi:nth-child(4) strong { font-size: var(--f-t-hero); }
+/* Los signos − y = que unen las columnas */
+#vista-finanzas .fin-kpi:nth-child(3)::before,
+#vista-finanzas .fin-kpi:nth-child(4)::before {
+  position: absolute;
+  top: 50%;
+  left: -15px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
+  border: 1px solid var(--f-linea);
+  border-radius: 50%;
+  background: var(--f-superficie);
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-l);
+  font-weight: 700;
+  line-height: 1;
+}
+#vista-finanzas .fin-kpi:nth-child(3)::before { content: "\2212"; }
+#vista-finanzas .fin-kpi:nth-child(4)::before { content: "="; }
+#vista-finanzas .fin-neg { color: var(--f-rojo) !important; }
+#vista-finanzas .fin-pos,
+#vista-finanzas .fin-tabla td.fin-pos { color: var(--f-verde-texto); }
+
+/* --- Pestañas --- */
+#vista-finanzas .fin-tabs {
+  display: flex;
+  gap: var(--f-e1);
+  margin-bottom: var(--f-e5);
+  border-bottom: 1px solid var(--f-linea-fuerte);
+  overflow-x: auto;
+}
+#vista-finanzas .fin-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--f-toque);
+  margin-bottom: -1px;
+  padding: 0 var(--f-e4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--f-tinta-2);
+  font: inherit;
+  font-size: var(--f-t-m);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--f-rapido) ease-out, border-color var(--f-rapido) ease-out;
+}
+#vista-finanzas .fin-tab:hover { color: var(--f-tinta); }
+#vista-finanzas .fin-tab.activa { color: var(--f-verde-texto); border-bottom-color: var(--f-verde); font-weight: 700; }
+#vista-finanzas .fin-tab-aviso {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--f-ambar-aviso);
+  color: #3F2A00;
+  font-size: var(--f-t-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Secciones --- */
+#vista-finanzas .fin-dos-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--f-e5);
+  align-items: start;
+}
+#vista-finanzas .fin-col { display: grid; gap: var(--f-e5); min-width: 0; }
+#vista-finanzas .fin-seccion {
+  min-width: 0;
+  padding: var(--f-e5);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-m);
+  background: var(--f-superficie);
+}
+#vista-finanzas .fin-seccion-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--f-e3);
+  margin-bottom: var(--f-e3);
+}
+#vista-finanzas .fin-seccion h4 {
+  margin: 0;
+  color: var(--f-tinta);
+  font-size: var(--f-t-l);
+  font-weight: 700;
+}
+#vista-finanzas .fin-sub {
+  margin: var(--f-e1) 0 0;
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-s);
+  line-height: 1.5;
+}
+#vista-finanzas .fin-vacio { margin: var(--f-e2) 0; color: var(--f-tinta-2); font-size: var(--f-t-s); line-height: 1.5; }
+
+/* --- Cuentas: lista, el saldo siempre a la derecha y alineado --- */
+#vista-finanzas .fin-cuentas { display: block; }
+#vista-finanzas .fin-cuenta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--f-e3);
+  min-width: 0;
+  padding: var(--f-e3) 0;
+  border-bottom: 1px solid var(--f-linea);
+}
+#vista-finanzas .fin-cuenta:first-child { border-top: 1px solid var(--f-linea); }
+#vista-finanzas .fin-cuenta > div:first-child { min-width: 0; }
+#vista-finanzas .fin-cuenta strong { display: block; color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 650; }
+#vista-finanzas .fin-cuenta small { display: block; margin-top: 2px; color: var(--f-tinta-3); font-size: var(--f-t-xs); }
+#vista-finanzas .fin-cuenta-saldo { text-align: right; flex: 0 0 auto; }
+#vista-finanzas .fin-cuenta-saldo strong {
+  font-size: var(--f-t-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#vista-finanzas .fin-nota {
+  margin: var(--f-e3) 0 0;
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-xs);
+  line-height: 1.5;
+}
+
+/* --- Tablas (movimientos y qué comprar) --- */
+#vista-finanzas .fin-tabla-wrap { overflow-x: auto; }
+#vista-finanzas .fin-tabla { width: 100%; border-collapse: collapse; }
+#vista-finanzas .fin-tabla th {
+  padding: var(--f-e2) var(--f-e3);
+  background: var(--f-hundido);
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-xs);
+  font-weight: 650;
+  text-align: left;
+}
+#vista-finanzas .fin-tabla td {
+  padding: var(--f-e3);
+  border-bottom: 1px solid var(--f-linea);
+  color: var(--f-tinta);
+  font-size: var(--f-t-s);
+  vertical-align: top;
+}
+#vista-finanzas .fin-tabla tbody tr:hover td { background: #FAF8F0; }
+#vista-finanzas .fin-tabla td strong { display: block; font-size: var(--f-t-s); font-weight: 650; }
+#vista-finanzas .fin-tabla td small { display: block; margin-top: 2px; color: var(--f-tinta-3); font-size: var(--f-t-xs); }
+#vista-finanzas .fin-importe {
+  text-align: right !important;
+  white-space: nowrap;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+#vista-finanzas .fin-anulado td { color: var(--f-tinta-3); }
+#vista-finanzas .fin-anulado td strong,
+#vista-finanzas .fin-anulado .fin-importe { text-decoration: line-through; color: var(--f-tinta-3) !important; }
+
+/* --- Vencimientos y pagos --- */
+#vista-finanzas .fin-fecha {
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--f-r-s);
+  background: var(--f-verde-claro);
+  color: var(--f-verde-texto);
+  text-align: center;
+  line-height: 1.1;
+}
+#vista-finanzas .fin-fecha span { font-size: var(--f-t-xs); font-weight: 700; letter-spacing: .04em; }
+#vista-finanzas .fin-fecha strong { font-size: var(--f-t-xl); font-variant-numeric: tabular-nums; }
+#vista-finanzas .fin-fecha-pronto { background: var(--f-ambar-fondo); color: var(--f-ambar-texto); }
+#vista-finanzas .fin-fecha-vencido { background: var(--f-rojo-fondo); color: var(--f-rojo); }
+#vista-finanzas .fin-venc,
+#vista-finanzas .fin-pago {
+  display: flex;
+  align-items: center;
+  gap: var(--f-e4);
+  padding: var(--f-e3) 0;
+  border-bottom: 1px solid var(--f-linea);
+}
+#vista-finanzas .fin-venc:first-child,
+#vista-finanzas .fin-pago:first-child { border-top: 1px solid var(--f-linea); }
+#vista-finanzas .fin-venc > div:nth-child(2),
+#vista-finanzas .fin-pago-datos { flex: 1 1 auto; min-width: 0; }
+#vista-finanzas .fin-venc strong,
+#vista-finanzas .fin-pago-datos strong { display: block; color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 650; }
+#vista-finanzas .fin-venc small,
+#vista-finanzas .fin-pago-datos small { display: block; margin-top: 3px; color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.4; }
+#vista-finanzas .fin-venc-monto {
+  color: var(--f-tinta);
+  font-size: var(--f-t-l);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#vista-finanzas .fin-pago-monto { display: flex; align-items: center; gap: var(--f-e4); flex: 0 0 auto; }
+#vista-finanzas .fin-pago-monto strong {
+  color: var(--f-tinta);
+  font-size: var(--f-t-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#vista-finanzas .fin-pago-monto .fin-link { margin: 0; white-space: nowrap; }
+#vista-finanzas .fin-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--f-e3);
+  padding: var(--f-e3) var(--f-e4);
+  border-radius: var(--f-r-s);
+  background: var(--f-hundido);
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-s);
+  font-weight: 600;
+}
+#vista-finanzas .fin-total strong { color: var(--f-tinta); font-size: var(--f-t-xl); font-variant-numeric: tabular-nums; }
+
+/* --- Tope prudente para compras: el único bloque verde oscuro de la pantalla --- */
+#vista-finanzas .fin-tope {
+  border-color: var(--f-verde-hondo);
+  background: var(--f-verde-hondo);
+  color: var(--f-crema-sobre-verde);
+  cursor: pointer;
+  transition: background var(--f-rapido) ease-out;
+}
+#vista-finanzas .fin-tope:hover { background: #1D4938; }
+#vista-finanzas .fin-tope h4 { color: var(--f-crema-sobre-verde); }
+#vista-finanzas .fin-tope .fin-vacio { color: var(--f-claro-sobre-verde); }
+#vista-finanzas .fin-tope-valor {
+  display: block;
+  margin: var(--f-e3) 0 var(--f-e2);
+  color: #fff;
+  font-size: var(--f-t-hero);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+}
+#vista-finanzas .fin-tope-sin { color: var(--f-ambar-aviso); font-size: var(--f-t-xl); }
+#vista-finanzas .fin-tope-texto {
+  margin: 0 0 var(--f-e3);
+  color: var(--f-claro-sobre-verde);
+  font-size: var(--f-t-s);
+  line-height: 1.5;
+}
+#vista-finanzas .fin-tope-desglose { margin-bottom: var(--f-e2); }
+#vista-finanzas .fin-tope-desglose div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--f-e3);
+  padding: var(--f-e2) 0;
+  border-bottom: 1px dashed rgba(243, 239, 226, .28);
+  color: var(--f-claro-sobre-verde);
+  font-size: var(--f-t-s);
+}
+#vista-finanzas .fin-tope-desglose strong { color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#vista-finanzas .fin-tope-nota { margin: var(--f-e2) 0 0; color: var(--f-claro-sobre-verde); font-size: var(--f-t-xs); line-height: 1.5; }
+#vista-finanzas .fin-tope-urgentes {
+  margin-top: var(--f-e3);
+  padding: var(--f-e2) var(--f-e3);
+  border-radius: var(--f-r-s);
+  background: var(--f-rojo-fondo);
+  color: var(--f-rojo);
+  font-size: var(--f-t-s);
+  font-weight: 700;
+}
+#vista-finanzas .fin-tope-boton { margin-top: var(--f-e4); width: 100%; }
+#vista-finanzas .fin-tope .fin-btn-primario {
+  border-color: var(--f-crema-sobre-verde);
+  background: var(--f-crema-sobre-verde);
+  color: var(--f-verde-hondo);
+}
+#vista-finanzas .fin-tope .fin-btn-primario:hover { background: #fff; border-color: #fff; }
+#vista-finanzas .fin-tope :focus-visible { outline-color: #fff; }
+
+/* --- Avisos (los textos vienen de la base) --- */
+#vista-finanzas .fin-aviso {
+  margin-top: var(--f-e3);
+  padding: var(--f-e3) var(--f-e4);
+  border-radius: var(--f-r-s);
+  background: var(--f-ambar-fondo);
+  color: var(--f-ambar-texto);
+  font-size: var(--f-t-s);
+  line-height: 1.5;
+}
+#vista-finanzas .fin-aviso-rojo { background: var(--f-rojo-fondo); color: #8A331F; }
+#vista-finanzas .fin-aviso .fin-link { color: inherit; }
+
+/* --- Qué comprar --- */
+#vista-finanzas .fin-compras-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: var(--f-e2);
+  border-top: 1px solid var(--f-linea);
+  border-bottom: 1px solid var(--f-linea);
+}
+#vista-finanzas .fin-compras-resumen div { padding: var(--f-e3) var(--f-e4); }
+#vista-finanzas .fin-compras-resumen div + div { border-left: 1px solid var(--f-linea); }
+#vista-finanzas .fin-compras-resumen div:first-child { padding-left: 0; }
+#vista-finanzas .fin-compras-resumen span { display: block; color: var(--f-tinta-2); font-size: var(--f-t-s); }
+#vista-finanzas .fin-compras-resumen strong {
+  display: block;
+  margin-top: var(--f-e1);
+  color: var(--f-tinta);
+  font-size: var(--f-t-xl);
+  font-variant-numeric: tabular-nums;
+}
+#vista-finanzas .fin-tabla-compras { margin-top: var(--f-e3); }
+#vista-finanzas .fin-tabla-compras th.fin-num,
+#vista-finanzas .fin-tabla-compras td.fin-num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#vista-finanzas .fin-tabla-compras td.fin-num strong { font-size: var(--f-t-m); }
+#vista-finanzas .fin-nivel-fila td {
+  padding: var(--f-e2) var(--f-e3);
+  border-bottom: 0;
+  font-size: var(--f-t-xs);
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+#vista-finanzas .fin-nivel-imprescindible td { background: var(--f-rojo-fondo) !important; color: #8A331F; }
+#vista-finanzas .fin-nivel-conviene td { background: var(--f-ambar-fondo) !important; color: var(--f-ambar-texto); }
+#vista-finanzas .fin-nivel-puede_esperar td { background: var(--f-hundido) !important; color: var(--f-tinta-2); }
+#vista-finanzas .fin-pasa { color: var(--f-rojo); font-weight: 700; }
+#vista-finanzas .fin-tabla-compras tbody tr:has(.fin-pasa) td { background: var(--f-rojo-suave); }
+#vista-finanzas .fin-esperan { margin-top: var(--f-e4); }
+#vista-finanzas .fin-pie { margin: var(--f-e4) 0 0; color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.6; }
+
+/* --- Error general --- */
+#vista-finanzas #fin-error {
+  margin: 0 0 var(--f-e4);
+  padding: var(--f-e3) var(--f-e4);
+  border-radius: var(--f-r-s);
+  background: var(--f-rojo-fondo);
+  color: #8A331F;
+  font-size: var(--f-t-s);
+}
+
+/* --- Diálogos --- */
+#vista-finanzas .fin-dialogo {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: var(--f-e5);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-l);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font-family: var(--f-fuente);
+  box-shadow: 0 18px 50px rgba(20, 40, 28, .25);
+  overflow-y: auto;
+}
+#vista-finanzas .fin-dialogo[open] { animation: fin-entrar 180ms cubic-bezier(.16, 1, .3, 1); }
+#vista-finanzas .fin-dialogo::backdrop { background: rgba(24, 40, 31, .5); }
+#vista-finanzas .fin-dialogo h4 { margin: 0; color: var(--f-tinta); font-size: var(--f-t-xl); font-weight: 700; }
+#vista-finanzas .fin-dialogo label {
+  display: block;
+  margin: var(--f-e4) 0 0;
+  color: var(--f-tinta);
+  font-size: var(--f-t-s);
+  font-weight: 650;
+}
+#vista-finanzas .fin-dialogo input,
+#vista-finanzas .fin-dialogo select {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: #fff;
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: 1rem; /* 16 px: evita que el celular haga zoom al tocar */
+  font-weight: 500;
+}
+#vista-finanzas .fin-dialogo input[type="number"] { font-variant-numeric: tabular-nums; font-size: var(--f-t-xl); font-weight: 650; }
+#vista-finanzas .fin-dialogo input:hover,
+#vista-finanzas .fin-dialogo select:hover { border-color: var(--f-tinta-3); }
+#vista-finanzas .fin-dialogo input:focus,
+#vista-finanzas .fin-dialogo select:focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); }
+#vista-finanzas .fin-ayuda { margin: var(--f-e2) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-xs); line-height: 1.5; }
+#vista-finanzas .fin-fila { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--f-e3); }
+#vista-finanzas .fin-dialogo .error {
+  margin: var(--f-e3) 0 0;
+  padding: var(--f-e3);
+  border-radius: var(--f-r-s);
+  background: var(--f-rojo-fondo);
+  color: #8A331F;
+  font-size: var(--f-t-s);
+}
+#vista-finanzas .fin-dialogo-acciones { display: flex; justify-content: flex-end; gap: var(--f-e3); margin-top: var(--f-e5); }
+#vista-finanzas .fin-tipos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--f-e1);
+  margin: var(--f-e4) 0 var(--f-e2);
+  padding: var(--f-e1);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-m);
+  background: var(--f-hundido);
+}
+#vista-finanzas .fin-tipo {
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e2);
+  border: 0;
+  border-radius: var(--f-r-s);
+  background: none;
+  color: var(--f-tinta-2);
+  font: inherit;
+  font-size: var(--f-t-m);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--f-rapido) ease-out;
+}
+#vista-finanzas .fin-tipo.activa { background: #fff; color: var(--f-verde-texto); font-weight: 700; box-shadow: 0 1px 4px rgba(32, 53, 39, .14); }
+
+@keyframes fin-entrar { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fin-subir { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* --- Tablet y celular --- */
+@media (max-width: 960px) {
+  /* Resumen: la cuenta en una columna, una línea por cifra */
+  #vista-finanzas .fin-kpis { display: block; }
+  #vista-finanzas .fin-kpi,
+  #vista-finanzas .fin-kpi:nth-child(n) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--f-e3);
+    align-items: center;
+    padding: var(--f-e3) var(--f-e4) var(--f-e3) 52px;
+    border-left: 0;
+    border-top: 0;
+  }
+  #vista-finanzas .fin-kpi span { grid-column: 1; grid-row: 1; }
+  #vista-finanzas .fin-kpi strong { grid-column: 2; grid-row: 1 / span 2; margin: 0; align-self: center; }
+  #vista-finanzas .fin-kpi small { grid-column: 1; grid-row: 2; margin-top: 2px; }
+  #vista-finanzas .fin-kpi + .fin-kpi { border-top: 1px solid var(--f-linea); }
+  #vista-finanzas .fin-kpi:nth-child(2) { padding-left: 52px; border-top: 1px dashed var(--f-linea-fuerte); }
+  #vista-finanzas .fin-kpi:nth-child(2) strong { font-size: var(--f-t-l); }
+  #vista-finanzas .fin-kpi:nth-child(1) { padding-left: var(--f-e4); }
+  #vista-finanzas .fin-kpi:nth-child(3) strong { font-size: var(--f-t-num); }
+  #vista-finanzas .fin-kpi:nth-child(4) strong { font-size: var(--f-t-hero); }
+  #vista-finanzas .fin-kpi:nth-child(4) { padding-top: var(--f-e4); padding-bottom: var(--f-e4); }
+  #vista-finanzas .fin-kpi:nth-child(3)::before,
+  #vista-finanzas .fin-kpi:nth-child(4)::before { left: var(--f-e4); }
+  #vista-finanzas .fin-kpi:nth-child(1)::before,
+  #vista-finanzas .fin-kpi:nth-child(2)::before { content: none; }
+
+  /* Dos columnas pasan a una; el tope va primero porque es lo que más se consulta */
+  #vista-finanzas .fin-dos-columnas { grid-template-columns: 1fr; }
+  #vista-finanzas .fin-col { display: contents; }
+  #vista-finanzas .fin-col:nth-child(2) > #fin-tope { order: 1; }
+  #vista-finanzas .fin-col:nth-child(2) > .fin-seccion:not(#fin-tope) { order: 2; }
+  #vista-finanzas .fin-col:nth-child(1) > .fin-seccion:nth-child(1) { order: 3; }
+  #vista-finanzas .fin-col:nth-child(1) > .fin-seccion:nth-child(2) { order: 4; }
+}
+
+@media (max-width: 640px) {
+  #vista-finanzas .fin-seccion { padding: var(--f-e4); }
+
+  /* Movimientos: cada fila es una tarjetita simple */
+  #vista-finanzas #fin-movimientos .fin-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #vista-finanzas #fin-movimientos .fin-tabla,
+  #vista-finanzas #fin-movimientos .fin-tabla tbody { display: block; }
+  #vista-finanzas #fin-movimientos .fin-tabla tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: var(--f-e2);
+    padding: var(--f-e3) 0;
+    border-bottom: 1px solid var(--f-linea);
+  }
+  #vista-finanzas #fin-movimientos .fin-tabla td { padding: 0; border: 0; background: none !important; }
+  #vista-finanzas #fin-movimientos .fin-tabla td:nth-child(1) { grid-column: 1 / span 2; grid-row: 1; }
+  #vista-finanzas #fin-movimientos .fin-tabla td:nth-child(2) { grid-column: 1; grid-row: 2; margin-top: var(--f-e1); color: var(--f-tinta-3); font-size: var(--f-t-xs); font-weight: 600; }
+  #vista-finanzas #fin-movimientos .fin-tabla td:nth-child(3) { grid-column: 2; grid-row: 2; margin-top: var(--f-e1); color: var(--f-tinta-3); font-size: var(--f-t-xs); }
+  #vista-finanzas #fin-movimientos .fin-tabla td:nth-child(4) { grid-column: 3; grid-row: 1 / span 2; align-self: start; font-size: var(--f-t-l); }
+
+  /* Qué comprar: cada producto es una tarjetita con sus datos rotulados */
+  #vista-finanzas .fin-compras-resumen { grid-template-columns: 1fr; border-top: 0; }
+  #vista-finanzas .fin-compras-resumen div,
+  #vista-finanzas .fin-compras-resumen div + div,
+  #vista-finanzas .fin-compras-resumen div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--f-e3) 0;
+    border-left: 0;
+    border-top: 1px solid var(--f-linea);
+  }
+  #vista-finanzas .fin-compras-resumen strong { margin: 0; }
+  #vista-finanzas .fin-tabla-compras thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #vista-finanzas .fin-tabla-compras,
+  #vista-finanzas .fin-tabla-compras tbody { display: block; }
+  #vista-finanzas .fin-tabla-compras tr:not(.fin-nivel-fila) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--f-e2) var(--f-e4);
+    padding: var(--f-e4) var(--f-e3);
+    border-bottom: 1px solid var(--f-linea);
+  }
+  #vista-finanzas .fin-tabla-compras tr.fin-nivel-fila,
+  #vista-finanzas .fin-tabla-compras tr.fin-nivel-fila td { display: block; }
+  #vista-finanzas .fin-tabla-compras tr:not(.fin-nivel-fila) td { padding: 0; border: 0; background: none !important; text-align: left !important; white-space: normal; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(1) { grid-column: 1; grid-row: 1; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(1) strong { font-size: var(--f-t-m); }
+  #vista-finanzas .fin-tabla-compras td:nth-child(5) { grid-column: 2; grid-row: 1; text-align: right !important; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(5) strong { font-size: var(--f-t-xl); }
+  #vista-finanzas .fin-tabla-compras td:nth-child(2) { grid-column: 1; grid-row: 2; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(3) { grid-column: 2; grid-row: 2; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(4) { grid-column: 1; grid-row: 3; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(6) { grid-column: 2; grid-row: 3; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(7) { grid-column: 1 / -1; grid-row: 4; }
+  #vista-finanzas .fin-tabla-compras td:empty { display: none; }
+  #vista-finanzas .fin-tabla-compras tr:not(.fin-nivel-fila) td::before {
+    display: block;
+    margin-bottom: 1px;
+    color: var(--f-tinta-3);
+    font-size: var(--f-t-xs);
+    font-weight: 600;
+  }
+  #vista-finanzas .fin-tabla-compras td:nth-child(2)::before { content: "Stock"; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(3)::before { content: "Dura"; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(4)::before { content: "Mínimo"; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(5)::before { content: "Comprar"; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(6)::before { content: "Costo estimado"; }
+  #vista-finanzas .fin-tabla-compras td:nth-child(7)::before { content: "Acumulado del tope"; }
+  #vista-finanzas .fin-tabla-compras tbody tr:has(.fin-pasa) { background: var(--f-rojo-suave); }
+}
+
+@media (max-width: 560px) {
+  #vista-finanzas .app-content-header { padding-top: var(--f-e4); }
+  #vista-finanzas .fin-cabecera-acciones { width: 100%; flex-direction: column; align-items: stretch; }
+  #vista-finanzas #contenedor-selector-local select { width: 100%; }
+  #vista-finanzas .fin-cabecera-acciones .fin-btn { width: 100%; min-height: 48px; }
+
+  /* Pestañas: las tres a la vista, sin deslizar */
+  #vista-finanzas .fin-tabs { display: grid; grid-template-columns: repeat(3, 1fr); overflow: visible; }
+  #vista-finanzas .fin-tab {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: var(--f-e2) 4px;
+    font-size: var(--f-t-s);
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+  }
+
+  #vista-finanzas .fin-fila { grid-template-columns: 1fr; }
+  #vista-finanzas .fin-pago { flex-wrap: wrap; }
+  #vista-finanzas .fin-pago-monto { width: 100%; justify-content: space-between; }
+  #vista-finanzas .fin-pago-monto .fin-btn { min-width: 112px; }
+  #vista-finanzas .fin-tope-valor { font-size: 2rem; }
+  /* El resultado de la cuenta va en grande, con el número debajo del rótulo */
+  #vista-finanzas .fin-kpi:nth-child(4) span { grid-column: 1 / -1; }
+  #vista-finanzas .fin-kpi:nth-child(4) strong { grid-column: 1 / -1; grid-row: 2; margin-top: var(--f-e1); font-size: 2.5rem; }
+  #vista-finanzas .fin-kpi:nth-child(4) small { grid-column: 1 / -1; grid-row: 3; }
+  #vista-finanzas .fin-kpi:nth-child(4)::before { top: 28px; margin-top: 0; }
+
+  /* Diálogos: hoja que sube desde abajo, con botones grandes */
+  #vista-finanzas .fin-dialogo {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    margin: auto 0 0;
+    padding: var(--f-e5) var(--f-e4) calc(var(--f-e5) + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--f-r-l) var(--f-r-l) 0 0;
+  }
+  #vista-finanzas .fin-dialogo[open] { animation: fin-subir 220ms cubic-bezier(.16, 1, .3, 1); }
+  #vista-finanzas .fin-dialogo-acciones { display: grid; grid-template-columns: 1fr 1fr; }
+  #vista-finanzas .fin-dialogo-acciones .fin-btn { min-height: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #vista-finanzas .fin-dialogo[open] { animation: none; }
+  #vista-finanzas * { transition: none !important; }
+}
