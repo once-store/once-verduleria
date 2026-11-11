@@ -124,7 +124,7 @@
 #vista-armado details.detalle-pedido[open] > summary::after { transform: rotate(-135deg); }
 
 /* Productos del pedido */
-#vista-armado .detalle-items { padding: var(--f-e1) var(--f-e4) 0; }
+#vista-armado .detalle-items { padding: var(--f-e1) var(--f-e4) 0; border: 0; }
 #vista-armado .item-detalle {
   display: flex;
   align-items: center;
@@ -189,6 +189,8 @@
 #vista-armado .acciones-pedido { display: flex; justify-content: flex-end; margin: 0; padding: var(--f-e4); }
 #vista-armado .btn-confirmar-armado {
   display: inline-flex;
+  flex: 0 0 auto;
+  width: auto;
   align-items: center;
   justify-content: center;
   min-height: 48px;
