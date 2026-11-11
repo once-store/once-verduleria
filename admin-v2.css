@@ -1,0 +1,532 @@
+/* ==========================================================================
+   Panel · estilos propios de la página (no se toca el CSS compartido).
+   Mismo sistema que Finanzas (ver DESIGN.md). Todo acotado a #vista-panel,
+   #vista-login y los tres modales por su id.
+   ========================================================================== */
+
+:is(#vista-panel, #vista-login, #modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) {
+  --f-suelo: #F4F1E6;
+  --f-superficie: #FFFEFA;
+  --f-hundido: #F0EDE1;
+  --f-linea: #E2DDCC;
+  --f-linea-fuerte: #CFC9B4;
+  --f-tinta: #15271D;
+  --f-tinta-2: #4A5A4F;
+  --f-tinta-3: #5F6E64;
+  --f-verde: #1F6B43;
+  --f-verde-sobre: #17583A;
+  --f-verde-hondo: #183D2E;
+  --f-verde-medio: #2B5942;
+  --f-verde-claro: #E1EDE2;
+  --f-verde-texto: #1A5C39;
+  --f-ambar-fondo: #FBEBC8;
+  --f-ambar-texto: #6E4700;
+  --f-ambar-aviso: #F2B84B;
+  --f-rojo: #A8412A;
+  --f-rojo-fondo: #F8E2DA;
+  --f-rojo-suave: #FCF0EB;
+  --f-fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-t-xs: .75rem; --f-t-s: .8125rem; --f-t-m: .9375rem; --f-t-l: 1.0625rem;
+  --f-t-xl: 1.25rem; --f-t-num: 1.75rem; --f-t-hero: 2.25rem;
+  --f-e1: 4px; --f-e2: 8px; --f-e3: 12px; --f-e4: 16px; --f-e5: 24px; --f-e6: 32px;
+  --f-r-s: 8px; --f-r-m: 12px; --f-r-l: 16px;
+  --f-toque: 44px;
+  --f-rapido: 150ms;
+  font-family: var(--f-fuente);
+  accent-color: var(--f-verde);
+  caret-color: var(--f-verde);
+}
+:is(#vista-panel, #vista-login, #modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) *,
+:is(#vista-panel, #vista-login, #modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) *::before,
+:is(#vista-panel, #vista-login, #modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) *::after { box-sizing: border-box; }
+:is(#vista-panel, #vista-login, #modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) .oculto { display: none !important; }
+#vista-panel ::selection, #vista-login ::selection { background: #CFE5D3; color: var(--f-tinta); }
+:is(#vista-panel, #vista-login, #modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) :is(button, a, input, select, summary):focus-visible {
+  outline: 2px solid var(--f-verde);
+  outline-offset: 2px;
+}
+#vista-panel { background: var(--f-suelo); color: var(--f-tinta); }
+#vista-panel .muted { color: var(--f-tinta-2); }
+
+/* --- Marco: menú verde, barra de arriba y fondo crema --- */
+#vista-panel .app-sidebar { background: var(--f-verde-hondo) !important; }
+#vista-panel .sidebar-brand .brand-link { color: #fff; }
+#vista-panel .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-panel .sidebar-menu .nav-link.active { color: #fff; background: var(--f-verde-medio); }
+#vista-panel .app-main { background: var(--f-suelo); }
+#vista-panel .app-header { background: var(--f-superficie) !important; border-bottom: 1px solid var(--f-linea); }
+#vista-panel .app-header .nav-link { color: var(--f-tinta-2); min-height: var(--f-toque); display: inline-flex; align-items: center; }
+#vista-panel #contenedor-selector-local select {
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: var(--f-t-s);
+}
+#vista-panel #btn-campana { font-size: var(--f-t-xl); color: var(--f-tinta); position: relative; }
+#vista-panel #badge-alertas {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--f-rojo) !important;
+  color: #fff;
+  font-size: var(--f-t-xs);
+  font-weight: 700;
+  line-height: 20px;
+}
+
+/* --- Encabezado --- */
+#vista-panel .app-content-header { padding-top: var(--f-e5); }
+#vista-panel .pan-cabecera { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--f-e4); flex-wrap: wrap; }
+#vista-panel .app-content-header h3 { margin: 0; font-size: var(--f-t-num); font-weight: 700; letter-spacing: -.01em; color: var(--f-tinta); }
+#vista-panel .pan-descripcion { margin: var(--f-e1) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-m); }
+#vista-panel .pan-caja {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--f-e2);
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font-size: var(--f-t-s);
+  font-weight: 650;
+  text-decoration: none;
+  transition: background var(--f-rapido) ease-out;
+}
+#vista-panel .pan-caja:hover { background: var(--f-hundido); color: var(--f-tinta); }
+#vista-panel .pan-caja i { color: var(--f-verde-texto); font-size: var(--f-t-l); }
+#vista-panel .pan-caja small { padding-left: var(--f-e2); border-left: 1px solid var(--f-linea-fuerte); color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 600; }
+#vista-panel .pan-pagina { max-width: 1120px; margin-top: var(--f-e3); }
+
+/* --- Aviso de clima --- */
+#vista-panel .tarjeta-clima { display: grid; gap: var(--f-e2); margin: 0 0 var(--f-e4); }
+#vista-panel .tarjeta-clima-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--f-e3);
+  margin: 0;
+  padding: var(--f-e3) var(--f-e4);
+  border: 0;
+  border-radius: var(--f-r-m);
+  background: var(--f-ambar-fondo);
+  color: var(--f-ambar-texto);
+}
+#vista-panel .tarjeta-clima-icono { font-size: var(--f-t-xl); line-height: 1.3; }
+#vista-panel .tarjeta-clima-texto { flex: 1 1 auto; font-size: var(--f-t-m); line-height: 1.5; }
+#vista-panel .tarjeta-clima-cerrar {
+  min-height: var(--f-toque);
+  margin-top: var(--f-e2);
+  padding: 0 var(--f-e4);
+  border: 1px solid var(--f-ambar-texto);
+  border-radius: var(--f-r-s);
+  background: transparent;
+  color: var(--f-ambar-texto);
+  font: inherit;
+  font-size: var(--f-t-s);
+  font-weight: 650;
+  cursor: pointer;
+}
+#vista-panel .tarjeta-clima-cerrar:hover { background: rgba(110, 71, 0, .1); }
+
+/* --- Secciones --- */
+#vista-panel .pan-seccion {
+  min-width: 0;
+  padding: var(--f-e5);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-m);
+  background: var(--f-superficie);
+}
+#vista-panel .pan-seccion-cab { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); margin-bottom: var(--f-e3); }
+#vista-panel .pan-seccion-cab h4 { margin: 0; color: var(--f-tinta); font-size: var(--f-t-l); font-weight: 700; }
+#vista-panel .pan-sub { margin: var(--f-e1) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-s); line-height: 1.5; }
+#vista-panel .pan-ver-todas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--f-e1);
+  min-height: var(--f-toque);
+  color: var(--f-verde-texto);
+  font-size: var(--f-t-s);
+  font-weight: 650;
+  text-decoration: none;
+}
+#vista-panel .pan-ver-todas:hover { text-decoration: underline; text-underline-offset: 2px; }
+#vista-panel .pan-seccion .muted { margin: var(--f-e2) 0; font-size: var(--f-t-s); line-height: 1.5; }
+
+/* --- Resumen de hoy: lo vendido arriba y grande, el detalle al lado --- */
+#vista-panel .pan-resumen { margin-bottom: var(--f-e5); }
+#vista-panel .pan-resumen .pan-seccion-cab { margin-bottom: var(--f-e2); }
+#vista-panel .pan-kpis {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--f-superficie);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-l);
+  overflow: hidden;
+}
+#vista-panel .pan-kpis:empty { min-height: 96px; }
+#vista-panel .pan-kpis .resumen-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--f-e1);
+  min-width: 0;
+  margin: 0;
+  padding: var(--f-e5);
+  border: 0;
+  border-left: 1px solid var(--f-linea);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+#vista-panel .pan-kpis .resumen-item:first-child { border-left: 0; background: var(--f-verde-claro); }
+#vista-panel .pan-kpis .resumen-item span { color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 600; }
+#vista-panel .pan-kpis .resumen-item:first-child span { color: var(--f-verde-texto); font-weight: 700; }
+#vista-panel .pan-kpis .resumen-item strong {
+  color: var(--f-tinta);
+  font-size: var(--f-t-num);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#vista-panel .pan-kpis .resumen-item:first-child strong { font-size: var(--f-t-hero); }
+
+/* --- Zona de trabajo: pendientes a la izquierda, accesos y conversaciones a la derecha --- */
+#vista-panel .pan-trabajo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-areas: "pend acc" "pend conv";
+  gap: var(--f-e5);
+  align-items: start;
+}
+#vista-panel .pan-pendientes { grid-area: pend; }
+#vista-panel .pan-accesos { grid-area: acc; }
+#vista-panel .pan-conversaciones { grid-area: conv; }
+
+/* --- Pendientes de confirmar --- */
+#vista-panel #lista-pendientes > .muted {
+  margin: 0;
+  padding: var(--f-e5) var(--f-e4);
+  border-radius: var(--f-r-s);
+  background: var(--f-hundido);
+  color: var(--f-tinta-2);
+  font-size: var(--f-t-m);
+  text-align: center;
+}
+#vista-panel .fila-pendiente-wrap {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--f-linea);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+#vista-panel .fila-pendiente-wrap:first-child { border-top: 1px solid var(--f-linea); }
+#vista-panel .detalle-pedido { margin: 0; padding: 0; border: 0; background: transparent; }
+#vista-panel .detalle-pedido[open] { background: #FAF8F0; }
+#vista-panel .detalle-pedido > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 20px;
+  align-items: center;
+  column-gap: var(--f-e4);
+  min-height: 56px;
+  padding: var(--f-e3) var(--f-e2);
+  list-style: none;
+  cursor: pointer;
+}
+#vista-panel .detalle-pedido > summary::-webkit-details-marker { display: none; }
+#vista-panel .detalle-pedido > summary::marker { content: ""; }
+#vista-panel .detalle-pedido > summary::after {
+  content: "";
+  grid-column: 3;
+  grid-row: 1;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 2px solid var(--f-tinta-3);
+  border-bottom: 2px solid var(--f-tinta-3);
+  transform: rotate(45deg);
+  transition: transform var(--f-rapido) ease-out;
+}
+#vista-panel .detalle-pedido[open] > summary::after { transform: rotate(-135deg); }
+#vista-panel .detalle-pedido > summary:hover { background: #FAF8F0; }
+#vista-panel .fila-titulo { color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 700; white-space: nowrap; }
+#vista-panel .detalle-pedido > summary .muted {
+  margin: 0;
+  color: var(--f-tinta);
+  font-size: var(--f-t-s);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.4;
+}
+#vista-panel .detalle-items { padding: 0 var(--f-e2); }
+#vista-panel .item-detalle {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--f-e4);
+  padding: var(--f-e2) 0;
+  border-bottom: 1px dashed var(--f-linea-fuerte);
+  color: var(--f-tinta);
+  font-size: var(--f-t-s);
+}
+#vista-panel .item-detalle span:last-child { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#vista-panel .acciones-pedido { display: flex; flex-wrap: wrap; gap: var(--f-e2); padding: var(--f-e3) var(--f-e2) var(--f-e4); }
+#vista-panel .acciones-pedido button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--f-toque);
+  margin: 0;
+  padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: var(--f-t-s);
+  font-weight: 650;
+  cursor: pointer;
+  transition: background var(--f-rapido) ease-out;
+}
+#vista-panel .acciones-pedido button:hover { background: var(--f-hundido); }
+#vista-panel .acciones-pedido button:disabled { opacity: .5; cursor: default; }
+#vista-panel .acciones-pedido .btn-confirmar { border-color: var(--f-verde); background: var(--f-verde); color: #fff; min-width: 120px; }
+#vista-panel .acciones-pedido .btn-confirmar:hover { background: var(--f-verde-sobre); }
+#vista-panel .acciones-pedido .btn-cancelar { margin-left: auto; border-color: transparent; background: transparent; color: var(--f-rojo); text-decoration: underline; text-underline-offset: 2px; }
+#vista-panel .acciones-pedido .btn-cancelar:hover { background: var(--f-rojo-suave); }
+
+/* --- Accesos rápidos --- */
+#vista-panel .pan-accesos-lista { display: grid; border-top: 1px solid var(--f-linea); }
+#vista-panel .pan-acceso {
+  display: flex;
+  align-items: center;
+  gap: var(--f-e3);
+  min-height: 56px;
+  padding: var(--f-e2) var(--f-e1);
+  border-bottom: 1px solid var(--f-linea);
+  color: var(--f-tinta);
+  text-decoration: none;
+  transition: background var(--f-rapido) ease-out;
+}
+#vista-panel .pan-acceso:hover { background: #FAF8F0; color: var(--f-tinta); }
+#vista-panel .pan-acceso > i { flex: 0 0 auto; width: 24px; color: var(--f-verde-texto); font-size: var(--f-t-xl); text-align: center; }
+#vista-panel .pan-acceso > span:not(.pan-badge) { flex: 1 1 auto; min-width: 0; }
+#vista-panel .pan-acceso strong { display: block; font-size: var(--f-t-m); font-weight: 650; }
+#vista-panel .pan-acceso small { display: block; margin-top: 1px; color: var(--f-tinta-3); font-size: var(--f-t-xs); }
+#vista-panel .pan-badge {
+  flex: 0 0 auto;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--f-rojo);
+  color: #fff;
+  font-size: var(--f-t-s);
+  font-weight: 700;
+  line-height: 24px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Conversaciones recientes (el JS pone estilos en línea; se pisan con !important) --- */
+#vista-panel #tarjeta-conversaciones-recientes > div {
+  padding: var(--f-e3) 0 !important;
+  border-bottom: 1px solid var(--f-linea) !important;
+}
+#vista-panel #tarjeta-conversaciones-recientes > div:first-child { border-top: 1px solid var(--f-linea); }
+#vista-panel #tarjeta-conversaciones-recientes strong { font-size: var(--f-t-m) !important; font-weight: 650; color: var(--f-tinta); }
+#vista-panel #tarjeta-conversaciones-recientes p { margin-top: 2px !important; font-size: var(--f-t-s) !important; color: var(--f-tinta-2); }
+
+/* --- Login --- */
+#vista-login { min-height: 100dvh; background: var(--f-suelo); color: var(--f-tinta); display: grid; place-items: center; padding: var(--f-e4); }
+#vista-login.oculto { display: none !important; }
+#vista-login .pan-login-caja { width: min(400px, 100%); }
+#vista-login .pan-login-marca { margin: 0 0 var(--f-e4); color: var(--f-verde-hondo); font-size: var(--f-t-num); text-align: center; letter-spacing: -.01em; }
+#vista-login .pan-login-tarjeta { padding: var(--f-e5); border: 1px solid var(--f-linea); border-radius: var(--f-r-l); background: var(--f-superficie); }
+#vista-login .pan-login-mensaje { margin: 0 0 var(--f-e2); color: var(--f-tinta-2); font-size: var(--f-t-m); }
+#vista-login label { display: block; margin: var(--f-e4) 0 0; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 650; }
+#vista-login input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: #fff;
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: 1rem;
+}
+#vista-login input:focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); }
+#vista-login .pan-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin-top: var(--f-e5);
+  padding: 0 var(--f-e4);
+  border: 1px solid var(--f-verde);
+  border-radius: var(--f-r-s);
+  background: var(--f-verde);
+  color: #fff;
+  font: inherit;
+  font-size: var(--f-t-m);
+  font-weight: 650;
+  cursor: pointer;
+}
+#vista-login .pan-btn-ancho { width: 100%; }
+#vista-login .pan-btn:hover { background: var(--f-verde-sobre); }
+#vista-login .pan-btn-link {
+  display: block;
+  width: 100%;
+  min-height: var(--f-toque);
+  margin-top: var(--f-e2);
+  border: 0;
+  background: none;
+  color: var(--f-verde-texto);
+  font: inherit;
+  font-size: var(--f-t-s);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+#vista-login .error, #vista-login .pan-info { margin: var(--f-e3) 0 0; padding: var(--f-e3); border-radius: var(--f-r-s); font-size: var(--f-t-s); line-height: 1.5; }
+#vista-login .error { background: var(--f-rojo-fondo); color: #8A331F; }
+#vista-login .pan-info { background: var(--f-verde-claro); color: var(--f-verde-texto); }
+
+/* --- Ventanas emergentes (el fondo oscuro y el centrado los sigue poniendo style.css) --- */
+:is(#modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) .modal-alerta-caja {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: var(--f-e5);
+  border: 1px solid var(--f-linea);
+  border-radius: var(--f-r-l);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  box-shadow: 0 18px 50px rgba(20, 40, 28, .25);
+}
+:is(#modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) h2,
+:is(#modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) h3 { margin: 0; color: var(--f-tinta); font-size: var(--f-t-xl); font-weight: 700; }
+:is(#modal-alerta-critica, #modal-cuenta-corriente, #modal-lista-alertas) .panel-header { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); margin-bottom: var(--f-e3); }
+#modal-alerta-critica .modal-alerta-caja { text-align: left; border-color: var(--f-rojo); }
+#modal-alerta-critica .modal-alerta-icono { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: var(--f-e3); border-radius: 50%; background: var(--f-rojo-fondo); color: var(--f-rojo); font-size: var(--f-t-xl); }
+#modal-alerta-critica #modal-alerta-critica-mensaje { margin: var(--f-e2) 0 var(--f-e5); color: var(--f-tinta); font-size: var(--f-t-m); line-height: 1.5; }
+:is(#modal-alerta-critica, #modal-cuenta-corriente) .btn-primario {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin-top: var(--f-e4);
+  border: 1px solid var(--f-verde);
+  border-radius: var(--f-r-s);
+  background: var(--f-verde);
+  color: #fff;
+  font: inherit;
+  font-size: var(--f-t-m);
+  font-weight: 650;
+  cursor: pointer;
+}
+:is(#modal-alerta-critica, #modal-cuenta-corriente) .btn-primario:hover { background: var(--f-verde-sobre); }
+:is(#modal-cuenta-corriente, #modal-lista-alertas) .btn-texto {
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e2);
+  border: 0;
+  background: none;
+  color: var(--f-verde-texto);
+  font: inherit;
+  font-size: var(--f-t-s);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+#modal-cuenta-corriente .pan-modal-ayuda { margin: 0; color: var(--f-tinta-2); font-size: var(--f-t-s); }
+#modal-cuenta-corriente label { display: block; margin: var(--f-e4) 0 0; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 650; }
+#modal-cuenta-corriente select {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: #fff;
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: 1rem;
+}
+#modal-cuenta-corriente .error { margin: var(--f-e3) 0 0; padding: var(--f-e3); border-radius: var(--f-r-s); background: var(--f-rojo-fondo); color: #8A331F; font-size: var(--f-t-s); }
+#modal-lista-alertas .alerta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--f-e3);
+  margin: 0 0 var(--f-e2);
+  padding: var(--f-e3) var(--f-e4);
+  border: 0;
+  border-radius: var(--f-r-s);
+  background: var(--f-hundido);
+}
+#modal-lista-alertas .alerta-item.prioridad-critica { background: var(--f-rojo-fondo); }
+#modal-lista-alertas .alerta-item-mensaje { margin: 0; color: var(--f-tinta); font-size: var(--f-t-s); line-height: 1.5; }
+#modal-lista-alertas .alerta-item-fecha { display: block; margin-top: 2px; color: var(--f-tinta-3); font-size: var(--f-t-xs); }
+#modal-lista-alertas .btn-marcar-visto {
+  flex: 0 0 auto;
+  min-height: var(--f-toque);
+  padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte);
+  border-radius: var(--f-r-s);
+  background: var(--f-superficie);
+  color: var(--f-tinta);
+  font: inherit;
+  font-size: var(--f-t-xs);
+  font-weight: 650;
+  cursor: pointer;
+}
+#modal-lista-alertas .btn-marcar-visto:disabled { opacity: .5; }
+#modal-lista-alertas .muted { color: var(--f-tinta-2); font-size: var(--f-t-s); }
+
+/* --- Tablet y celular --- */
+@media (max-width: 960px) {
+  #vista-panel .pan-trabajo { grid-template-columns: 1fr; grid-template-areas: "pend" "acc" "conv"; }
+  #vista-panel .pan-kpis { grid-template-columns: 1fr; }
+  #vista-panel .pan-kpis .resumen-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: var(--f-e3) var(--f-e4);
+    border-left: 0;
+    border-top: 1px solid var(--f-linea);
+  }
+  #vista-panel .pan-kpis .resumen-item strong { font-size: var(--f-t-xl); }
+  #vista-panel .pan-kpis .resumen-item:first-child { display: block; padding: var(--f-e4); border-top: 0; }
+  #vista-panel .pan-kpis .resumen-item:first-child strong { display: block; margin-top: var(--f-e1); font-size: 2.5rem; }
+}
+@media (max-width: 560px) {
+  #vista-panel .app-content-header { padding-top: var(--f-e4); }
+  #vista-panel .pan-caja { width: 100%; min-height: 48px; }
+  #vista-panel .pan-seccion { padding: var(--f-e4); }
+  #vista-panel .detalle-pedido > summary { grid-template-columns: minmax(0, 1fr) 20px; row-gap: 2px; }
+  #vista-panel .detalle-pedido > summary .muted { grid-column: 1; grid-row: 2; text-align: left; }
+  #vista-panel .detalle-pedido > summary::after { grid-column: 2; grid-row: 1 / span 2; }
+  #vista-panel .acciones-pedido { display: grid; grid-template-columns: 1fr 1fr; }
+  #vista-panel .acciones-pedido button { min-height: 48px; }
+  #vista-panel .acciones-pedido .btn-confirmar { grid-column: 1 / -1; }
+  #vista-panel .acciones-pedido .btn-cancelar { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #vista-panel * { transition: none !important; }
+}

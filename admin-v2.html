@@ -3,39 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#183D2E">
 <title>once · panel</title>
 <link rel="preload" href="adminlte.min.css" as="style">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css">
+<link rel="stylesheet" href="admin-v2.css?v=panel-ui-1">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
 <!-- ============ LOGIN ============ -->
-<section id="vista-login" class="login-page">
-  <div class="login-box">
-    <div class="login-logo">
-      <b>once</b> · panel
-    </div>
-    <div class="card">
-      <div class="card-body login-card-body">
-        <p class="login-box-msg">Ingresá para administrar el local</p>
-        <form id="form-login">
-          <div class="mb-3">
-            <label class="form-label" for="login-email">Email</label>
-            <input type="email" id="login-email" class="form-control" required autocomplete="username">
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="login-password">Contraseña</label>
-            <input type="password" id="login-password" class="form-control" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn btn-primary d-block w-100">Entrar</button>
-          <button type="button" id="btn-olvide-pass" class="btn btn-link d-block w-100 mt-2">¿Olvidaste tu contraseña?</button>
-          <p id="login-error" class="error oculto mt-2"></p>
-          <p id="login-info" class="oculto mt-2 text-success"></p>
-        </form>
-      </div>
+<section id="vista-login" class="pan-login">
+  <div class="pan-login-caja">
+    <p class="pan-login-marca"><b>once</b> · panel</p>
+    <div class="pan-login-tarjeta">
+      <p class="pan-login-mensaje">Ingresá para administrar el local</p>
+      <form id="form-login">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required autocomplete="username">
+        <label for="login-password">Contraseña</label>
+        <input type="password" id="login-password" required autocomplete="current-password">
+        <button type="submit" class="pan-btn pan-btn-primario pan-btn-ancho">Entrar</button>
+        <button type="button" id="btn-olvide-pass" class="pan-btn-link">¿Olvidaste tu contraseña?</button>
+        <p id="login-error" class="error oculto"></p>
+        <p id="login-info" class="pan-info oculto"></p>
+      </form>
     </div>
   </div>
 </section>
@@ -97,6 +91,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="guia-compras.html" class="nav-link" data-roles="dueno">
+              <i class="nav-icon bi bi-bag-check"></i>
+              <p>Guía de compras</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="promociones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
               <i class="nav-icon bi bi-tags"></i>
               <p>Promociones</p>
@@ -146,73 +146,92 @@
 
   <!--begin::Main-->
   <main class="app-main">
-    <div class="app-content-header dashboard-heading">
-      <div class="container-fluid dashboard-heading-inner">
+    <div class="app-content-header">
+      <div class="container-fluid pan-cabecera">
         <div>
-          <span class="dashboard-eyebrow">ONCE · OPERACIÓN</span>
-          <h1 class="dashboard-title">Panel</h1>
-          <p class="dashboard-subtitle">Un vistazo claro a las ventas y la operación de hoy.</p>
+          <h3>Panel</h3>
+          <p class="pan-descripcion">Un vistazo claro a las ventas y la operación de hoy.</p>
         </div>
-        <a href="caja.html" class="dashboard-cash-link">
-          <span class="dashboard-cash-icon"><i class="bi bi-safe2"></i></span>
-          <span><strong>Abrir caja</strong><small id="badge-estado-caja">cargando…</small></span>
-          <i class="bi bi-arrow-up-right dashboard-cash-arrow"></i>
+        <a href="caja.html" class="pan-caja">
+          <i class="bi bi-cash-coin" aria-hidden="true"></i>
+          <span>Caja</span>
+          <small id="badge-estado-caja">cargando…</small>
         </a>
       </div>
     </div>
 
-    <div class="app-content dashboard-content">
-      <div class="container-fluid dashboard-container">
-        <div id="tarjeta-clima" class="tarjeta-clima oculto mb-3"></div>
+    <div class="app-content">
+      <div class="container-fluid pan-pagina">
 
-        <section class="dashboard-metrics-section" aria-label="Resumen de hoy">
-          <div class="dashboard-section-heading">
-            <div><span class="dashboard-eyebrow">RESUMEN</span><h2>Hoy</h2></div>
-            <span class="dashboard-live"><span></span> Actualizado al momento</span>
+        <div id="tarjeta-clima" class="tarjeta-clima oculto"></div>
+
+        <section class="pan-resumen" aria-labelledby="pan-resumen-titulo">
+          <div class="pan-seccion-cab">
+            <div>
+              <h4 id="pan-resumen-titulo">Resumen de hoy</h4>
+              <p class="pan-sub">Actividad registrada durante la jornada.</p>
+            </div>
           </div>
-          <div id="resumen-hoy" class="resumen-grid dashboard-metrics"></div>
+          <div id="resumen-hoy" class="pan-kpis"></div>
         </section>
 
-        <div class="dashboard-workspace">
-          <section class="dashboard-card dashboard-pending">
-            <header class="dashboard-card-header">
-              <div class="dashboard-card-title-wrap"><span class="dashboard-icon dashboard-icon-amber"><i class="bi bi-inbox"></i></span><div><h2>Pendientes de confirmar</h2><p>Pedidos que necesitan tu atención</p></div></div>
-            </header>
-            <div class="dashboard-card-body" id="lista-pendientes"><p class="dashboard-loading">Cargando…</p></div>
-          </section>
-
-          <section class="dashboard-card dashboard-conversations">
-            <header class="dashboard-card-header">
-              <div class="dashboard-card-title-wrap"><span class="dashboard-icon dashboard-icon-green"><i class="bi bi-chat-dots"></i></span><div><h2>Conversaciones recientes</h2><p>Últimos mensajes de tus clientes</p></div></div>
-              <a href="conversaciones.html" class="dashboard-view-all">Ver todas <i class="bi bi-arrow-right"></i></a>
-            </header>
-            <div class="dashboard-card-body" id="tarjeta-conversaciones-recientes"><p class="muted">Cargando…</p></div>
-          </section>
-
-          <section class="dashboard-shortcuts-section">
-            <div class="dashboard-section-heading dashboard-shortcuts-heading">
-              <div><span class="dashboard-eyebrow">PARA SEGUIR</span><h2>Accesos rápidos</h2></div>
+        <div class="pan-trabajo">
+          <section class="pan-seccion pan-pendientes" aria-labelledby="pan-pendientes-titulo">
+            <div class="pan-seccion-cab">
+              <h4 id="pan-pendientes-titulo">Pendientes de confirmar</h4>
             </div>
-            <nav class="dashboard-shortcuts" aria-label="Accesos rápidos">
-              <a href="armado.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-green"><i class="bi bi-bag-check"></i></span><span><strong>Pedidos por armar</strong><small>Prepará los pedidos</small></span><span id="badge-por-armar" class="badge text-bg-danger oculto">0</span><i class="bi bi-arrow-up-right"></i></a>
-              <a href="compras.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-orange"><i class="bi bi-basket2"></i></span><span><strong>Compras y mermas</strong><small>Registrá movimientos</small></span><i class="bi bi-arrow-up-right"></i></a>
-              <a href="clientes.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-blue"><i class="bi bi-people"></i></span><span><strong>Clientes</strong><small>Revisá cuentas y datos</small></span><i class="bi bi-arrow-up-right"></i></a>
-              <a href="promociones.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-pink"><i class="bi bi-tag"></i></span><span><strong>Promociones</strong><small>Administrá ofertas</small></span><i class="bi bi-arrow-up-right"></i></a>
-              <a href="metricas.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-violet"><i class="bi bi-bar-chart-line"></i></span><span><strong>Cómo van los números</strong><small>Consultá tus métricas</small></span><i class="bi bi-arrow-up-right"></i></a>
-              <a href="horario.html" class="dashboard-shortcut"><span class="dashboard-shortcut-icon shortcut-slate"><i class="bi bi-clock"></i></span><span><strong>Horario habitual</strong><small>Configurá tus horarios</small></span><i class="bi bi-arrow-up-right"></i></a>
-            </nav>
+            <div id="lista-pendientes"><p class="muted">Cargando…</p></div>
+          </section>
+
+          <section class="pan-seccion pan-accesos" aria-labelledby="pan-accesos-titulo">
+            <div class="pan-seccion-cab">
+              <div>
+                <h4 id="pan-accesos-titulo">Accesos rápidos</h4>
+                <p class="pan-sub">Las tareas más usadas, a un toque.</p>
+              </div>
+            </div>
+            <div class="pan-accesos-lista">
+              <a href="armado.html" class="pan-acceso">
+                <i class="bi bi-basket2" aria-hidden="true"></i><span><strong>Pedidos por armar</strong><small>Preparar pedidos confirmados</small></span>
+                <span id="badge-por-armar" class="pan-badge oculto">0</span>
+              </a>
+              <a href="compras.html" class="pan-acceso">
+                <i class="bi bi-box-seam" aria-hidden="true"></i><span><strong>Cargar compras</strong><small>Ingresos, mermas y lotes</small></span>
+              </a>
+              <a href="clientes.html" class="pan-acceso">
+                <i class="bi bi-people" aria-hidden="true"></i><span><strong>Clientes</strong><small>Cuentas y contactos</small></span>
+              </a>
+              <a href="promociones.html" class="pan-acceso">
+                <i class="bi bi-tags" aria-hidden="true"></i><span><strong>Promociones</strong><small>Ofertas vigentes</small></span>
+              </a>
+              <a href="metricas.html" class="pan-acceso">
+                <i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span><strong>Números</strong><small>Ver cómo va el local</small></span>
+              </a>
+              <a href="horario.html" class="pan-acceso">
+                <i class="bi bi-clock" aria-hidden="true"></i><span><strong>Horario</strong><small>Editar horario habitual</small></span>
+              </a>
+            </div>
+          </section>
+
+          <section class="pan-seccion pan-conversaciones" aria-labelledby="pan-conversaciones-titulo">
+            <div class="pan-seccion-cab">
+              <h4 id="pan-conversaciones-titulo">Conversaciones recientes</h4>
+              <a href="conversaciones.html" class="pan-ver-todas">Ver todas <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div id="tarjeta-conversaciones-recientes"><p class="muted">Cargando…</p></div>
           </section>
         </div>
+
       </div>
     </div>
   </main>
   <!--end::Main-->
 </div>
 
-<!-- Modales: se mantienen igual que en admin.html, mismo CSS (style.css) -->
+<!-- Modales: mismas ids y mismo comportamiento que admin-v2.html -->
 <div id="modal-alerta-critica" class="modal-alerta oculto">
   <div class="modal-alerta-caja modal-alerta-critica-caja">
-    <span class="modal-alerta-icono">⚠️</span>
+    <span class="modal-alerta-icono"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span>
     <h3>Atención</h3>
     <p id="modal-alerta-critica-mensaje"></p>
     <button id="btn-cerrar-alerta-critica" class="btn-primario btn-ancho">Entendido</button>
@@ -225,11 +244,11 @@
       <h2>Cargar a cuenta</h2>
       <button id="btn-cerrar-modal-cc" class="btn-texto">Cerrar</button>
     </div>
-    <p class="muted" style="margin-top:-4px;">Se recalcula el pedido a precio de lista, sin promociones.</p>
+    <p class="muted pan-modal-ayuda">Se recalcula el pedido a precio de lista, sin promociones.</p>
     <label>Cliente
       <select id="cc-select-cliente"></select>
     </label>
-    <button id="btn-confirmar-cc" class="btn-primario btn-ancho" style="margin-top:12px;">Confirmar cargo</button>
+    <button id="btn-confirmar-cc" class="btn-primario btn-ancho">Confirmar cargo</button>
     <p id="cc-error" class="error oculto"></p>
   </div>
 </div>
