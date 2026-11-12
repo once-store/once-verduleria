@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Promociones · estilos propios de la página (no se toca el CSS compartido).
+   Mismo sistema que Finanzas, Panel, Pedidos y Caja (ver DESIGN.md).
+   Todo acotado a #vista-promociones, #panel-form-promo.
+   ========================================================================== */
+
+:is(#vista-promociones, #panel-form-promo) {
+  --f-suelo: #F4F1E6; --f-superficie: #FFFEFA; --f-hundido: #F0EDE1;
+  --f-linea: #E2DDCC; --f-linea-fuerte: #CFC9B4;
+  --f-tinta: #15271D; --f-tinta-2: #4A5A4F; --f-tinta-3: #5F6E64;
+  --f-verde: #1F6B43; --f-verde-sobre: #17583A; --f-verde-hondo: #183D2E; --f-verde-medio: #2B5942;
+  --f-verde-claro: #E1EDE2; --f-verde-texto: #1A5C39;
+  --f-ambar-fondo: #FBEBC8; --f-ambar-texto: #6E4700;
+  --f-rojo: #A8412A; --f-rojo-fondo: #F8E2DA; --f-rojo-texto: #8A331F;
+  --f-fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-t-xs: .75rem; --f-t-s: .8125rem; --f-t-m: .9375rem; --f-t-l: 1.0625rem; --f-t-xl: 1.25rem; --f-t-num: 1.75rem;
+  --f-e1: 4px; --f-e2: 8px; --f-e3: 12px; --f-e4: 16px; --f-e5: 24px; --f-e6: 32px;
+  --f-r-s: 8px; --f-r-m: 12px; --f-r-l: 16px;
+  --f-toque: 44px; --f-rapido: 150ms;
+  font-family: var(--f-fuente);
+  accent-color: var(--f-verde);
+  caret-color: var(--f-verde);
+}
+#vista-promociones { background: var(--f-suelo); color: var(--f-tinta); }
+:is(#vista-promociones, #panel-form-promo) *, :is(#vista-promociones, #panel-form-promo) *::before, :is(#vista-promociones, #panel-form-promo) *::after { box-sizing: border-box; }
+:is(#vista-promociones, #panel-form-promo) .oculto { display: none !important; }
+:is(#vista-promociones, #panel-form-promo) ::selection { background: #CFE5D3; color: var(--f-tinta); }
+:is(#vista-promociones, #panel-form-promo) :is(button, a, input, select, summary):focus-visible { outline: 2px solid var(--f-verde); outline-offset: 2px; }
+:is(#vista-promociones, #panel-form-promo) .muted { color: var(--f-tinta-2); }
+
+/* --- Marco: menú verde, barra de arriba y fondo crema --- */
+#vista-promociones .app-sidebar { background: var(--f-verde-hondo) !important; }
+#vista-promociones .sidebar-brand .brand-link { color: #fff; }
+#vista-promociones .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-promociones .sidebar-menu .nav-link.active { color: #fff; background: var(--f-verde-medio); }
+#vista-promociones .app-main { background: var(--f-suelo); }
+#vista-promociones .app-header { background: var(--f-superficie) !important; border-bottom: 1px solid var(--f-linea); }
+#vista-promociones .app-header .nav-link { color: var(--f-tinta-2); min-height: var(--f-toque); display: inline-flex; align-items: center; }
+
+/* --- Encabezado de la página --- */
+#vista-promociones .app-content-header { padding-top: var(--f-e5); }
+#vista-promociones .pag-cab { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--f-e4); flex-wrap: wrap; }
+#vista-promociones .pag-cab h3 { margin: 0; font-size: var(--f-t-num); font-weight: 700; letter-spacing: -.01em; color: var(--f-tinta); }
+#vista-promociones .pag-descripcion { margin: var(--f-e1) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-m); }
+#vista-promociones .pag-pagina { max-width: 1120px; margin-top: var(--f-e3); }
+#vista-promociones .pag-seccion { min-width: 0; padding: var(--f-e5); border: 1px solid var(--f-linea); border-radius: var(--f-r-m); background: var(--f-superficie); }
+#vista-promociones .pag-seccion > .muted, #vista-promociones .pag-seccion > .error { margin: var(--f-e2) 0; }
+
+/* --- Botones --- */
+:is(#vista-promociones, #panel-form-promo) .pag-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--f-toque); padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s);
+  background: var(--f-superficie); color: var(--f-tinta);
+  font: inherit; font-size: var(--f-t-s); font-weight: 650; white-space: nowrap; cursor: pointer;
+  transition: background var(--f-rapido) ease-out;
+}
+:is(#vista-promociones, #panel-form-promo) .pag-btn:hover { background: var(--f-hundido); }
+:is(#vista-promociones, #panel-form-promo) .pag-btn-primario { border-color: var(--f-verde); background: var(--f-verde); color: #fff; }
+:is(#vista-promociones, #panel-form-promo) .pag-btn-primario:hover { background: var(--f-verde-sobre); border-color: var(--f-verde-sobre); }
+
+/* Botón de texto de los formularios y filas (Cerrar, Editar...) */
+:is(#vista-promociones, #panel-form-promo) .btn-texto {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--f-toque); margin: 0; padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s);
+  background: var(--f-superficie); color: var(--f-tinta);
+  font: inherit; font-size: var(--f-t-s); font-weight: 650; cursor: pointer;
+}
+:is(#vista-promociones, #panel-form-promo) .btn-texto:hover { background: var(--f-hundido); }
+
+/* --- Chips --- */
+:is(#vista-promociones, #panel-form-promo) .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--f-hundido); color: var(--f-tinta-2); font-size: var(--f-t-xs); font-weight: 700; opacity: 1; }
+:is(#vista-promociones, #panel-form-promo) .chip-verde { background: var(--f-verde-claro); color: var(--f-verde-texto); }
+:is(#vista-promociones, #panel-form-promo) .chip-apagado { background: var(--f-hundido); color: var(--f-tinta-3); border: 1px solid var(--f-linea-fuerte); opacity: 1; }
+
+/* --- Ventanas de formulario (se abren sobre toda la pantalla) --- */
+:is(#panel-form-promo).panel { background: var(--f-suelo); }
+:is(#panel-form-promo) .panel-shell {
+  width: min(600px, 100%); max-width: 600px; min-height: 0;
+  margin: var(--f-e5) auto; padding: var(--f-e5);
+  border: 1px solid var(--f-linea); border-radius: var(--f-r-l); background: var(--f-superficie);
+}
+:is(#panel-form-promo) .panel-header { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); margin: 0 0 var(--f-e4); }
+:is(#panel-form-promo) .panel-header h2 { margin: 0; color: var(--f-tinta); font-size: var(--f-t-xl); font-weight: 700; }
+:is(#panel-form-promo) .form-carga { display: grid; gap: 0; margin: 0; padding: 0; background: none; border: 0; }
+:is(#panel-form-promo) .form-carga label { display: block; margin: var(--f-e4) 0 0; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 650; }
+:is(#panel-form-promo) .form-carga label .muted { font-weight: 500; }
+:is(#panel-form-promo) .form-carga :is(input:not([type="checkbox"]):not([type="hidden"]), select) {
+  display: block; width: 100%; min-height: 48px; margin: 6px 0 0; padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s);
+  background: #fff; color: var(--f-tinta);
+  font: inherit; font-size: 1rem; font-weight: 500;
+}
+:is(#panel-form-promo) .form-carga input[type="file"] { padding: var(--f-e3); min-height: 0; font-size: var(--f-t-s); }
+:is(#panel-form-promo) .form-carga input[type="number"] { font-variant-numeric: tabular-nums; font-weight: 650; }
+:is(#panel-form-promo) .form-carga :is(input:not([type="checkbox"]), select):hover { border-color: var(--f-tinta-3); }
+:is(#panel-form-promo) .form-carga :is(input:not([type="checkbox"]), select):focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); }
+:is(#panel-form-promo) .fila-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--f-e3); }
+:is(#panel-form-promo) .subtitulo { margin: var(--f-e5) 0 var(--f-e2); color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 700; }
+:is(#panel-form-promo) .switch-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); min-height: 52px; margin: 0; padding: var(--f-e2) 0; border-bottom: 1px solid var(--f-linea); }
+:is(#panel-form-promo) .switch-etiqueta { color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 600; }
+:is(#panel-form-promo) .form-carga .switch { margin: 0; }
+:is(#panel-form-promo) .btn-primario {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin: var(--f-e5) 0 0; padding: 0 var(--f-e4);
+  border: 1px solid var(--f-verde); border-radius: var(--f-r-s); background: var(--f-verde); color: #fff;
+  font: inherit; font-size: var(--f-t-m); font-weight: 700; cursor: pointer;
+}
+:is(#panel-form-promo) .btn-primario:hover:not(:disabled) { background: var(--f-verde-sobre); border-color: var(--f-verde-sobre); }
+:is(#panel-form-promo) .btn-primario:disabled { opacity: .6; cursor: default; }
+:is(#panel-form-promo) .btn-cancelar {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: var(--f-e3) 0 0; padding: 0 var(--f-e4);
+  border: 1px solid var(--f-rojo); border-radius: var(--f-r-s); background: transparent; color: var(--f-rojo);
+  font: inherit; font-size: var(--f-t-s); font-weight: 650; cursor: pointer;
+}
+:is(#panel-form-promo) .btn-cancelar:hover { background: var(--f-rojo-fondo); }
+:is(#panel-form-promo) .error, #vista-promociones .error { margin: var(--f-e3) 0 0; padding: var(--f-e3); border-radius: var(--f-r-s); background: var(--f-rojo-fondo); color: var(--f-rojo-texto); font-size: var(--f-t-s); line-height: 1.5; }
+:is(#panel-form-promo) .muted { color: var(--f-tinta-2); }
+
+
+/* --- Lista de promociones --- */
+#vista-promociones #lista-promos .fila-promo {
+  display: flex; align-items: center; gap: var(--f-e4); margin: 0; padding: var(--f-e3) var(--f-e2);
+  border: 0; border-bottom: 1px solid var(--f-linea); border-radius: 0; background: transparent;
+}
+#vista-promociones #lista-promos .fila-promo:first-child { border-top: 1px solid var(--f-linea); }
+#vista-promociones #lista-promos .fila-promo-img { flex: 0 0 56px; width: 56px; }
+#vista-promociones #lista-promos .fila-promo-img .foto-producto { display: block; width: 56px; height: 56px; aspect-ratio: 1; border-radius: var(--f-r-s); object-fit: cover; background: var(--f-hundido); }
+#vista-promociones #lista-promos .fila-promo-info { flex: 1 1 auto; min-width: 0; }
+#vista-promociones #lista-promos .fila-titulo { margin: 0; color: var(--f-tinta); font-size: var(--f-t-l); font-weight: 700; }
+#vista-promociones #lista-promos .fila-promo-info p.muted { margin: 2px 0 0 !important; color: var(--f-tinta-2); font-size: var(--f-t-s); font-variant-numeric: tabular-nums; }
+#vista-promociones #lista-promos .fila-promo-badges { display: flex; flex-wrap: wrap; gap: var(--f-e2); margin-top: var(--f-e2); }
+#vista-promociones #lista-promos .btn-editar-promo { flex: 0 0 auto; }
+
+/* --- Formulario de promoción --- */
+#panel-form-promo .campo-tipo { margin: 0; }
+#panel-form-promo .lista-check-productos {
+  display: block; max-height: 260px; overflow-y: auto; margin: 0 0 var(--f-e2); padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s); background: #fff;
+}
+#panel-form-promo .form-carga .check-producto { display: flex; flex-direction: row; justify-content: flex-start; text-align: left; align-items: center; gap: var(--f-e3); min-height: var(--f-toque); margin: 0; padding: var(--f-e2) 0; border-bottom: 1px solid var(--f-linea); color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 500; }
+#panel-form-promo .form-carga .check-producto:last-child { border-bottom: 0; }
+#panel-form-promo .form-carga .check-producto input { flex: 0 0 auto; width: 20px; height: 20px; min-height: 0; margin: 0; }
+#panel-form-promo .preview-imagen-promo { display: flex; align-items: center; gap: var(--f-e3); margin: 0 0 var(--f-e3); }
+#panel-form-promo .preview-imagen-promo img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--f-r-s); background: var(--f-hundido); }
+#panel-form-promo .btn-primario + .btn-cancelar { margin-top: var(--f-e3) !important; }
+
+@media (max-width: 560px) {
+  #vista-promociones .app-content-header { padding-top: var(--f-e4); }
+  #vista-promociones .pag-cab .pag-btn { width: 100%; min-height: 48px; }
+  #vista-promociones .pag-seccion { padding: var(--f-e4); }
+  #vista-promociones #lista-promos .fila-promo { flex-wrap: wrap; }
+  #vista-promociones #lista-promos .fila-promo-info { flex: 1 1 calc(100% - 72px); }
+  #vista-promociones #lista-promos .btn-editar-promo { width: 100%; }
+  :is(#panel-form-promo) .panel-shell { margin: 0; padding: var(--f-e4) var(--f-e4) 96px; border: 0; border-radius: 0; min-height: 100%; max-width: 100%; }
+  :is(#panel-form-promo) .fila-2 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { #vista-promociones * { transition: none !important; } }
