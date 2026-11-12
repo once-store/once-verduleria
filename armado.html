@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#183D2E">
 <title>once · armado de pedidos</title>
 <link rel="preload" href="adminlte.min.css" as="style">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css">
-<link rel="stylesheet" href="armado.css">
+<link rel="stylesheet" href="armado.css?v=armado-ui-2">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -103,26 +104,22 @@
 
   <main class="app-main">
     <div class="app-content-header">
-      <div class="container-fluid">
-        <h3 class="mb-0">Pedidos por armar</h3>
+      <div class="container-fluid armado-cab">
+        <h3>Pedidos por armar</h3>
         <p class="armado-subtitulo">Cargá el peso real de cada pedido antes de confirmar el armado.</p>
       </div>
     </div>
 
     <div class="app-content">
-      <div class="container-fluid armado-contenedor">
+      <div class="container-fluid armado-pagina">
         <div class="armado-seccion-cabecera">
-          <h2 class="armado-seccion-titulo">Esperando armado</h2>
+          <div>
+            <h2 class="armado-seccion-titulo">Esperando armado</h2>
+            <p class="armado-aviso">En productos por peso, ingresá cuánto se preparó realmente. Los productos vendidos por unidad se confirman tal como se pidieron.</p>
+          </div>
           <span id="contador-por-armar" class="armado-contador oculto"></span>
         </div>
-        <div class="armado-aviso">
-          En productos por peso, ingresá cuánto se preparó realmente. Los productos vendidos por unidad se confirman tal como se pidieron.
-        </div>
-        <div class="card card-primary card-outline">
-          <div class="card-body" id="lista-por-armar">
-            <p class="muted">Cargando…</p>
-          </div>
-        </div>
+        <div id="lista-por-armar"><p class="muted">Cargando…</p></div>
       </div>
     </div>
   </main>
