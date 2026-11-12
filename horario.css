@@ -1,0 +1,168 @@
+/* ==========================================================================
+   Horario · estilos propios de la página (no se toca el CSS compartido).
+   Mismo sistema que Finanzas, Panel, Pedidos y Caja (ver DESIGN.md).
+   Todo acotado a #vista-horario, #vista-horario.
+   ========================================================================== */
+
+:is(#vista-horario, #vista-horario) {
+  --f-suelo: #F4F1E6; --f-superficie: #FFFEFA; --f-hundido: #F0EDE1;
+  --f-linea: #E2DDCC; --f-linea-fuerte: #CFC9B4;
+  --f-tinta: #15271D; --f-tinta-2: #4A5A4F; --f-tinta-3: #5F6E64;
+  --f-verde: #1F6B43; --f-verde-sobre: #17583A; --f-verde-hondo: #183D2E; --f-verde-medio: #2B5942;
+  --f-verde-claro: #E1EDE2; --f-verde-texto: #1A5C39;
+  --f-ambar-fondo: #FBEBC8; --f-ambar-texto: #6E4700;
+  --f-rojo: #A8412A; --f-rojo-fondo: #F8E2DA; --f-rojo-texto: #8A331F;
+  --f-fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-t-xs: .75rem; --f-t-s: .8125rem; --f-t-m: .9375rem; --f-t-l: 1.0625rem; --f-t-xl: 1.25rem; --f-t-num: 1.75rem;
+  --f-e1: 4px; --f-e2: 8px; --f-e3: 12px; --f-e4: 16px; --f-e5: 24px; --f-e6: 32px;
+  --f-r-s: 8px; --f-r-m: 12px; --f-r-l: 16px;
+  --f-toque: 44px; --f-rapido: 150ms;
+  font-family: var(--f-fuente);
+  accent-color: var(--f-verde);
+  caret-color: var(--f-verde);
+}
+#vista-horario { background: var(--f-suelo); color: var(--f-tinta); }
+:is(#vista-horario, #vista-horario) *, :is(#vista-horario, #vista-horario) *::before, :is(#vista-horario, #vista-horario) *::after { box-sizing: border-box; }
+:is(#vista-horario, #vista-horario) .oculto { display: none !important; }
+:is(#vista-horario, #vista-horario) ::selection { background: #CFE5D3; color: var(--f-tinta); }
+:is(#vista-horario, #vista-horario) :is(button, a, input, select, summary):focus-visible { outline: 2px solid var(--f-verde); outline-offset: 2px; }
+:is(#vista-horario, #vista-horario) .muted { color: var(--f-tinta-2); }
+
+/* --- Marco: menú verde, barra de arriba y fondo crema --- */
+#vista-horario .app-sidebar { background: var(--f-verde-hondo) !important; }
+#vista-horario .sidebar-brand .brand-link { color: #fff; }
+#vista-horario .sidebar-menu .nav-link { color: #E4EEE7; }
+#vista-horario .sidebar-menu .nav-link.active { color: #fff; background: var(--f-verde-medio); }
+#vista-horario .app-main { background: var(--f-suelo); }
+#vista-horario .app-header { background: var(--f-superficie) !important; border-bottom: 1px solid var(--f-linea); }
+#vista-horario .app-header .nav-link { color: var(--f-tinta-2); min-height: var(--f-toque); display: inline-flex; align-items: center; }
+
+/* --- Encabezado de la página --- */
+#vista-horario .app-content-header { padding-top: var(--f-e5); }
+#vista-horario .pag-cab { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--f-e4); flex-wrap: wrap; }
+#vista-horario .pag-cab h3 { margin: 0; font-size: var(--f-t-num); font-weight: 700; letter-spacing: -.01em; color: var(--f-tinta); }
+#vista-horario .pag-descripcion { margin: var(--f-e1) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-m); }
+#vista-horario .pag-pagina { max-width: 1120px; margin-top: var(--f-e3); }
+#vista-horario .pag-seccion { min-width: 0; padding: var(--f-e5); border: 1px solid var(--f-linea); border-radius: var(--f-r-m); background: var(--f-superficie); }
+#vista-horario .pag-seccion > .muted, #vista-horario .pag-seccion > .error { margin: var(--f-e2) 0; }
+
+/* --- Botones --- */
+:is(#vista-horario, #vista-horario) .pag-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--f-toque); padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s);
+  background: var(--f-superficie); color: var(--f-tinta);
+  font: inherit; font-size: var(--f-t-s); font-weight: 650; white-space: nowrap; cursor: pointer;
+  transition: background var(--f-rapido) ease-out;
+}
+:is(#vista-horario, #vista-horario) .pag-btn:hover { background: var(--f-hundido); }
+:is(#vista-horario, #vista-horario) .pag-btn-primario { border-color: var(--f-verde); background: var(--f-verde); color: #fff; }
+:is(#vista-horario, #vista-horario) .pag-btn-primario:hover { background: var(--f-verde-sobre); border-color: var(--f-verde-sobre); }
+
+/* Botón de texto de los formularios y filas (Cerrar, Editar...) */
+:is(#vista-horario, #vista-horario) .btn-texto {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--f-toque); margin: 0; padding: 0 var(--f-e4);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s);
+  background: var(--f-superficie); color: var(--f-tinta);
+  font: inherit; font-size: var(--f-t-s); font-weight: 650; cursor: pointer;
+}
+:is(#vista-horario, #vista-horario) .btn-texto:hover { background: var(--f-hundido); }
+
+/* --- Chips --- */
+:is(#vista-horario, #vista-horario) .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--f-hundido); color: var(--f-tinta-2); font-size: var(--f-t-xs); font-weight: 700; opacity: 1; }
+:is(#vista-horario, #vista-horario) .chip-verde { background: var(--f-verde-claro); color: var(--f-verde-texto); }
+:is(#vista-horario, #vista-horario) .chip-apagado { background: var(--f-hundido); color: var(--f-tinta-3); border: 1px solid var(--f-linea-fuerte); opacity: 1; }
+
+/* --- Ventanas de formulario (se abren sobre toda la pantalla) --- */
+:is(#vista-horario).panel { background: var(--f-suelo); }
+:is(#vista-horario) .panel-shell {
+  width: min(600px, 100%); max-width: 600px; min-height: 0;
+  margin: var(--f-e5) auto; padding: var(--f-e5);
+  border: 1px solid var(--f-linea); border-radius: var(--f-r-l); background: var(--f-superficie);
+}
+:is(#vista-horario) .panel-header { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); margin: 0 0 var(--f-e4); }
+:is(#vista-horario) .panel-header h2 { margin: 0; color: var(--f-tinta); font-size: var(--f-t-xl); font-weight: 700; }
+:is(#vista-horario) .form-carga { display: grid; gap: 0; margin: 0; padding: 0; background: none; border: 0; }
+:is(#vista-horario) .form-carga label { display: block; margin: var(--f-e4) 0 0; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 650; }
+:is(#vista-horario) .form-carga label .muted { font-weight: 500; }
+:is(#vista-horario) .form-carga :is(input:not([type="checkbox"]):not([type="hidden"]), select) {
+  display: block; width: 100%; min-height: 48px; margin: 6px 0 0; padding: 0 var(--f-e3);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s);
+  background: #fff; color: var(--f-tinta);
+  font: inherit; font-size: 1rem; font-weight: 500;
+}
+:is(#vista-horario) .form-carga input[type="file"] { padding: var(--f-e3); min-height: 0; font-size: var(--f-t-s); }
+:is(#vista-horario) .form-carga input[type="number"] { font-variant-numeric: tabular-nums; font-weight: 650; }
+:is(#vista-horario) .form-carga :is(input:not([type="checkbox"]), select):hover { border-color: var(--f-tinta-3); }
+:is(#vista-horario) .form-carga :is(input:not([type="checkbox"]), select):focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); }
+:is(#vista-horario) .fila-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--f-e3); }
+:is(#vista-horario) .subtitulo { margin: var(--f-e5) 0 var(--f-e2); color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 700; }
+:is(#vista-horario) .switch-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); min-height: 52px; margin: 0; padding: var(--f-e2) 0; border-bottom: 1px solid var(--f-linea); }
+:is(#vista-horario) .switch-etiqueta { color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 600; }
+:is(#vista-horario) .form-carga .switch { margin: 0; }
+:is(#vista-horario) .btn-primario {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin: var(--f-e5) 0 0; padding: 0 var(--f-e4);
+  border: 1px solid var(--f-verde); border-radius: var(--f-r-s); background: var(--f-verde); color: #fff;
+  font: inherit; font-size: var(--f-t-m); font-weight: 700; cursor: pointer;
+}
+:is(#vista-horario) .btn-primario:hover:not(:disabled) { background: var(--f-verde-sobre); border-color: var(--f-verde-sobre); }
+:is(#vista-horario) .btn-primario:disabled { opacity: .6; cursor: default; }
+:is(#vista-horario) .btn-cancelar {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: var(--f-e3) 0 0; padding: 0 var(--f-e4);
+  border: 1px solid var(--f-rojo); border-radius: var(--f-r-s); background: transparent; color: var(--f-rojo);
+  font: inherit; font-size: var(--f-t-s); font-weight: 650; cursor: pointer;
+}
+:is(#vista-horario) .btn-cancelar:hover { background: var(--f-rojo-fondo); }
+:is(#vista-horario) .error, #vista-horario .error { margin: var(--f-e3) 0 0; padding: var(--f-e3); border-radius: var(--f-r-s); background: var(--f-rojo-fondo); color: var(--f-rojo-texto); font-size: var(--f-t-s); line-height: 1.5; }
+:is(#vista-horario) .muted { color: var(--f-tinta-2); }
+
+
+/* --- Dos columnas: franjas cargadas a la izquierda, agregar a la derecha --- */
+#vista-horario .hor-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); grid-template-areas: "lista agregar"; gap: var(--f-e5); align-items: start; }
+#vista-horario .hor-lista { grid-area: lista; }
+#vista-horario .hor-agregar { grid-area: agregar; }
+#vista-horario .pag-seccion h4 { margin: 0 0 var(--f-e2); color: var(--f-tinta); font-size: var(--f-t-l); font-weight: 700; }
+#vista-horario .pag-seccion .form-carga > label:first-child { margin-top: var(--f-e2); }
+#vista-horario .hor-agregar .btn-primario { margin-top: var(--f-e5); }
+#vista-horario #franja-error { margin-top: var(--f-e3); }
+
+/* --- Franjas por día --- */
+#vista-horario #lista-horario .subtitulo { margin: var(--f-e5) 0 var(--f-e2); padding: 0; color: var(--f-verde-texto); font-size: var(--f-t-s); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+#vista-horario #lista-horario .subtitulo:first-child { margin-top: 0; }
+#vista-horario #lista-horario .fila-pendiente {
+  display: flex; align-items: center; gap: var(--f-e3); margin: 0 0 var(--f-e2); padding: var(--f-e3);
+  border: 1px solid var(--f-linea); border-radius: var(--f-r-m); background: var(--f-suelo); box-shadow: none;
+}
+#vista-horario #lista-horario .fila-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--f-e2); margin: 0; flex: 1 1 auto; }
+#vista-horario #lista-horario input[type="time"] {
+  display: block; width: 100%; min-height: 48px; margin: 0; padding: 0 var(--f-e2);
+  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s); background: #fff; color: var(--f-tinta);
+  font: inherit; font-size: var(--f-t-l); font-weight: 650; font-variant-numeric: tabular-nums;
+}
+#vista-horario #lista-horario input[type="time"]:hover { border-color: var(--f-tinta-3); }
+#vista-horario #lista-horario input[type="time"]:focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); }
+#vista-horario #lista-horario .acciones-pedido { display: flex; gap: var(--f-e2); margin: 0 !important; padding: 0; flex: 0 0 auto; }
+#vista-horario #lista-horario .acciones-pedido button {
+  display: inline-flex; align-items: center; justify-content: center; width: auto; min-height: 48px; margin: 0; padding: 0 var(--f-e4);
+  border-radius: var(--f-r-s); font: inherit; font-size: var(--f-t-s); font-weight: 650; cursor: pointer; flex: 0 0 auto;
+}
+#vista-horario #lista-horario .btn-guardar-franja { border: 1px solid var(--f-verde); background: var(--f-verde); color: #fff; }
+#vista-horario #lista-horario .btn-guardar-franja:hover:not(:disabled) { background: var(--f-verde-sobre); }
+#vista-horario #lista-horario .btn-guardar-franja:disabled { opacity: .6; cursor: default; }
+#vista-horario #lista-horario .btn-borrar-franja { border: 1px solid var(--f-rojo); background: transparent; color: var(--f-rojo); }
+#vista-horario #lista-horario .btn-borrar-franja:hover { background: var(--f-rojo-fondo); }
+
+@media (max-width: 960px) {
+  #vista-horario .hor-grid { grid-template-columns: 1fr; grid-template-areas: "agregar" "lista"; }
+}
+@media (max-width: 560px) {
+  #vista-horario .app-content-header { padding-top: var(--f-e4); }
+  #vista-horario .pag-seccion { padding: var(--f-e4); }
+  #vista-horario #lista-horario .fila-pendiente { flex-wrap: wrap; }
+  #vista-horario #lista-horario .fila-2 { flex: 1 1 100%; }
+  #vista-horario #lista-horario .acciones-pedido { flex: 1 1 100%; }
+  #vista-horario #lista-horario .acciones-pedido button { flex: 1 1 0; }
+  #vista-horario .fila-2 { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { #vista-horario * { transition: none !important; } }
