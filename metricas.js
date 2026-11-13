@@ -1,4 +1,9 @@
-import { supabase, obtenerSesionActual, aplicarVisibilidadSidebarPorRol } from './sesion.js'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const SUPABASE_URL = 'https://meekevxxjirvgsuppvij.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lZWtldnh4amlydmdzdXBwdmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MjQwMjMsImV4cCI6MjEwMTEwMDAyM30.MGajznwLTreSKal-1-aFcYsEHTTGC6geruLvRryQ88M'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const vistaMetricas = document.getElementById('vista-metricas')
 const tarjetaMeta = document.getElementById('tarjeta-meta')
@@ -6,8 +11,23 @@ const tarjetaResultado = document.getElementById('tarjeta-resultado')
 const tarjetaMargen = document.getElementById('tarjeta-margen')
 const tarjetaGastos = document.getElementById('tarjeta-gastos-fijos')
 
+// Período (en días) del margen por categoría; lo cambian los botones 7 / 30 / 90 días
+let diasMargen = 30
+
+// Los nombres de gastos y categorías los carga una persona: se escapan antes de mostrarlos
+function escapeHtml(texto) {
+  if (texto == null) return ''
+  return String(texto)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
 function formatoMoneda(n) {
-  return '$' + Math.round(n).toLocaleString('es-AR')
+  const redondeado = Math.round(n)
+  return (redondeado < 0 ? '-' : '') + '$' + Math.abs(redondeado).toLocaleString('es-AR')
 }
 
 document.getElementById('btn-salir').addEventListener('click', async () => {
@@ -16,12 +36,10 @@ document.getElementById('btn-salir').addEventListener('click', async () => {
 })
 
 // --- Sesión: esta pantalla requiere estar logueado, igual que el resto del panel ---
-// Esta pantalla es Dueño-únicamente -- cualquier otro rol (o sin rol) rebota al panel.
-const sesion = await obtenerSesionActual({ forzarRecarga: true })
-if (!sesion || sesion.rol !== 'dueno') {
+const { data: { session } } = await supabase.auth.getSession()
+if (!session) {
   window.location.href = 'admin-v2.html'
 } else {
-  aplicarVisibilidadSidebarPorRol(sesion.rol)
   vistaMetricas.classList.remove('oculto')
   cargarMetaHoy()
   cargarResultadoBruto()
@@ -34,7 +52,7 @@ const NIVEL_META_INFO = {
   bajo_supervivencia: { color: 'tomate', texto: 'Por debajo del mínimo' },
   supervivencia: { color: 'naranja', texto: 'Cubriendo lo mínimo' },
   objetivo: { color: 'verde', texto: 'En objetivo' },
-  excelente: { color: 'verde-oscuro', texto: '¡Excelente! 🌟' },
+  excelente: { color: 'verde-oscuro', texto: '¡Excelente!' },
 }
 
 async function cargarMetaHoy() {
@@ -55,16 +73,19 @@ function dibujarMeta(meta) {
 
   tarjetaMeta.innerHTML = `
     <div class="meta-header">
-      <span class="meta-total">${formatoMoneda(meta.total_hoy)}</span>
+      <div>
+        <span class="meta-rotulo">Vendido hoy</span>
+        <span class="meta-total">${formatoMoneda(meta.total_hoy)}</span>
+      </div>
       <span class="meta-nivel meta-nivel-${info.color}">${info.texto}</span>
     </div>
-    <div class="meta-barra">
+    <div class="meta-barra" role="progressbar" aria-label="Avance hacia el objetivo del día" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(porcentaje)}">
       <div class="meta-barra-relleno meta-barra-${info.color}" style="width:${porcentaje}%"></div>
     </div>
     <div class="meta-niveles">
-      <span>🔴 ${formatoMoneda(meta.supervivencia)}</span>
-      <span>🟡 ${formatoMoneda(meta.objetivo)}</span>
-      <span>🟢 ${formatoMoneda(meta.excelente)}</span>
+      <span><i class="meta-punto meta-punto-bajo"></i>Mínimo <strong>${formatoMoneda(meta.supervivencia)}</strong></span>
+      <span><i class="meta-punto meta-punto-objetivo"></i>Objetivo <strong>${formatoMoneda(meta.objetivo)}</strong></span>
+      <span><i class="meta-punto meta-punto-excelente"></i>Excelente <strong>${formatoMoneda(meta.excelente)}</strong></span>
     </div>
     <p class="meta-falta muted">${faltaTexto}</p>
   `
@@ -96,7 +117,7 @@ function dibujarResultado(r) {
       <span class="muted">Costo de mercadería</span>
       <span>${formatoMoneda(r.costo_mercaderia)}</span>
     </div>
-    <div class="resultado-fila">
+    <div class="resultado-fila resultado-subtotal">
       <span>Resultado bruto</span>
       <span>${formatoMoneda(r.resultado_bruto)}</span>
     </div>
@@ -128,7 +149,7 @@ function dibujarGastosFijos(gastos) {
 
   tarjetaGastos.innerHTML = gastos.map(g => `
     <div class="gasto-fila">
-      <span class="gasto-concepto">${g.concepto}</span>
+      <span class="gasto-concepto">${escapeHtml(g.concepto)}</span>
       <input type="number" class="gasto-input" data-id="${g.id}" value="${g.monto_mensual}" min="0" step="1000">
     </div>
   `).join('') + `
@@ -158,7 +179,7 @@ tarjetaGastos.addEventListener('change', async (e) => {
 
 // --- Margen real por categoría (solo ventas con costo real registrado) ---
 async function cargarMargenCategoria() {
-  const { data, error } = await supabase.rpc('obtener_margen_por_categoria', { p_dias: 30 })
+  const { data, error } = await supabase.rpc('obtener_margen_por_categoria', { p_dias: diasMargen })
   if (error) {
     console.error(error)
     return
@@ -175,12 +196,18 @@ function dibujarMargen(datos) {
     return
   }
 
-  const filas = datos.categorias.map(c => `
+  const filas = datos.categorias.map(c => {
+    const pct = c.margen_real_pct
+    const ancho = pct !== null ? Math.max(0, Math.min(100, Number(pct))) : 0
+    const negativo = pct !== null && Number(pct) < 0
+    return `
     <div class="margen-fila">
-      <span class="margen-categoria">${c.categoria}</span>
-      <span class="margen-valor">${c.margen_real_pct !== null ? c.margen_real_pct + '%' : '—'}</span>
+      <span class="margen-categoria">${escapeHtml(c.categoria)}</span>
+      <span class="margen-barra"><span class="${negativo ? 'margen-barra-neg' : ''}" style="width:${ancho}%"></span></span>
+      <span class="margen-valor ${negativo ? 'margen-valor-neg' : ''}">${pct !== null ? pct + '%' : '—'}</span>
     </div>
-  `).join('')
+  `
+  }).join('')
 
   const notaParcial = datos.items_sin_costo_registrado > 0
     ? `<p class="muted margen-nota">${datos.items_sin_costo_registrado} venta(s) del período todavía no tienen costo real registrado (son de antes de este cambio) y no entran en este cálculo.</p>`
@@ -188,3 +215,30 @@ function dibujarMargen(datos) {
 
   tarjetaMargen.innerHTML = filas + notaParcial
 }
+
+// --- Tablero: período del margen y botón de actualizar ---
+const textoPeriodoMargen = document.getElementById('margen-periodo-texto')
+const botonesPeriodo = document.querySelectorAll('#margen-periodos [data-dias]')
+
+botonesPeriodo.forEach(btn => {
+  btn.addEventListener('click', () => {
+    diasMargen = Number(btn.dataset.dias)
+    botonesPeriodo.forEach(b => {
+      const activo = b === btn
+      b.classList.toggle('activa', activo)
+      b.setAttribute('aria-pressed', activo ? 'true' : 'false')
+    })
+    textoPeriodoMargen.textContent = '(' + diasMargen + ' días)'
+    tarjetaMargen.innerHTML = '<p class="muted">Cargando…</p>'
+    cargarMargenCategoria()
+  })
+})
+
+document.getElementById('btn-actualizar-numeros').addEventListener('click', async (e) => {
+  const btn = e.currentTarget
+  btn.disabled = true
+  btn.textContent = 'Actualizando…'
+  await Promise.all([cargarMetaHoy(), cargarResultadoBruto(), cargarMargenCategoria(), cargarGastosFijos()])
+  btn.disabled = false
+  btn.textContent = 'Actualizar'
+})
