@@ -118,94 +118,160 @@
 :is(#vista-metricas) .muted { color: var(--f-tinta-2); }
 
 
-/* --- Meta de hoy: la cifra del día y cuánto falta --- */
-#vista-metricas .pag-pagina > .pag-seccion { margin-bottom: var(--f-e5); }
-#vista-metricas .pag-seccion h4 { margin: 0 0 var(--f-e3); color: var(--f-tinta); font-size: var(--f-t-l); font-weight: 700; }
-#vista-metricas .pag-sub { margin: calc(-1 * var(--f-e2)) 0 var(--f-e3); color: var(--f-tinta-2); font-size: var(--f-t-s); line-height: 1.5; }
+/* ===== Alternativa "Informe": una hoja sobria, sin bloques de color, números alineados ===== */
+#vista-metricas .pag-pagina { max-width: 980px; padding: 0; }
+#vista-metricas .pag-pagina > .pag-seccion, #vista-metricas .num-grid > .pag-seccion { padding: 0; border: 0; border-radius: 0; background: transparent; margin: 0; }
+#vista-metricas .pag-pagina { background: var(--f-superficie); border: 1px solid var(--f-linea); border-radius: var(--f-r-m); padding: var(--f-e6) var(--f-e6) var(--f-e5); }
+#vista-metricas .pag-pagina > .pag-seccion + .num-grid, #vista-metricas .num-grid + .pag-seccion { margin-top: var(--f-e6); padding-top: var(--f-e5); border-top: 1px solid var(--f-linea); }
+#vista-metricas .num-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--f-e6); align-items: start; margin: 0; }
+#vista-metricas .num-grid > .pag-seccion + .pag-seccion { padding-left: var(--f-e6); border-left: 1px solid var(--f-linea); }
+#vista-metricas .pag-seccion h4 { margin: 0 0 var(--f-e3); color: var(--f-tinta-2); font-size: var(--f-t-xs); font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+#vista-metricas .pag-sub { margin: calc(-1 * var(--f-e1)) 0 var(--f-e3); color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.5; }
+#vista-metricas .num-periodo-texto { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* Meta: una cifra y una línea fina de avance */
 #vista-metricas #tarjeta-meta .meta-header { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--f-e4); flex-wrap: wrap; margin: 0 0 var(--f-e3); }
-#vista-metricas #tarjeta-meta .meta-rotulo { display: block; color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 650; }
-#vista-metricas #tarjeta-meta .meta-total { display: block; margin-top: var(--f-e1); color: var(--f-tinta); font-size: 2.75rem; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-#vista-metricas #tarjeta-meta .meta-nivel { display: inline-block; padding: 6px var(--f-e4); border-radius: 999px; font-size: var(--f-t-m); font-weight: 700; white-space: nowrap; }
-#vista-metricas #tarjeta-meta .meta-nivel-tomate { background: var(--f-rojo-fondo); color: var(--f-rojo-texto); }
-#vista-metricas #tarjeta-meta .meta-nivel-naranja { background: var(--f-ambar-fondo); color: var(--f-ambar-texto); }
-#vista-metricas #tarjeta-meta .meta-nivel-verde { background: var(--f-verde-claro); color: var(--f-verde-texto); }
-#vista-metricas #tarjeta-meta .meta-nivel-verde-oscuro { background: var(--f-verde-hondo); color: #fff; }
-#vista-metricas #tarjeta-meta .meta-barra { height: 16px; margin: 0 0 var(--f-e3); border-radius: 999px; background: var(--f-hundido); border: 1px solid var(--f-linea); overflow: hidden; }
-#vista-metricas #tarjeta-meta .meta-barra-relleno { height: 100%; border-radius: 999px; transition: width 400ms ease-out; }
-#vista-metricas #tarjeta-meta .meta-barra-tomate { background: var(--f-rojo); }
-#vista-metricas #tarjeta-meta .meta-barra-naranja { background: #D9962B; }
-#vista-metricas #tarjeta-meta .meta-barra-verde { background: var(--f-verde); }
-#vista-metricas #tarjeta-meta .meta-barra-verde-oscuro { background: var(--f-verde-hondo); }
-#vista-metricas #tarjeta-meta .meta-niveles { display: flex; flex-wrap: wrap; gap: var(--f-e2) var(--f-e5); margin: 0 0 var(--f-e2); color: var(--f-tinta-2); font-size: var(--f-t-s); }
-#vista-metricas #tarjeta-meta .meta-niveles span { display: inline-flex; align-items: center; gap: 6px; }
-#vista-metricas #tarjeta-meta .meta-niveles strong { color: var(--f-tinta); font-variant-numeric: tabular-nums; }
-#vista-metricas #tarjeta-meta .meta-punto { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
-#vista-metricas #tarjeta-meta .meta-punto-bajo { background: var(--f-rojo); }
-#vista-metricas #tarjeta-meta .meta-punto-objetivo { background: #D9962B; }
-#vista-metricas #tarjeta-meta .meta-punto-excelente { background: var(--f-verde); }
-#vista-metricas #tarjeta-meta .meta-falta { margin: 0; color: var(--f-tinta-2); font-size: var(--f-t-m); }
+#vista-metricas #tarjeta-meta .meta-rotulo { display: block; color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 500; }
+#vista-metricas #tarjeta-meta .meta-total { display: block; margin-top: 2px; color: var(--f-tinta); font-size: 2.25rem; font-weight: 600; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+#vista-metricas #tarjeta-meta .meta-nivel { display: inline-flex; align-items: center; gap: 8px; padding: 0; border-radius: 0; background: transparent; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 650; }
+#vista-metricas #tarjeta-meta .meta-nivel::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+#vista-metricas #tarjeta-meta .meta-nivel-tomate { color: var(--f-rojo); }
+#vista-metricas #tarjeta-meta .meta-nivel-naranja { color: #8A5A00; }
+#vista-metricas #tarjeta-meta .meta-nivel-verde, #vista-metricas #tarjeta-meta .meta-nivel-verde-oscuro { color: var(--f-verde-texto); }
+#vista-metricas #tarjeta-meta .meta-barra { height: 6px; margin: 0 0 var(--f-e3); border: 0; border-radius: 3px; background: var(--f-linea); overflow: hidden; }
+#vista-metricas #tarjeta-meta .meta-barra-relleno { height: 100%; border-radius: 3px; background: var(--f-tinta); transition: width 400ms ease-out; }
+#vista-metricas #tarjeta-meta .meta-niveles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--f-e4); margin: 0 0 var(--f-e2); padding-top: var(--f-e3); border-top: 1px solid var(--f-linea); color: var(--f-tinta-2); font-size: var(--f-t-xs); }
+#vista-metricas #tarjeta-meta .meta-niveles span { display: flex; flex-direction: column; gap: 2px; }
+#vista-metricas #tarjeta-meta .meta-niveles strong { color: var(--f-tinta); font-size: var(--f-t-l); font-weight: 600; font-variant-numeric: tabular-nums; }
+#vista-metricas #tarjeta-meta .meta-punto { display: none; }
+#vista-metricas #tarjeta-meta .meta-falta { margin: var(--f-e2) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-s); }
 
-/* --- Resultado del día: una cuenta de arriba hacia abajo --- */
-#vista-metricas .num-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--f-e5); align-items: start; margin-bottom: var(--f-e5); }
-#vista-metricas .num-grid > .pag-seccion { margin: 0; }
-#vista-metricas #tarjeta-resultado .resultado-fila { display: flex; justify-content: space-between; align-items: baseline; gap: var(--f-e3); margin: 0; padding: var(--f-e3) 0; border: 0; border-bottom: 1px solid var(--f-linea); background: transparent; color: var(--f-tinta); font-size: var(--f-t-m); font-variant-numeric: tabular-nums; }
-#vista-metricas #tarjeta-resultado .resultado-fila:first-child { border-top: 1px solid var(--f-linea); }
+/* Resultado: como un estado de resultados */
+#vista-metricas #tarjeta-resultado .resultado-fila { display: flex; justify-content: space-between; align-items: baseline; gap: var(--f-e3); margin: 0; padding: var(--f-e2) 0; border: 0; border-bottom: 1px solid var(--f-linea); background: transparent; color: var(--f-tinta); font-size: var(--f-t-s); font-variant-numeric: tabular-nums; }
 #vista-metricas #tarjeta-resultado .resultado-fila span.muted { color: var(--f-tinta-2); }
-#vista-metricas #tarjeta-resultado .resultado-fila span:last-child { font-weight: 700; white-space: nowrap; }
-#vista-metricas #tarjeta-resultado .resultado-subtotal span:first-child { font-weight: 700; }
-#vista-metricas #tarjeta-resultado .resultado-total { margin-top: var(--f-e3); padding: var(--f-e4); border: 0; border-radius: var(--f-r-m); background: var(--f-verde-claro); }
-#vista-metricas #tarjeta-resultado .resultado-total span:first-child { color: var(--f-verde-texto); font-weight: 700; }
-#vista-metricas #tarjeta-resultado .resultado-total span:last-child { color: var(--f-tinta); font-size: var(--f-t-num); line-height: 1.1; }
-#vista-metricas #tarjeta-resultado .resultado-total.resultado-negativo { background: var(--f-rojo-fondo); }
-#vista-metricas #tarjeta-resultado .resultado-total.resultado-negativo span:first-child, #vista-metricas #tarjeta-resultado .resultado-total.resultado-negativo span:last-child { color: var(--f-rojo); }
-#vista-metricas #tarjeta-resultado .resultado-aviso, #vista-metricas #tarjeta-resultado .resultado-nota { margin: var(--f-e3) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-xs); line-height: 1.5; }
+#vista-metricas #tarjeta-resultado .resultado-fila span:last-child { font-weight: 600; white-space: nowrap; }
+#vista-metricas #tarjeta-resultado .resultado-subtotal { border-bottom: 1px solid var(--f-linea-fuerte); }
+#vista-metricas #tarjeta-resultado .resultado-subtotal span:first-child { font-weight: 650; }
+#vista-metricas #tarjeta-resultado .resultado-total { margin-top: var(--f-e2); padding: var(--f-e3) 0; border: 0; border-top: 2px solid var(--f-tinta); border-bottom: 0; border-radius: 0; background: transparent; }
+#vista-metricas #tarjeta-resultado .resultado-total span:first-child { color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 700; }
+#vista-metricas #tarjeta-resultado .resultado-total span:last-child { color: var(--f-tinta); font-size: var(--f-t-xl); font-weight: 700; }
+#vista-metricas #tarjeta-resultado .resultado-total.resultado-negativo span { color: var(--f-rojo); }
+#vista-metricas #tarjeta-resultado .resultado-aviso, #vista-metricas #tarjeta-resultado .resultado-nota { margin: var(--f-e2) 0 0; color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.5; }
 
-/* --- Gastos fijos --- */
-#vista-metricas #tarjeta-gastos-fijos .gasto-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); margin: 0; padding: var(--f-e2) 0; border: 0; border-bottom: 1px solid var(--f-linea); background: transparent; }
-#vista-metricas #tarjeta-gastos-fijos .gasto-fila:first-child { border-top: 1px solid var(--f-linea); }
-#vista-metricas #tarjeta-gastos-fijos .gasto-concepto { flex: 1 1 auto; min-width: 0; color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 600; }
-#vista-metricas #tarjeta-gastos-fijos .gasto-input {
-  flex: 0 0 150px; width: 150px; min-height: 44px; margin: 0; padding: 0 var(--f-e3);
-  border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s); background: #fff; color: var(--f-tinta);
-  font: inherit; font-size: var(--f-t-m); font-weight: 650; text-align: right; font-variant-numeric: tabular-nums;
-}
-#vista-metricas #tarjeta-gastos-fijos .gasto-input:hover { border-color: var(--f-tinta-3); }
-#vista-metricas #tarjeta-gastos-fijos .gasto-input:focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); }
-#vista-metricas #tarjeta-gastos-fijos .gasto-total { margin-top: var(--f-e3); padding: var(--f-e3) var(--f-e4); border: 0; border-radius: var(--f-r-s); background: var(--f-hundido); color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 650; }
-#vista-metricas #tarjeta-gastos-fijos .gasto-total span:last-child { color: var(--f-tinta); font-size: var(--f-t-xl); font-weight: 700; font-variant-numeric: tabular-nums; }
+/* Gastos fijos: tabla con campos discretos */
+#vista-metricas #tarjeta-gastos-fijos .gasto-fila { display: flex; justify-content: space-between; align-items: center; gap: var(--f-e3); margin: 0; padding: 2px 0; border: 0; border-bottom: 1px solid var(--f-linea); background: transparent; }
+#vista-metricas #tarjeta-gastos-fijos .gasto-concepto { flex: 1 1 auto; min-width: 0; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 500; }
+#vista-metricas #tarjeta-gastos-fijos .gasto-input { flex: 0 0 130px; width: 130px; min-height: 40px; margin: 0; padding: 0 var(--f-e2); border: 1px solid transparent; border-radius: var(--f-r-s); background: transparent; color: var(--f-tinta); font: inherit; font-size: var(--f-t-s); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+#vista-metricas #tarjeta-gastos-fijos .gasto-input:hover { border-color: var(--f-linea-fuerte); background: #fff; }
+#vista-metricas #tarjeta-gastos-fijos .gasto-input:focus { outline: 2px solid var(--f-verde); outline-offset: 0; border-color: var(--f-verde); background: #fff; }
+#vista-metricas #tarjeta-gastos-fijos .gasto-total { margin-top: var(--f-e2); padding: var(--f-e3) 0; border: 0; border-top: 2px solid var(--f-tinta); border-radius: 0; background: transparent; color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 700; }
+#vista-metricas #tarjeta-gastos-fijos .gasto-total span:last-child { padding-right: var(--f-e2); font-size: var(--f-t-xl); font-variant-numeric: tabular-nums; }
 
-/* --- Margen por categoría: barras --- */
+/* Margen: barras finas y una sola tinta */
 #vista-metricas .num-sec-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--f-e4); flex-wrap: wrap; margin-bottom: var(--f-e2); }
-#vista-metricas .num-sec-cab h4 { margin-bottom: var(--f-e1); }
 #vista-metricas .num-sec-cab .pag-sub { margin: 0; }
-#vista-metricas .num-periodo-texto { color: var(--f-tinta-2); font-weight: 500; }
-#vista-metricas .num-periodos { display: inline-flex; gap: var(--f-e1); padding: var(--f-e1); border: 1px solid var(--f-linea); border-radius: var(--f-r-m); background: var(--f-hundido); }
-#vista-metricas .num-chip { min-height: var(--f-toque); padding: 0 var(--f-e4); border: 0; border-radius: var(--f-r-s); background: none; color: var(--f-tinta-2); font: inherit; font-size: var(--f-t-s); font-weight: 600; cursor: pointer; transition: background var(--f-rapido) ease-out; }
+#vista-metricas .num-periodos { display: inline-flex; gap: var(--f-e4); padding: 0; border: 0; background: transparent; }
+#vista-metricas .num-chip { min-height: var(--f-toque); padding: 0 2px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--f-tinta-3); font: inherit; font-size: var(--f-t-s); font-weight: 600; cursor: pointer; }
 #vista-metricas .num-chip:hover { color: var(--f-tinta); }
-#vista-metricas .num-chip.activa { background: #fff; color: var(--f-verde-texto); font-weight: 700; box-shadow: 0 1px 4px rgba(32, 53, 39, .14); }
-#vista-metricas #tarjeta-margen .margen-fila { display: grid; grid-template-columns: minmax(110px, 200px) minmax(0, 1fr) 64px; align-items: center; gap: var(--f-e4); margin: 0; padding: var(--f-e3) 0; border: 0; border-bottom: 1px solid var(--f-linea); background: transparent; }
-#vista-metricas #tarjeta-margen .margen-fila:first-child { border-top: 1px solid var(--f-linea); }
-#vista-metricas #tarjeta-margen .margen-categoria { color: var(--f-tinta); font-size: var(--f-t-m); font-weight: 600; }
-#vista-metricas #tarjeta-margen .margen-barra { display: block; height: 14px; border-radius: 999px; background: var(--f-hundido); overflow: hidden; }
-#vista-metricas #tarjeta-margen .margen-barra > span { display: block; height: 100%; border-radius: 999px; background: var(--f-verde); transition: width 400ms ease-out; }
+#vista-metricas .num-chip.activa { background: none; box-shadow: none; border-bottom-color: var(--f-tinta); color: var(--f-tinta); font-weight: 700; }
+#vista-metricas #tarjeta-margen .margen-fila { display: grid; grid-template-columns: minmax(110px, 190px) minmax(0, 1fr) 56px; align-items: center; gap: var(--f-e4); margin: 0; padding: var(--f-e2) 0; border: 0; border-bottom: 1px solid var(--f-linea); background: transparent; }
+#vista-metricas #tarjeta-margen .margen-categoria { color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 500; }
+#vista-metricas #tarjeta-margen .margen-barra { display: block; height: 6px; border-radius: 3px; background: var(--f-linea); overflow: hidden; }
+#vista-metricas #tarjeta-margen .margen-barra > span { display: block; height: 100%; border-radius: 3px; background: var(--f-tinta); transition: width 400ms ease-out; }
 #vista-metricas #tarjeta-margen .margen-barra > span.margen-barra-neg { background: var(--f-rojo); }
-#vista-metricas #tarjeta-margen .margen-valor { color: var(--f-tinta); font-size: var(--f-t-l); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+#vista-metricas #tarjeta-margen .margen-valor { color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 650; text-align: right; font-variant-numeric: tabular-nums; }
 #vista-metricas #tarjeta-margen .margen-valor-neg { color: var(--f-rojo); }
-#vista-metricas #tarjeta-margen .margen-nota { margin: var(--f-e3) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-xs); line-height: 1.5; }
-#vista-metricas #tarjeta-margen > .muted { margin: var(--f-e2) 0; padding: var(--f-e4); border-radius: var(--f-r-s); background: var(--f-hundido); color: var(--f-tinta-2); font-size: var(--f-t-s); line-height: 1.5; }
-#vista-metricas #btn-actualizar-numeros:disabled { opacity: .6; cursor: default; }
+#vista-metricas #tarjeta-margen .margen-nota { margin: var(--f-e3) 0 0; color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.5; }
+#vista-metricas #tarjeta-margen > .muted { margin: var(--f-e2) 0; padding: 0; background: transparent; color: var(--f-tinta-2); font-size: var(--f-t-s); line-height: 1.5; }
 
-@media (max-width: 960px) { #vista-metricas .num-grid { grid-template-columns: 1fr; } }
+@media (max-width: 960px) {
+  #vista-metricas .num-grid { grid-template-columns: 1fr; }
+  #vista-metricas .num-grid > .pag-seccion + .pag-seccion { padding-left: 0; border-left: 0; margin-top: var(--f-e5); padding-top: var(--f-e5); border-top: 1px solid var(--f-linea); }
+}
 @media (max-width: 560px) {
   #vista-metricas .app-content-header { padding-top: var(--f-e4); }
   #vista-metricas .pag-cab .pag-btn { width: 100%; min-height: 48px; }
-  #vista-metricas .pag-seccion { padding: var(--f-e4); }
-  #vista-metricas #tarjeta-meta .meta-total { font-size: 2.25rem; }
-  #vista-metricas .num-periodos { width: 100%; }
-  #vista-metricas .num-chip { flex: 1 1 0; }
+  #vista-metricas .pag-pagina { padding: var(--f-e4); }
+  #vista-metricas #tarjeta-meta .meta-total { font-size: 2rem; }
+  #vista-metricas #tarjeta-meta .meta-niveles { grid-template-columns: 1fr; gap: var(--f-e2); }
+  #vista-metricas #tarjeta-meta .meta-niveles span { flex-direction: row; justify-content: space-between; align-items: baseline; }
+  #vista-metricas .num-periodos { width: 100%; justify-content: space-between; }
   #vista-metricas #tarjeta-margen .margen-fila { grid-template-columns: minmax(0, 1fr) 56px; row-gap: var(--f-e2); }
   #vista-metricas #tarjeta-margen .margen-barra { grid-column: 1 / -1; grid-row: 2; }
   #vista-metricas #tarjeta-margen .margen-valor { grid-column: 2; grid-row: 1; }
-  #vista-metricas #tarjeta-gastos-fijos .gasto-input { flex-basis: 130px; width: 130px; }
 }
 @media (prefers-reduced-motion: reduce) { #vista-metricas * { transition: none !important; } }
+
+/* ===== Controles de período y local ===== */
+#vista-metricas .num-controles { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--f-e4) var(--f-e6); margin: var(--f-e6) 0 0; padding-top: var(--f-e5); border-top: 1px solid var(--f-linea); }
+#vista-metricas .num-control { display: flex; flex-direction: column; gap: var(--f-e1); }
+#vista-metricas .num-control.oculto { display: none !important; }
+#vista-metricas .num-control-rotulo { color: var(--f-tinta-2); font-size: var(--f-t-xs); font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+#vista-metricas .num-select { min-height: var(--f-toque); padding: 0 var(--f-e3); border: 1px solid var(--f-linea-fuerte); border-radius: var(--f-r-s); background: #fff; color: var(--f-tinta); font: inherit; font-size: var(--f-t-s); font-weight: 600; }
+#vista-metricas .num-ventas, #vista-metricas .pag-pagina > .pag-seccion + .pag-seccion { margin-top: var(--f-e5); }
+#vista-metricas .pag-pagina > .num-controles + .pag-seccion { margin-top: var(--f-e5); padding-top: 0; border-top: 0; }
+#vista-metricas .pag-pagina > .pag-seccion { padding-top: var(--f-e5); border-top: 1px solid var(--f-linea); }
+#vista-metricas .pag-pagina > .pag-seccion:first-child { padding-top: 0; border-top: 0; }
+#vista-metricas .pag-pagina > .num-grid { margin-top: var(--f-e5); }
+#vista-metricas .num-nota { margin: var(--f-e6) 0 0; padding-top: var(--f-e4); border-top: 1px solid var(--f-linea); color: var(--f-tinta-3); font-size: var(--f-t-xs); line-height: 1.5; }
+
+/* ===== Indicadores del período ===== */
+#vista-metricas .num-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--f-e5); }
+#vista-metricas .num-kpi { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#vista-metricas .num-kpi + .num-kpi { padding-left: var(--f-e5); border-left: 1px solid var(--f-linea); }
+#vista-metricas .num-kpi-rotulo { color: var(--f-tinta-2); font-size: var(--f-t-s); font-weight: 500; }
+#vista-metricas .num-kpi-valor { color: var(--f-tinta); font-size: var(--f-t-num); font-weight: 600; line-height: 1.15; letter-spacing: -.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#vista-metricas .num-kpi-var { color: var(--f-tinta-3); font-size: var(--f-t-xs); }
+#vista-metricas .num-kpi-var-sube { color: var(--f-verde-texto); font-weight: 650; }
+#vista-metricas .num-kpi-var-baja { color: var(--f-rojo); font-weight: 650; }
+
+/* ===== Gráficos de barras (hechos con CSS, livianos) ===== */
+#vista-metricas .graf-vacio { margin: var(--f-e2) 0; padding: var(--f-e5) var(--f-e4); border-radius: var(--f-r-s); background: var(--f-hundido); color: var(--f-tinta-2); font-size: var(--f-t-s); line-height: 1.5; text-align: center; }
+#vista-metricas .graf { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: 200px auto; column-gap: var(--f-e2); }
+#vista-metricas .graf-horas { grid-template-rows: 160px auto; }
+#vista-metricas .graf-eje { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; color: var(--f-tinta-3); font-size: var(--f-t-xs); font-variant-numeric: tabular-nums; line-height: 1; }
+#vista-metricas .graf-area { position: relative; min-width: 0; }
+#vista-metricas .graf-grilla { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+#vista-metricas .graf-grilla i { display: block; height: 0; border-top: 1px solid var(--f-linea); }
+#vista-metricas .graf-barras { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 3px; align-items: stretch; }
+#vista-metricas .graf-fino .graf-barras { gap: 1px; }
+#vista-metricas .graf-barra { position: relative; display: flex; align-items: flex-end; justify-content: center; min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+#vista-metricas .graf-barra > span { display: block; width: 100%; max-width: 40px; min-height: 0; border-radius: 3px 3px 0 0; background: var(--f-tinta); transition: background var(--f-rapido) ease-out; }
+#vista-metricas .graf-barra:hover > span, #vista-metricas .graf-barra:focus-visible > span { background: var(--f-verde); }
+#vista-metricas .graf-barra:focus-visible { outline: 2px solid var(--f-verde); outline-offset: 1px; }
+#vista-metricas .graf-barra-mejor > span { background: var(--f-verde); }
+#vista-metricas .graf-linea { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+#vista-metricas .graf-linea polyline { fill: none; stroke: #D9962B; stroke-width: 2; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+#vista-metricas .graf-x { grid-column: 2; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 3px; margin-top: var(--f-e2); color: var(--f-tinta-3); font-size: var(--f-t-xs); text-align: center; font-variant-numeric: tabular-nums; }
+#vista-metricas .graf-fino + .graf-x, #vista-metricas .graf-fino .graf-x { gap: 1px; }
+#vista-metricas .graf-x span { justify-self: center; width: max-content; white-space: nowrap; overflow: visible; line-height: 1.3; }
+#vista-metricas .graf-x span:first-child { justify-self: start; text-align: left; }
+#vista-metricas .graf-x span:last-child { justify-self: end; text-align: right; }
+#vista-metricas .graf-lectura { min-height: 1.5em; margin: var(--f-e3) 0 0; color: var(--f-tinta); font-size: var(--f-t-s); font-weight: 600; font-variant-numeric: tabular-nums; }
+#vista-metricas .graf-leyenda { display: flex; gap: var(--f-e5); margin: var(--f-e2) 0 0; color: var(--f-tinta-2); font-size: var(--f-t-xs); }
+#vista-metricas .graf-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+#vista-metricas .graf-ley-barra { width: 12px; height: 12px; border-radius: 2px; background: var(--f-tinta); }
+#vista-metricas .graf-ley-linea { width: 18px; height: 0; border-top: 2px dashed #D9962B; }
+
+/* ===== Medios de pago ===== */
+#vista-metricas .medios-barra { display: flex; height: 14px; margin: var(--f-e2) 0 var(--f-e3); border-radius: 7px; background: var(--f-linea); overflow: hidden; }
+#vista-metricas .medios-seg { display: block; height: 100%; }
+#vista-metricas .medios-seg + .medios-seg { border-left: 2px solid var(--f-superficie); }
+#vista-metricas .medios-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto 56px; align-items: center; gap: var(--f-e3); padding: var(--f-e2) 0; border-bottom: 1px solid var(--f-linea); font-size: var(--f-t-s); font-variant-numeric: tabular-nums; }
+#vista-metricas .medios-nombre { display: inline-flex; align-items: center; gap: var(--f-e2); color: var(--f-tinta); font-weight: 500; }
+#vista-metricas .medios-nombre i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+#vista-metricas .medios-monto { color: var(--f-tinta); font-weight: 650; text-align: right; }
+#vista-metricas .medios-pct { color: var(--f-tinta-2); text-align: right; }
+
+@media (max-width: 960px) {
+  #vista-metricas .num-kpis { grid-template-columns: 1fr; gap: var(--f-e4); }
+  #vista-metricas .num-kpi + .num-kpi { padding-left: 0; padding-top: var(--f-e4); border-left: 0; border-top: 1px solid var(--f-linea); }
+}
+@media (max-width: 560px) {
+  #vista-metricas .graf { grid-template-columns: 52px minmax(0, 1fr); grid-template-rows: 170px auto; }
+  #vista-metricas .graf-horas { grid-template-rows: 140px auto; }
+  #vista-metricas .num-controles { align-items: stretch; }
+  #vista-metricas .num-control { width: 100%; }
+  #vista-metricas .num-periodos { width: 100%; justify-content: space-between; }
+  #vista-metricas .num-select { width: 100%; }
+}

@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css">
-<link rel="stylesheet" href="metricas.css?v=num-ui-1">
+<link rel="stylesheet" href="metricas.css?v=num-ui-3">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -139,20 +139,50 @@
           </section>
         </div>
 
-        <section class="pag-seccion num-margen" aria-labelledby="num-margen-titulo">
-          <div class="num-sec-cab">
-            <div>
-              <h4 id="num-margen-titulo">Margen real por categoría <span id="margen-periodo-texto" class="num-periodo-texto">(30 días)</span></h4>
-              <p class="pag-sub">Solo cuentan las ventas con costo real registrado.</p>
-            </div>
-            <div id="margen-periodos" class="num-periodos" role="group" aria-label="Período del margen">
+        <div class="num-controles" role="group" aria-label="Período y local de los gráficos">
+          <div class="num-control">
+            <span class="num-control-rotulo">Período</span>
+            <div id="num-periodos" class="num-periodos">
               <button type="button" class="num-chip" data-dias="7" aria-pressed="false">7 días</button>
               <button type="button" class="num-chip activa" data-dias="30" aria-pressed="true">30 días</button>
               <button type="button" class="num-chip" data-dias="90" aria-pressed="false">90 días</button>
             </div>
           </div>
+          <div id="num-local-caja" class="num-control oculto">
+            <label class="num-control-rotulo" for="num-local">Local</label>
+            <select id="num-local" class="num-select"></select>
+          </div>
+        </div>
+
+        <section class="pag-seccion num-ventas" aria-labelledby="num-ventas-titulo">
+          <h4 id="num-ventas-titulo">Ventas <span class="num-periodo-texto">(30 días)</span></h4>
+          <div id="num-kpis" class="num-kpis"></div>
+        </section>
+
+        <section class="pag-seccion" aria-labelledby="num-dias-titulo">
+          <h4 id="num-dias-titulo">Ventas por día</h4>
+          <div id="graf-dias"><p class="muted">Cargando…</p></div>
+        </section>
+
+        <div class="num-grid">
+          <section class="pag-seccion" aria-labelledby="num-horas-titulo">
+            <h4 id="num-horas-titulo">Ventas por hora del día</h4>
+            <div id="graf-horas"><p class="muted">Cargando…</p></div>
+          </section>
+
+          <section class="pag-seccion" aria-labelledby="num-medios-titulo">
+            <h4 id="num-medios-titulo">Cómo te pagan</h4>
+            <div id="graf-medios"><p class="muted">Cargando…</p></div>
+          </section>
+        </div>
+
+        <section class="pag-seccion num-margen" aria-labelledby="num-margen-titulo">
+          <h4 id="num-margen-titulo">Margen real por categoría <span class="num-periodo-texto">(30 días)</span></h4>
+          <p class="pag-sub">Solo cuentan las ventas con costo real registrado.</p>
           <div id="tarjeta-margen"><p class="muted">Cargando…</p></div>
         </section>
+
+        <p class="num-nota">El período y el local se aplican a las ventas y los gráficos. El margen respeta el período; las metas, el resultado de hoy y los gastos fijos son del negocio completo.</p>
 
       </div>
     </div>
