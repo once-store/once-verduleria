@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#183D2E">
 <title>once · números</title>
 <link rel="preload" href="adminlte.min.css" as="style">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css">
+<link rel="stylesheet" href="metricas.css?v=num-ui-1">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -45,49 +47,49 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="armado.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+            <a href="armado.html" class="nav-link">
               <i class="nav-icon bi bi-basket"></i>
               <p>Pedidos por armar</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="compras.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+            <a href="compras.html" class="nav-link">
               <i class="nav-icon bi bi-box-seam"></i>
               <p>Compras y mermas</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="promociones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+            <a href="promociones.html" class="nav-link">
               <i class="nav-icon bi bi-tags"></i>
               <p>Promociones</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="clientes.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+            <a href="clientes.html" class="nav-link">
               <i class="nav-icon bi bi-people"></i>
               <p>Clientes</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="conversaciones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+            <a href="conversaciones.html" class="nav-link">
               <i class="nav-icon bi bi-whatsapp"></i>
               <p>Conversaciones</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="caja.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+            <a href="caja.html" class="nav-link">
               <i class="nav-icon bi bi-cash-coin"></i>
               <p>Caja</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="metricas.html" class="nav-link active" data-roles="dueno">
+            <a href="metricas.html" class="nav-link active">
               <i class="nav-icon bi bi-graph-up"></i>
               <p>Números</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="horario.html" class="nav-link" data-roles="dueno">
+            <a href="horario.html" class="nav-link">
               <i class="nav-icon bi bi-clock"></i>
               <p>Editar horario</p>
             </a>
@@ -107,42 +109,51 @@
   <!--begin::Main-->
   <main class="app-main">
     <div class="app-content-header">
-      <div class="container-fluid">
-        <h3 class="mb-0">Cómo van los números</h3>
+      <div class="container-fluid pag-cab">
+        <div>
+          <h3>Cómo van los números</h3>
+          <p class="pag-descripcion">Ventas, resultado y márgenes del negocio, con los datos que ya cargaste.</p>
+        </div>
+        <button id="btn-actualizar-numeros" class="pag-btn" type="button">Actualizar</button>
       </div>
     </div>
 
     <div class="app-content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-lg-6 mb-4">
-            <div class="card card-primary card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Meta de hoy</h3></div>
-              <div class="card-body" id="tarjeta-meta"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
+      <div class="container-fluid pag-pagina">
 
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Resultado bruto de hoy</h3></div>
-              <div class="card-body" id="tarjeta-resultado"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
+        <section class="pag-seccion num-meta" aria-labelledby="num-meta-titulo">
+          <h4 id="num-meta-titulo">Meta de hoy</h4>
+          <div id="tarjeta-meta"><p class="muted">Cargando…</p></div>
+        </section>
 
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Margen real por categoría (30 días)</h3></div>
-              <div class="card-body" id="tarjeta-margen"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
+        <div class="num-grid">
+          <section class="pag-seccion" aria-labelledby="num-resultado-titulo">
+            <h4 id="num-resultado-titulo">Resultado bruto de hoy</h4>
+            <div id="tarjeta-resultado"><p class="muted">Cargando…</p></div>
+          </section>
 
-          <div class="col-lg-6 mb-4">
-            <div class="card card-outline h-100">
-              <div class="card-header"><h3 class="card-title">Gastos fijos (estimados, editables)</h3></div>
-              <div class="card-body" id="tarjeta-gastos-fijos"><p class="muted">Cargando…</p></div>
-            </div>
-          </div>
+          <section class="pag-seccion" aria-labelledby="num-gastos-titulo">
+            <h4 id="num-gastos-titulo">Gastos fijos</h4>
+            <p class="pag-sub">Montos estimados por mes. Podés editarlos y se guardan al salir del campo.</p>
+            <div id="tarjeta-gastos-fijos"><p class="muted">Cargando…</p></div>
+          </section>
         </div>
+
+        <section class="pag-seccion num-margen" aria-labelledby="num-margen-titulo">
+          <div class="num-sec-cab">
+            <div>
+              <h4 id="num-margen-titulo">Margen real por categoría <span id="margen-periodo-texto" class="num-periodo-texto">(30 días)</span></h4>
+              <p class="pag-sub">Solo cuentan las ventas con costo real registrado.</p>
+            </div>
+            <div id="margen-periodos" class="num-periodos" role="group" aria-label="Período del margen">
+              <button type="button" class="num-chip" data-dias="7" aria-pressed="false">7 días</button>
+              <button type="button" class="num-chip activa" data-dias="30" aria-pressed="true">30 días</button>
+              <button type="button" class="num-chip" data-dias="90" aria-pressed="false">90 días</button>
+            </div>
+          </div>
+          <div id="tarjeta-margen"><p class="muted">Cargando…</p></div>
+        </section>
+
       </div>
     </div>
   </main>
