@@ -1,0 +1,81 @@
+/* ==========================================================================
+   Compras v2 · retoque de estilos (no se toca el CSS compartido).
+   Se carga DESPUÉS de once-adminlte-overrides.css. La pestaña "Compra" no se modifica.
+   Qué hace: textos de 9–11 px pasan a 12 px y los grises claros a un gris con buen
+   contraste (solo en Merma, Depósito, Maduración y Precio); botones de 44 px;
+   fondo crema como el resto de las pantallas; pestañas completas en el celular.
+   ========================================================================== */
+
+/* --- Fondo crema, igual que Finanzas, Panel, Caja... --- */
+#vista-compras .app-main { background: #F4F1E6; }
+
+/* --- Textos chicos y grises claros: más legibles (generado a partir de tus reglas) --- */
+#vista-compras .tabs .tab { color: #5F6E64; }
+#vista-compras .compras-page-description { color: #5F6E64; }
+#panel-precio .precio-intro-cabecera p { color: #5F6E64; }
+#panel-precio .precio-lotes-count { font-size: 12px; }
+#panel-precio .precio-selector-card label { font-size: 12px; }
+#panel-precio .precio-selector-card .muted { color: #5F6E64; font-size: 12px; }
+#lista-precio-lotes > .muted { color: #5F6E64; }
+#lista-precio-lotes .precio-lote-meta { color: #5F6E64; font-size: 12px; }
+#lista-precio-lotes .precio-lote-ubicacion { font-size: 12px; }
+#lista-precio-lotes .precio-lote-campos label { font-size: 12px; }
+#lista-precio-lotes .precio-lote-campos label .muted { color: #5F6E64; font-size: 12px; }
+#lista-precio-lotes .check-volumen-lote { font-size: 12px; }
+#lista-precio-lotes .margen-lote { color: #5F6E64; font-size: 12px; }
+#lista-precio-lotes .btn-guardar-precio-lote { font-size: 12px; }
+#panel-precio .precio-nota { color: #5F6E64; font-size: 12px; }
+#panel-merma .merma-intro p { color: #5F6E64; }
+#panel-merma .merma-form-head p { color: #5F6E64; font-size: 12px; }
+#panel-merma .merma-form label { font-size: 12px; }
+#panel-merma .merma-unidad { color: #5F6E64; font-size: 12px; }
+#panel-merma .merma-ayuda-motivos { color: #5F6E64; font-size: 12px; }
+#panel-merma .merma-form .btn-primario { font-size: 12px; }
+#panel-merma .merma-form .error { font-size: 12px; }
+#panel-merma .merma-guia > p { color: #5F6E64; font-size: 12px; }
+#panel-merma .merma-motivos strong { font-size: 12px; }
+#panel-merma .merma-motivos small { color: #5F6E64; font-size: 12px; }
+#panel-maduracion .maduracion-eyebrow { font-size: 12px; }
+#panel-maduracion .maduracion-intro { color: #5F6E64; }
+#panel-maduracion .maduracion-count { font-size: 12px; }
+#panel-maduracion .maduracion-lote { color: #5F6E64; font-size: 12px; }
+#panel-maduracion .maduracion-etiqueta { font-size: 12px; }
+#panel-maduracion .maduracion-precio-resumen { color: #5F6E64; font-size: 12px; }
+#panel-maduracion .campo-precio-maduracion,
+#panel-maduracion .maduracion-cantidad label { color: #5F6E64; font-size: 12px; }
+#panel-maduracion .maduracion-acciones button { font-size: 12px; }
+#panel-maduracion .maduracion-cantidad > span { color: #5F6E64; font-size: 12px; }
+#panel-maduracion .maduracion-ayuda { color: #5F6E64; font-size: 12px; }
+#vista-compras .tabs .tab .tab-aviso { font-size: 12px; }
+#panel-deposito .deposito-cabecera p { color: #5F6E64; }
+#panel-deposito .deposito-count { font-size: 12px; }
+#panel-deposito .deposito-fecha { color: #5F6E64; font-size: 12px; }
+#panel-deposito .deposito-cantidad small { color: #5F6E64; font-size: 12px; }
+#panel-deposito .deposito-edad { color: #5F6E64; font-size: 12px; }
+#panel-deposito .deposito-item .btn-pasar-salon { font-size: 12px; }
+#panel-deposito .deposito-nota { color: #5F6E64; }
+
+/* Texto de apoyo genérico dentro de las cuatro pestañas */
+#panel-merma .muted, #panel-deposito .muted, #panel-maduracion .muted, #panel-precio .muted { color: #5F6E64; }
+
+/* --- Botones: zona de toque cómoda (44 px) --- */
+#panel-deposito .btn-pasar-salon,
+#panel-precio .btn-guardar-precio-lote,
+#panel-maduracion .maduracion-acciones button,
+#panel-merma .merma-form .btn-primario { min-height: 44px; }
+
+/* --- Foco visible para quien usa teclado --- */
+#vista-compras .tabs .tab:focus-visible,
+#panel-merma :is(button, input, select):focus-visible,
+#panel-deposito :is(button):focus-visible,
+#panel-maduracion :is(button, input):focus-visible,
+#panel-precio :is(button, input, select):focus-visible { outline: 2px solid #1F6B43; outline-offset: 2px; }
+
+/* --- Celular: las cinco pestañas a la vista (así no se esconde el aviso de Maduración) --- */
+@media (max-width: 560px) {
+  #vista-compras .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow-x: visible; }
+  #vista-compras .tabs .tab { padding: 10px 4px; white-space: normal; line-height: 1.25; text-align: center; border-bottom: 0; margin-bottom: 0; }
+}
+
+/* Íconos de las notas: verde más oscuro para que se lean */
+#panel-deposito .deposito-nota-icono, #panel-maduracion .maduracion-ayuda-icon { color: #1A5C39; }

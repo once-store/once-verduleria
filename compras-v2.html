@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#183D2E">
+<title>once · compras y mermas</title>
+<link rel="preload" href="adminlte.min.css" as="style">
+<link rel="stylesheet" href="adminlte.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-14">
+<link rel="stylesheet" href="compras-v2.css?v=v2-1">
+</head>
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
+
+<div id="vista-compras" class="app-wrapper oculto">
+
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Mostrar/ocultar menú">
+            <i class="bi bi-list"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="admin-v2.html" class="brand-link">
+        <span class="brand-text fw-bold">once · panel</span>
+      </a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2" aria-label="Navegación principal">
+        <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false">
+          <li class="nav-item">
+            <a href="admin-v2.html" class="nav-link">
+              <i class="nav-icon bi bi-speedometer"></i>
+              <p>Panel</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="armado.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-basket"></i>
+              <p>Pedidos por armar</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="compras.html" class="nav-link active" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-box-seam"></i>
+              <p>Compras y mermas <span id="badge-maduracion" class="badge text-bg-warning oculto">0</span></p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="promociones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-tags"></i>
+              <p>Promociones</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="clientes.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-people"></i>
+              <p>Clientes</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="conversaciones.html" class="nav-link" data-roles="dueno,encargado,mostrador">
+              <i class="nav-icon bi bi-whatsapp"></i>
+              <p>Conversaciones</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="metricas.html" class="nav-link" data-roles="dueno">
+              <i class="nav-icon bi bi-graph-up"></i>
+              <p>Números</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="horario.html" class="nav-link" data-roles="dueno">
+              <i class="nav-icon bi bi-clock"></i>
+              <p>Editar horario</p>
+            </a>
+          </li>
+          <li class="nav-item mt-3">
+            <button id="btn-salir" class="nav-link btn btn-link text-start w-100">
+              <i class="nav-icon bi bi-box-arrow-left"></i>
+              <p>Cerrar sesión</p>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <h3 class="mb-0">Compras y mermas</h3>
+        <p class="compras-page-description">Registrá mercadería y costos para mantener el stock al día.</p>
+      </div>
+    </div>
+
+    <div class="app-content">
+      <div class="container-fluid">
+        <div class="card card-primary card-outline">
+          <div class="card-header p-0 border-bottom-0">
+            <div class="tabs">
+              <button class="tab activa" data-tab="compra">Compra</button>
+              <button class="tab" data-tab="merma">Merma</button>
+              <button class="tab" data-tab="deposito">Depósito</button>
+              <button class="tab" data-tab="maduracion">Maduración <span id="maduracion-tab-aviso" class="tab-aviso oculto" role="status"></span></button>
+              <button class="tab" data-tab="precio">Precio</button>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div id="panel-compra" class="tab-panel">
+
+              <section class="compra-card compra-documento">
+                <div class="compra-section-head">
+                  <div><h5>Datos del comprobante</h5><p>El proveedor es opcional. Podés registrar varios productos en una misma compra.</p></div>
+                </div>
+                <div class="cabecera-boleta">
+                  <label>Proveedor <span class="muted">(opcional)</span>
+                    <select id="compra-proveedor"></select>
+                  </label>
+                  <label>Comprobante
+                    <select id="compra-tipo-comprobante">
+                      <option>Sin comprobante</option>
+                      <option>Factura A</option>
+                      <option>Factura B</option>
+                      <option>Factura C</option>
+                      <option>Remito</option>
+                      <option>Nota de crédito</option>
+                    </select>
+                  </label>
+                  <label>Número <span class="muted">(opcional)</span>
+                    <input type="text" id="compra-numero-comprobante" placeholder="0001-00001234">
+                  </label>
+                  <label>Fecha
+                    <input type="date" id="compra-fecha-comprobante">
+                  </label>
+                </div>
+                <div class="compra-quick-links">
+                  <button type="button" id="btn-mostrar-nuevo-proveedor" class="btn-texto btn-enlace-chico">+ Nuevo proveedor</button>
+                  <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
+                </div>
+              </section>
+
+              <p id="factura-existente-aviso" class="aviso-info oculto"></p>
+
+              <div id="form-nuevo-proveedor" class="form-carga oculto">
+                <label>Nombre del proveedor
+                  <input type="text" id="nuevo-proveedor-nombre" placeholder="ej: Distribuidora El Sol">
+                </label>
+                <div class="acciones-pedido">
+                  <button type="button" id="btn-crear-proveedor" class="btn-confirmar">Crear proveedor</button>
+                  <button type="button" id="btn-cancelar-nuevo-proveedor" class="btn-cancelar">Cancelar</button>
+                </div>
+                <p id="nuevo-proveedor-error" class="error oculto"></p>
+              </div>
+
+              <div id="form-nuevo-producto" class="form-carga oculto">
+                <label>Nombre
+                  <input type="text" id="nuevo-producto-nombre" placeholder="ej: Naranja de ombligo">
+                </label>
+                <div class="switch-fila">
+                  <span class="switch-etiqueta">Por peso (kg)</span>
+                  <label class="switch">
+                    <input type="checkbox" id="nuevo-producto-tipo">
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="switch-etiqueta">Por unidad</span>
+                </div>
+                <label>Precio inicial <span class="muted">(lo vas a poder ajustar en la compra)</span>
+                  <input type="number" id="nuevo-producto-precio" min="0" step="1">
+                </label>
+                <label>Perfil de maduración <span class="muted">(cuánto aguanta antes de necesitar oferta)</span>
+                  <select id="nuevo-producto-perfil">
+                    <option value="">Sin definir (no le van a caer ofertas automáticas)</option>
+                    <option value="A">A — rápido (~6 días)</option>
+                    <option value="B">B — muy rápido (~2-3 días)</option>
+                    <option value="C">C — medio (~20 días)</option>
+                    <option value="D">D — medio-largo (~40 días)</option>
+                    <option value="E1">E1 — largo (~20 días, ej. cítricos)</option>
+                    <option value="E2">E2 — muy largo (~60 días, ej. ajo/huevo)</option>
+                  </select>
+                </label>
+                <div class="acciones-pedido">
+                  <button type="button" id="btn-crear-producto" class="btn-confirmar">Crear producto</button>
+                  <button type="button" id="btn-cancelar-nuevo-producto" class="btn-cancelar">Cancelar</button>
+                </div>
+                <p id="nuevo-producto-error" class="error oculto"></p>
+              </div>
+
+              <section class="compra-card compra-producto-card">
+                <div class="compra-section-head">
+                  <div><h5>Producto de esta compra</h5><p>Al registrar un producto, la fila queda lista para cargar el siguiente.</p></div>
+                </div>
+                <p id="compra-stock-actual" class="muted compra-stock oculto"></p>
+
+                <div class="grilla-compra-wrap">
+                  <div class="grilla-compra-header">
+                    <span>codbar</span><span>producto</span><span>cant.</span><span>pcu</span><span>pct</span>
+                    <span>iva</span><span>marg. %</span><span>pvu</span><span>estado</span><span>depósito/salón</span><span>bultos</span>
+                  </div>
+                  <div class="grilla-compra-fila compra-entry" id="fila-compra">
+                    <div class="compra-producto-select">
+                      <label for="compra-producto">Producto</label>
+                      <select class="celda" id="compra-producto" required></select>
+                      <div class="compra-cantidad"><span>Cantidad neta</span><strong class="celda-texto" id="compra-cantidad-out">—</strong></div>
+                    </div>
+                    <input class="celda compra-id-interno" id="compra-codbar" disabled placeholder="—" aria-label="Código de barras">
+                    <div class="compra-costos">
+                      <div class="compra-costo-item">
+                        <label for="compra-pcu">Costo por kg / unidad (PCU)</label>
+                        <input class="celda" id="compra-pcu" type="number" min="0" step="0.01" inputmode="decimal" placeholder="$ por kg / unidad">
+                      </div>
+                      <div class="compra-costo-item">
+                        <label for="compra-pct">Costo total (PCT)</label>
+                        <input class="celda" id="compra-pct" type="number" min="0" step="1" inputmode="decimal" placeholder="Total del producto">
+                      </div>
+                    </div>
+                    <input class="celda compra-id-interno" id="compra-iva" disabled value="N/A" aria-label="IVA">
+                    <div class="compra-precio-sugerido">
+                      <label for="compra-margen">Margen objetivo (%)</label>
+                      <input class="celda" id="compra-margen" type="number" min="0" step="1" placeholder="30">
+                      <div class="compra-precio-resultado"><span>Precio de venta sugerido para este lote</span><strong class="celda-texto" id="compra-pvu-out">—</strong></div>
+                    </div>
+                    <div class="compra-estado-wrap">
+                      <span class="compra-control-label">Avance de madurez</span>
+                      <div class="switch3 celda" id="compra-estado" data-valor="0" tabindex="0" title="Avance de madurez">
+                        <button type="button" class="switch3-opcion activo" data-valor="0" tabindex="-1">Nueva</button>
+                        <button type="button" class="switch3-opcion" data-valor="50" tabindex="-1">Media</button>
+                        <button type="button" class="switch3-opcion" data-valor="90" tabindex="-1">Ya</button>
+                      </div>
+                    </div>
+                    <div class="celda switch-ubicacion" title="Depósito / Salón">
+                      <span class="compra-control-label">Ubicación</span>
+                      <span class="switch-mini-etiqueta">Depósito</span>
+                      <label class="switch">
+                        <input type="checkbox" id="compra-ubicacion">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span class="switch-mini-etiqueta">Salón</span>
+                    </div>
+                    <label id="label-compra-presentacion" class="oculto compra-presentacion">
+                      <span>Presentación</span>
+                      <select id="compra-presentacion"></select>
+                      <span class="muted">Cantidad</span>
+                      <input type="number" id="compra-cantidad-presentacion" min="1" step="1">
+                    </label>
+                    <div class="compra-bultos">
+                      <button type="button" class="celda compra-bultos-toggle" id="btn-toggle-cajones" title="Ver el detalle de cajones/bultos">
+                        <span>Detalle de bultos</span>
+                        <strong><span id="cant-cajones">1</span> bultos <i class="bi bi-chevron-down"></i></strong>
+                      </button>
+                      <div id="bloque-cajones" class="oculto">
+                        <div id="pesos-cajones"></div>
+                        <button type="button" id="btn-agregar-cajon" class="btn-texto btn-enlace-chico">+ Agregar bulto</button>
+                      </div>
+                    </div>
+                  </div>
+                  <p id="compra-error" class="error oculto"></p>
+                </div>
+              </section>
+
+              <p id="compra-pago-ok" class="compra-pago-ok oculto" role="status"></p>
+
+              <div id="resumen-sesion-compra" class="bloque compra-resumen oculto">
+                <p class="subtitulo">Cargado en esta compra</p>
+                <div id="lista-sesion-compra"></div>
+                <div class="t-fila" style="font-weight:800; font-size:16px; margin-top:8px; display:flex; justify-content:space-between;">
+                  <span>Total</span><span id="total-sesion-compra">$0</span>
+                </div>
+                <div id="pago-compra" class="compra-pago">
+                  <p class="compra-pago-titulo">Forma de pago</p>
+                  <label class="compra-pago-forma">
+                    <span>Efectivo</span>
+                    <input type="number" id="pago-efectivo" min="0" step="any" inputmode="decimal" placeholder="0">
+                  </label>
+                  <label id="pago-origen-label" class="compra-pago-forma oculto">
+                    <span>Sale de</span>
+                    <select id="pago-efectivo-origen"><option value="">Caja</option></select>
+                  </label>
+                  <div id="pago-cuentas"></div>
+                  <label class="compra-pago-forma">
+                    <span>A pagar <small>(queda como deuda)</small></span>
+                    <input type="number" id="pago-apagar" min="0" step="any" inputmode="decimal" placeholder="0">
+                  </label>
+                  <label id="pago-vencimiento-label" class="compra-pago-forma oculto">
+                    <span>Vence</span>
+                    <input type="date" id="pago-vencimiento">
+                  </label>
+                  <p id="pago-error" class="error oculto"></p>
+                </div>
+                <button type="button" id="btn-finalizar-carga" class="btn-texto">Finalizar esta compra (boleta terminada)</button>
+              </div>
+            </div>
+
+            <div id="panel-merma" class="tab-panel oculto">
+              <div class="merma-intro">
+                <h4>Registrar una merma</h4>
+                <p>Indicá qué producto se perdió, cuánto y por qué.</p>
+              </div>
+              <div class="merma-grid">
+                <form id="form-merma" class="form-carga merma-form">
+                  <div class="merma-form-head">
+                    <span class="merma-icono" aria-hidden="true">↘</span>
+                    <div>
+                      <h5>Cargar pérdida de stock</h5>
+                      <p>El stock se descontará del lote más urgente.</p>
+                    </div>
+                  </div>
+                  <label>Producto
+                    <select id="merma-producto" required></select>
+                  </label>
+                  <label>Cantidad
+                    <div class="merma-cantidad-wrap">
+                      <input type="number" id="merma-cantidad" min="0.01" step="0.01" inputmode="decimal" required>
+                      <span class="merma-unidad" aria-hidden="true">kg / un.</span>
+                    </div>
+                  </label>
+                  <label>Motivo
+                    <select id="merma-motivo" aria-describedby="merma-ayuda-motivos">
+                      <option value="perecido">Perecido</option>
+                      <option value="vencido">Vencido</option>
+                      <option value="roto">Roto / dañado</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </label>
+                  <p id="merma-ayuda-motivos" class="merma-ayuda-motivos">Perecido: se pasó de maduro o se echó a perder. Vencido: superó la fecha impresa en el envase.</p>
+                  <button type="submit" class="btn-primario">Registrar merma</button>
+                  <p id="merma-error" class="error oculto"></p>
+                </form>
+                <aside class="merma-guia" aria-label="Cómo elegir el motivo">
+                  <span class="merma-guia-icono" aria-hidden="true">↘</span>
+                  <h5>¿Qué motivo elijo?</h5>
+                  <p>Elegí el motivo que mejor describa por qué esa mercadería ya no se puede vender.</p>
+                  <div class="merma-motivos">
+                    <div><span class="merma-punto"></span><span><strong>Perecido</strong><small>Se pasó de maduro, está marchito o se echó a perder.</small></span></div>
+                    <div><span class="merma-punto"></span><span><strong>Vencido</strong><small>Pasó la fecha de vencimiento indicada en el envase.</small></span></div>
+                    <div><span class="merma-punto"></span><span><strong>Roto / dañado</strong><small>Tuvo un golpe, rotura u otro daño físico.</small></span></div>
+                    <div><span class="merma-punto"></span><span><strong>Otro</strong><small>La pérdida se debe a un motivo diferente.</small></span></div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+
+            <div id="panel-deposito" class="tab-panel oculto">
+              <section class="deposito-lista">
+                <header class="deposito-cabecera">
+                  <div>
+                    <h4>Lotes en depósito</h4>
+                    <p>Ordenados desde el ingreso más antiguo.</p>
+                  </div>
+                  <span id="deposito-count" class="deposito-count">0 lotes</span>
+                </header>
+                <div id="lista-deposito"><p class="muted">Cargando…</p></div>
+              </section>
+              <div class="deposito-nota">
+                <span class="deposito-nota-icono">i</span>
+                <span>Al pasarlo a salón, el lote deja de aparecer en esta lista y queda disponible en la ubicación de venta.</span>
+              </div>
+            </div>
+
+            <div id="panel-maduracion" class="tab-panel oculto">
+              <section class="maduracion-panel">
+                <div class="maduracion-panel-head">
+                  <div>
+                    <h4>Atención sugerida para hoy</h4>
+                    <p class="maduracion-intro">Revisá los lotes según su perfil de maduración y el tiempo transcurrido.</p>
+                  </div>
+                  <span id="maduracion-count" class="maduracion-count" aria-live="polite">0 lotes</span>
+                </div>
+                <div id="lista-maduracion"><p class="muted">Cargando…</p></div>
+                <div class="maduracion-ayuda">
+                  <span class="maduracion-ayuda-icon" aria-hidden="true">i</span>
+                  <span>Si todavía no hay un descuento configurado para la edad del lote, podés ajustar el precio desde la pestaña Precio o completar las reglas de maduración.</span>
+                </div>
+              </section>
+            </div>
+
+            <div id="panel-precio" class="tab-panel oculto">
+              <div class="precio-intro">
+                <div class="precio-intro-cabecera">
+                  <div>
+                    <h4>Precios por lote</h4>
+                    <p>Revisá el costo, el precio actual y el margen de cada lote.</p>
+                  </div>
+                  <span id="precio-lotes-count" class="precio-lotes-count" aria-live="polite"></span>
+                </div>
+              </div>
+              <div class="precio-selector-card">
+                <label for="precio-producto">Producto
+                  <select id="precio-producto"></select>
+                </label>
+                <p class="muted">Cada lote mantiene su propio costo y precio.</p>
+              </div>
+              <div id="lista-precio-lotes"><p class="muted">Cargando…</p></div>
+              <p class="precio-nota"><span aria-hidden="true">ⓘ</span> La rebaja por consumo pronto aplica al comprar la cantidad indicada. El precio y el margen se guardan para el lote seleccionado.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="adminlte.min.js"></script>
+<script type="module" src="compras.js"></script>
+<script type="module" src="sidebar-alertas.js"></script>
+</body>
+</html>
