@@ -79,3 +79,6 @@
 
 /* Íconos de las notas: verde más oscuro para que se lean */
 #panel-deposito .deposito-nota-icono, #panel-maduracion .maduracion-ayuda-icon { color: #1A5C39; }
+
+/* --- Recordatorio: lo cargado ya está en el stock, falta registrar el pago --- */
+#vista-compras .compra-recordatorio-pago { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; background: #FBEBC8; color: #6E4700; font-size: 13px; font-weight: 600; line-height: 1.5; }
