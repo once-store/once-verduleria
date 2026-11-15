@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#183D2E">
 <title>once · inventario</title>
 <link rel="preload" href="adminlte.min.css" as="style">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="adminlte.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="once-adminlte-overrides.css?v=compra-ui-14">
-<link rel="stylesheet" href="inventario.css?v=inventario-ui-3">
+<link rel="stylesheet" href="inventario.css?v=inventario-ui-4">
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary" data-bs-theme="light">
 
@@ -116,11 +117,10 @@
   <main class="app-main">
     <div class="app-content-header">
       <div class="container-fluid">
-        <div class="inv-cabecera">
+        <div class="pag-cab">
           <div>
-            <p class="inv-eyebrow">ONCE · STOCK DEL LOCAL</p>
-            <h3 class="mb-0">Inventario</h3>
-            <p class="inv-descripcion">Un vistazo al stock que tenés, dónde está y qué hay en cada lote.</p>
+            <h3>Inventario</h3>
+            <p class="pag-descripcion">Un vistazo al stock que tenés, dónde está y qué hay en cada lote.</p>
           </div>
           <div id="contenedor-selector-local"></div>
         </div>
@@ -162,7 +162,6 @@
           </section>
 
           <div class="inv-nota">
-            <span class="inv-nota-icono">i</span>
             <span>El total se muestra por producto y en su unidad. Desplegá una fila para ver código, ubicación, fecha, costo, precio, estado y margen sobre costo. Los lotes en oferta muestran el precio regular y el margen puede ser negativo o 0%. Dueño y Encargado pueden usar "Hacer control" para contar y ajustar el stock.</span>
           </div>
           <p id="inv-aviso-costos" class="inv-aviso-costos oculto">Costos y margen visibles solo para Dueño y Encargado.</p>
