@@ -332,7 +332,7 @@ function renderComprasSesion() {
     return
   }
   elResumenSesion.classList.remove('oculto')
-  elListaSesion.innerHTML = comprasSesion.map((c, i) => `
+  elListaSesion.innerHTML = `<p class="compra-recordatorio-pago" role="status">Estos productos ya están cargados en el stock. Falta registrar el pago: tocá «Finalizar esta compra».</p>` + comprasSesion.map((c, i) => `
     <div class="t-fila" style="display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--borde);">
       <span>
         <strong>${i + 1}.</strong> ${c.nombre} — ${c.cantidad} ${c.unidad}
@@ -352,6 +352,15 @@ function renderComprasSesion() {
   elTotalSesion.textContent = formatoMoneda(total)
   reiniciarPanelPago()
 }
+
+// Aviso al salir o recargar la página: lo que ya cargaste está en el stock, pero el pago todavía no
+// se registró. El navegador muestra su propio cartel (no se puede cambiar el texto).
+window.addEventListener('beforeunload', (e) => {
+  if (comprasSesion.length > 0) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+})
 
 // Sacar un ítem ya registrado no es solo un cambio visual: ese Enter ya
 // creó una compra + un lote + sus cajones de verdad en la base. Así que
