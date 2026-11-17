@@ -1,3 +1,4 @@
+
 import { supabase, obtenerSesionActual } from './sesion.js'
 
 // Pantalla del repartidor. Lee la lista con la función `obtener_para_repartir` y marca cada
@@ -316,3 +317,4 @@ setInterval(async () => {
 }, REFRESCO_MS)
 
 iniciar()
+
