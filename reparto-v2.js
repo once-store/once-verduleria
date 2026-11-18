@@ -1,17 +1,20 @@
-
 import { supabase, obtenerSesionActual } from './sesion.js'
 
-// Pantalla del repartidor. Lee la lista con la función `obtener_para_repartir` y marca cada
-// entrega con `marcar_entrega` (la base decide el estado y, en efectivo, pasa el pedido a "pagado"
-// recién al entregar). El cierre del día usa `obtener_entregas_hoy`.
+// Pantalla del repartidor. Lee la lista con `obtener_para_repartir` y marca cada entrega con
+// `marcar_entrega` (la base decide el estado y, en efectivo, pasa el pedido a "pagado" recién al
+// entregar). El cierre del día usa `obtener_entregas_hoy`.
 const ROLES_OK = ['dueno', 'encargado', 'mostrador']
 const REFRESCO_MS = 15000
 
 const $ = (id) => document.getElementById(id)
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 const num = (v) => Number(v) || 0
-const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(num(n))
+const miles = (n) => new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(num(n))
+const money = (n) => '$' + miles(n)
+// Precio "de feria": el signo $ chico y levantado, cifras grandes.
+const peso = (n) => `<span class="m"><span class="cur">$</span>${miles(n)}</span>`
 const cant = (it) => `${num(it.cantidad).toLocaleString('es-AR')} ${it.tipo === 'peso' ? 'kg' : 'un.'}`
+const icono = (id) => `<svg class="i" aria-hidden="true"><use href="#i-${id}"/></svg>`
 
 let pedidos = []
 let hoy = null // null = todavía no cargó; [] = sin entregas; 'error' = función no disponible
@@ -19,6 +22,7 @@ let actual = null
 let tab = 'list'
 let ocupado = false
 let sesion = null
+let ultimaCarga = null
 
 // ---------- Datos ----------
 function cobro(p) {
@@ -29,26 +33,26 @@ function cobro(p) {
   if (p.estado === 'pendiente_combinado') return { ef, tr }
   return { ef: 0, tr: 0 }
 }
-const hayCobro = (p) => { const c = cobro(p); return c.ef + c.tr > 0 }
+const totalCobro = (p) => { const c = cobro(p); return c.ef + c.tr }
 
 function textoCobro(p) {
   const c = cobro(p)
   if (c.ef && c.tr) return `${money(c.ef)} en efectivo + ${money(c.tr)} por transferencia`
-  if (c.ef) return `${money(c.ef)} en efectivo`
-  return `${money(c.tr)} por transferencia`
+  if (c.ef) return 'En efectivo'
+  return 'Por transferencia'
 }
 
 const telefonoLimpio = (p) => {
   const d = String(p.telefono_contacto || '').replace(/\D/g, '')
   return d.length === 10 ? d : null
 }
-const mapaGoogle = (p) => (Number.isFinite(Number(p.lat)) && p.lat !== null && p.lng !== null
-  ? `https://www.google.com/maps/dir/?api=1&destination=${Number(p.lat)},${Number(p.lng)}&travelmode=driving` : null)
-const mapaWaze = (p) => (p.lat !== null && p.lng !== null
-  ? `https://waze.com/ul?ll=${Number(p.lat)},${Number(p.lng)}&navigate=yes` : null)
+const tieneMapa = (p) => p.lat !== null && p.lat !== undefined && p.lng !== null && p.lng !== undefined && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))
+const mapaGoogle = (p) => (tieneMapa(p) ? `https://www.google.com/maps/dir/?api=1&destination=${Number(p.lat)},${Number(p.lng)}&travelmode=driving` : null)
+const mapaWaze = (p) => (tieneMapa(p) ? `https://waze.com/ul?ll=${Number(p.lat)},${Number(p.lng)}&navigate=yes` : null)
 
 const enCamino = (p) => p.entrega_estado === 'en_camino'
 const siguiente = () => pedidos.find(enCamino) || pedidos[0] || null
+const lugar = (p) => p.referencia || 'Ubicación en el mapa'
 
 async function cargar() {
   const { data, error } = await supabase.rpc('obtener_para_repartir')
@@ -57,105 +61,115 @@ async function cargar() {
     return false
   }
   pedidos = Array.isArray(data) ? data : []
+  ultimaCarga = new Date()
 
   const r = await supabase.rpc('obtener_entregas_hoy')
   hoy = r.error ? 'error' : (Array.isArray(r.data) ? r.data : [])
   return true
 }
 
+function hora(d) {
+  return d ? d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : ''
+}
+
 // ---------- Pantallas ----------
-function tarjeta(p, i) {
-  const c = cobro(p)
-  const etiqueta = p.entrega_estado === 'no_entregado'
-    ? '<span class="paytag wait">No se pudo entregar</span>'
-    : hayCobro(p)
-      ? `<span class="paytag charge">Cobrar ${money(c.ef + c.tr)}</span>`
-      : '<span class="paytag">✓ Ya pagó</span>'
-  const productos = (p.items || []).slice(0, 2).map((x) => esc(x.nombre)).join(' · ')
-  const mas = (p.items || []).length > 2 ? ` · +${p.items.length - 2}` : ''
-  return `<button class="order ${p === siguiente() ? 'current' : ''}" data-id="${esc(p.pedido_id)}">
-    <div class="orderhead">
-      <div class="stop ${p.entrega_estado === 'no_entregado' ? 'issue' : ''}">${String(i + 1).padStart(2, '0')}</div>
-      <div class="identity"><div class="number">#${esc(p.numero_corto)}</div>
-        <div class="customer">${enCamino(p) ? '🛵 En camino · ' : ''}${esc(p.referencia || 'Ubicación en el mapa')}</div></div>
-      <div class="amount">${money(p.monto_total)}</div>
-    </div>
-    <div class="orderfoot"><span class="items">${productos}${mas}</span>${etiqueta}</div>
+function fila(p, i) {
+  const esSig = p === siguiente()
+  const cobrar = totalCobro(p) > 0
+  const estado = p.entrega_estado === 'no_entregado'
+    ? '<span class="status warn">No se pudo entregar</span>'
+    : cobrar
+      ? `<span class="status cobrar">Cobrar ${esc(money(totalCobro(p)))}</span>`
+      : '<span class="status">Pagado</span>'
+  const productos = (p.items || []).slice(0, 3).map((x) => esc(x.nombre)).join(', ')
+  const mas = (p.items || []).length > 3 ? ` y ${p.items.length - 3} más` : ''
+  return `<button class="order ${esSig ? 'cur' : ''}" data-id="${esc(p.pedido_id)}">
+    <span class="stop ${p.entrega_estado === 'no_entregado' ? 'issue' : ''}">${i + 1}</span>
+    <span class="who"><span class="num">#${esc(p.numero_corto)}${enCamino(p) ? '<span class="chip">En camino</span>' : esSig ? '<span class="chip">Siguiente</span>' : ''}</span>
+      <span class="ref" style="display:-webkit-box">${esc(lugar(p))}</span>
+      <span class="items" style="display:block">${productos}${mas}</span></span>
+    <span class="right">${peso(p.monto_total)}${estado}</span>
   </button>`
 }
 
 function pintarLista() {
-  const porCobrar = pedidos.reduce((a, p) => { const c = cobro(p); return a + c.ef + c.tr }, 0)
-  $('screen-list').innerHTML = `
-    <div class="intro"><div><h2>La vuelta de hoy</h2><p>${pedidos.length} para entregar</p></div><span class="daypill">EN VIVO</span></div>
-    <div class="summary">
-      <div class="metric"><b>${pedidos.length}</b><span>PARA ENTREGAR</span></div>
-      <div class="metric"><b>${money(porCobrar)}</b><span>POR COBRAR</span></div>
-    </div>
-    ${pedidos.length ? pedidos.map(tarjeta).join('') : '<div class="empty">No hay pedidos para repartir ahora. Cuando armes un pedido con delivery, aparece acá.</div>'}
-    <p class="smallnote">Salen los pedidos de WhatsApp con delivery, ya armados y con el pago hecho o por cobrar al entregar. Se actualiza solo cada 15 segundos.</p>`
+  const porCobrar = pedidos.reduce((a, p) => a + totalCobro(p), 0)
+  $('screen-list').innerHTML = pedidos.length
+    ? `<div class="strip"><span><b>${pedidos.length}</b> ${pedidos.length === 1 ? 'pedido para entregar' : 'pedidos para entregar'}</span><span>Por cobrar ${peso(porCobrar)}</span></div>
+       <div class="rows">${pedidos.map(fila).join('')}</div>
+       <p class="fresh">Actualizado a las ${esc(hora(ultimaCarga))} · se renueva solo</p>`
+    : `<div class="empty"><b>No hay pedidos para repartir</b>Cuando armes un pedido de WhatsApp con delivery y esté listo para salir, aparece acá. Los pedidos con pago pendiente en efectivo aparecen con el monto a cobrar.</div>
+       <p class="fresh">Actualizado a las ${esc(hora(ultimaCarga))}</p>`
+}
+
+function botonesMapa(p) {
+  const g = mapaGoogle(p)
+  const w = mapaWaze(p)
+  return `<a class="btn ${g ? '' : 'off'}" ${g ? `href="${esc(g)}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('ext')}Abrir en Google Maps</a>
+    <a class="btn line ${w ? '' : 'off'}" ${w ? `href="${esc(w)}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('ext')}Abrir en Waze</a>`
 }
 
 function pintarSiguiente() {
   const p = siguiente()
   if (!p) {
-    $('screen-next').innerHTML = '<div class="intro"><div><h2>Siguiente parada</h2><p>Sin entregas pendientes</p></div></div><div class="empty">¡Vuelta terminada! No quedan pedidos para entregar.</div>'
+    $('screen-next').innerHTML = '<div class="empty"><b>Vuelta terminada</b>No quedan pedidos para entregar. Si entra uno nuevo, aparece acá.</div>'
     return
   }
-  const g = mapaGoogle(p)
-  const w = mapaWaze(p)
   $('screen-next').innerHTML = `
-    <div class="intro"><div><h2>Siguiente parada</h2><p>${pedidos.length} en total</p></div><span class="daypill">${enCamino(p) ? 'EN CAMINO' : 'POR SALIR'}</span></div>
-    <div class="routeinfo"><div class="stop">${pedidos.indexOf(p) + 1}</div>
-      <div style="flex:1;min-width:0"><b>Pedido #${esc(p.numero_corto)}</b><small>${esc(p.referencia || 'Ubicación en el mapa')}</small></div>
-      <b>${money(p.monto_total)}</b></div>
-    ${hayCobro(p) ? `<div class="collect">Cobrar ${money(cobro(p).ef + cobro(p).tr)}<small>${esc(textoCobro(p))}</small></div>` : ''}
-    <a class="btn ${g ? '' : 'off'}" ${g ? `href="${esc(g)}" target="_blank" rel="noopener"` : ''}>↗ Abrir en Google Maps</a>
-    <div class="mapbuttons">
-      <a class="btn secondary ${w ? '' : 'off'}" ${w ? `href="${esc(w)}" target="_blank" rel="noopener"` : ''}>Abrir en Waze</a>
-      <button class="btn secondary" data-id="${esc(p.pedido_id)}" data-ir="detalle">Ver entrega →</button>
+    <div class="next-card">
+      <span class="stop" style="background:var(--accent);border-color:var(--accent);color:var(--on-accent)">${pedidos.indexOf(p) + 1}</span>
+      <span class="who"><span class="num">Pedido #${esc(p.numero_corto)}</span><span class="ref" style="display:-webkit-box">${esc(lugar(p))}</span></span>
+      <span class="right">${peso(p.monto_total)}</span>
     </div>
-    <p class="smallnote">El orden es el de llegada de los pedidos. El mapa con la ruta completa llega en una próxima etapa.</p>`
+    ${totalCobro(p) ? `<div class="cobrar-box"><span>Cobrar al entregar · ${esc(textoCobro(p))}</span>${peso(totalCobro(p))}</div>` : '<div class="paid-box">' + icono('check') + 'Ya está pagado</div>'}
+    <div class="next-actions">
+      ${botonesMapa(p)}
+      <button class="btn line" data-id="${esc(p.pedido_id)}" data-ir="detalle">Ver el pedido</button>
+    </div>
+    <p class="note">El orden es el de llegada de los pedidos. El mapa con la ruta completa llega en una próxima etapa.</p>`
 }
 
 function pintarDetalle() {
   const p = pedidos.find((x) => x.pedido_id === actual)
   if (!p) { mostrar('list'); return }
   const tel = telefonoLimpio(p)
-  const g = mapaGoogle(p)
-  const w = mapaWaze(p)
-  const c = cobro(p)
-  const total = c.ef + c.tr
+  const total = totalCobro(p)
+  const estadoTxt = enCamino(p) ? 'En camino' : p.entrega_estado === 'no_entregado' ? 'No se pudo entregar la última vez' : 'Todavía no salió'
   $('screen-detail').innerHTML = `
-    <button class="back" id="volver">← Volver a la vuelta</button>
-    <div class="details-head"><div class="stop ${p.entrega_estado === 'no_entregado' ? 'issue' : ''}">${pedidos.indexOf(p) + 1}</div>
-      <div class="identity"><div class="number">#${esc(p.numero_corto)}</div><div class="customer">${enCamino(p) ? '🛵 En camino' : p.entrega_estado === 'no_entregado' ? 'No se pudo entregar' : 'Por salir'}</div></div>
-      <div class="amount">${money(p.monto_total)}</div></div>
-    <div class="address"><span>⌖</span><div><strong>${esc(p.referencia || 'Ubicación en el mapa')}</strong><small>La Rioja${num(p.costo_envio) ? ` · envío ${money(p.costo_envio)} incluido` : ''}</small></div></div>
-    <div class="mapbuttons"><a class="btn ${g ? '' : 'off'}" style="margin:0" ${g ? `href="${esc(g)}" target="_blank" rel="noopener"` : ''}>↗ Google Maps</a>
-      <a class="btn secondary ${w ? '' : 'off'}" style="margin:0" ${w ? `href="${esc(w)}" target="_blank" rel="noopener"` : ''}>Waze</a></div>
-    <div class="detailbox" style="margin-top:10px"><h3>Pedido · ${(p.items || []).length} productos</h3>
-      ${(p.items || []).map((x) => `<div class="itemrow"><span>${esc(x.nombre)}</span><span>${esc(cant(x))}</span></div>`).join('')}
-      ${num(p.costo_envio) ? `<div class="itemrow"><span>Envío</span><span>${money(p.costo_envio)}</span></div>` : ''}
-      <div class="totalrow"><span>Total del pedido</span><span>${money(p.monto_total)}</span></div>
-      ${total ? `<div class="collect">Cobrar ${money(total)}<small>${esc(textoCobro(p))}</small></div>` : '<div class="paytag" style="margin-top:8px;display:inline-block">✓ Ya pagó</div>'}
+    <button class="back" id="volver">${icono('back')}Volver a la lista</button>
+    <div class="head">
+      <span class="stop ${p.entrega_estado === 'no_entregado' ? 'issue' : ''}">${pedidos.indexOf(p) + 1}</span>
+      <span class="who"><span class="num">#${esc(p.numero_corto)}</span><span class="items" style="display:block">${esc(estadoTxt)}</span></span>
+      <span class="right">${peso(p.monto_total)}</span>
     </div>
-    <div class="contactrow">
-      <a class="btn secondary ${tel ? '' : 'off'}" ${tel ? `href="tel:+549${tel}"` : ''}>☎ Llamar</a>
-      <a class="btn secondary ${tel ? '' : 'off'}" ${tel ? `href="https://wa.me/549${tel}" target="_blank" rel="noopener"` : ''}>◉ WhatsApp</a>
+    ${total
+      ? `<div class="cobrar-box" style="margin-top:0"><span>Cobrar al entregar · ${esc(textoCobro(p))}</span>${peso(total)}</div>`
+      : `<div class="paid-box" style="margin-top:0">${icono('check')}Ya está pagado, no cobres nada</div>`}
+    <div class="where">${icono('pin')}<div><b>${esc(lugar(p))}</b><small>La Rioja${num(p.costo_envio) ? ` · envío ${esc(money(p.costo_envio))} incluido` : ''}</small></div></div>
+    <div class="block"><div class="pair" style="margin-top:2px">
+      <a class="btn ${mapaGoogle(p) ? '' : 'off'}" ${mapaGoogle(p) ? `href="${esc(mapaGoogle(p))}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('ext')}Maps</a>
+      <a class="btn line ${mapaWaze(p) ? '' : 'off'}" ${mapaWaze(p) ? `href="${esc(mapaWaze(p))}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('ext')}Waze</a></div></div>
+    <div class="block"><h3>${(p.items || []).length === 1 ? '1 producto' : (p.items || []).length + ' productos'}</h3>
+      ${(p.items || []).map((x) => `<div class="line-item"><span>${esc(x.nombre)}</span><span>${esc(cant(x))}</span></div>`).join('')}
+      ${num(p.costo_envio) ? `<div class="line-item"><span>Envío</span><span>${esc(money(p.costo_envio))}</span></div>` : ''}
+      <div class="total"><span>Total del pedido</span>${peso(p.monto_total)}</div></div>
+    <div class="contact pair">
+      <a class="btn line ${tel ? '' : 'off'}" ${tel ? `href="tel:+549${tel}"` : 'aria-disabled="true"'}>${icono('phone')}Llamar</a>
+      <a class="btn line ${tel ? '' : 'off'}" ${tel ? `href="https://wa.me/549${tel}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('chat')}WhatsApp</a>
     </div>
-    ${tel ? '' : '<p class="smallnote">Este cliente no dejó un teléfono de contacto. Escribile desde el chat del bot.</p>'}
-    <div class="actionstack">
-      ${enCamino(p) ? '' : '<button class="btn secondary" data-marcar="en_camino">🛵 Salí con este pedido</button>'}
-      <button class="btn" data-marcar="entregado">Entregado${total ? ' · cobré ' + money(total) : ''}</button>
-      <button class="btn warn" data-marcar="no_entregado">No estaba / Problema</button>
-    </div>
-    <p class="smallnote">Al marcar "Salí" el cliente recibe un aviso de WhatsApp. En efectivo, el pedido pasa a pagado al marcarlo entregado.</p>`
+    ${tel ? '' : '<p class="note">Este cliente no dejó un teléfono de contacto. Escribile desde el chat del bot.</p>'}
+    <div class="actionbar">
+      <button class="btn" data-marcar="entregado">${icono('check')}Entregado${total ? ' y cobré ' + esc(money(total)) : ''}</button>
+      <div class="pair">
+        ${enCamino(p) ? '<span></span>' : `<button class="btn line" data-marcar="en_camino">${icono('moto')}Salí</button>`}
+        <button class="btn danger" data-marcar="no_entregado">No estaba</button>
+      </div>
+    </div>`
 }
 
 function pintarCierre() {
   if (hoy === 'error') {
-    $('screen-close').innerHTML = '<div class="intro"><div><h2>Cierre del día</h2></div></div><div class="empty">El resumen del día todavía no está disponible.</div>'
+    $('screen-close').innerHTML = '<div class="empty"><b>Resumen del día no disponible</b>No se pudo leer el resumen de hoy. Probá de nuevo en un rato.</div>'
     return
   }
   const lista = hoy || []
@@ -165,20 +179,20 @@ function pintarCierre() {
   const efectivo = hechas.filter((e) => ['efectivo', 'combinado'].includes(e.metodo_pago)).reduce((a, e) => a + num(e.monto_efectivo), 0)
   const transf = hechas.filter((e) => String(e.estado).startsWith('pendiente')).reduce((a, e) => a + num(e.monto_transferencia), 0)
   const parte = hechas.reduce((a, e) => a + num(e.pago_repartidor), 0)
-  $('screen-close').innerHTML = `
-    <div class="intro"><div><h2>Cierre del día</h2><p>Entregas de hoy</p></div><span class="daypill">HOY</span></div>
-    <div class="closehero"><div class="eyebrow">Entregas hechas</div><strong>${hechas.length} <span style="font-size:18px">/ ${lista.length}</span></strong>
-      <span>${abiertas.length} pendientes${problemas.length ? ' · ' + problemas.length + ' con problema' : ''}</span></div>
-    <div class="closegrid">
-      <div class="closecard"><span>EFECTIVO PARA ENTREGAR EN CAJA</span><strong>${money(efectivo)}</strong></div>
-      <div class="closecard"><span>TRANSFERENCIAS POR CONFIRMAR</span><strong>${money(transf)}</strong></div>
-      <div class="closecard"><span>TU PARTE DE LOS ENVÍOS</span><strong>${money(parte)}</strong></div>
-      <div class="closecard"><span>ENTREGAS CON PROBLEMA</span><strong>${problemas.length}</strong></div>
-    </div>
-    <p class="smallnote">El efectivo cobrado se entrega en la caja del local. Las transferencias las confirma el local en el panel.</p>`
+  $('screen-close').innerHTML = lista.length
+    ? `<dl class="ledger">
+        <div class="key"><dt>Efectivo para entregar en caja</dt><dd>${peso(efectivo)}</dd></div>
+        <div><dt>Entregas hechas</dt><dd>${hechas.length} de ${lista.length}</dd></div>
+        <div><dt>Pendientes</dt><dd>${abiertas.length}</dd></div>
+        <div><dt>Con problema</dt><dd>${problemas.length}</dd></div>
+        <div><dt>Transferencias por confirmar</dt><dd>${peso(transf)}</dd></div>
+        <div><dt>Tu parte de los envíos</dt><dd>${peso(parte)}</dd></div>
+      </dl>
+      <p class="note">El efectivo cobrado se entrega en la caja del local. Las transferencias las confirma el local en el panel.</p>`
+    : '<div class="empty"><b>Todavía no hay entregas hoy</b>Cuando entregues el primer pedido, acá ves el efectivo que tenés que dejar en caja y lo que te corresponde por los envíos.</div>'
 }
 
-const TITULOS = { login: 'Reparto', list: 'Para repartir', next: 'Siguiente parada', detail: 'Detalle de entrega', close: 'Cierre del día' }
+const TITULOS = { login: 'Reparto', list: 'Para repartir', next: 'Siguiente parada', detail: 'Entrega', close: 'Cierre del día' }
 
 function mostrar(pantalla) {
   tab = pantalla
@@ -194,10 +208,12 @@ function mostrar(pantalla) {
 }
 
 function repintar() {
+  const y = $('main').scrollTop
   if (tab === 'list') pintarLista()
   else if (tab === 'next') pintarSiguiente()
   else if (tab === 'detail') pintarDetalle()
   else if (tab === 'close') pintarCierre()
+  $('main').scrollTop = y
 }
 
 // ---------- Acciones ----------
@@ -213,7 +229,7 @@ function toast(texto) {
 async function marcar(estado) {
   const p = pedidos.find((x) => x.pedido_id === actual)
   if (!p || ocupado) return
-  const total = cobro(p).ef + cobro(p).tr
+  const total = totalCobro(p)
   if (estado === 'entregado') {
     const msg = total
       ? `¿Confirmás que entregaste el pedido #${p.numero_corto} y cobraste ${money(total)}?`
@@ -244,10 +260,10 @@ function pantallaLogin(mensaje = '') {
   $('btn-salir').hidden = true
   $('nav').classList.add('off')
   $('screen-login').innerHTML = `
-    <div class="login"><h2>Entrar al reparto</h2><p>Usá el mismo usuario y contraseña del panel de once.</p>
+    <div class="login"><h2>Entrar al reparto</h2><p>Usá el mismo correo y contraseña del panel de once.</p>
       <label for="correo">Correo</label><input id="correo" type="email" autocomplete="username" inputmode="email">
       <label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password">
-      <button class="btn" id="entrar">Entrar</button><div class="err" id="login-error">${esc(mensaje)}</div></div>`
+      <button class="btn" id="entrar">Entrar</button><div class="err" id="login-error" role="alert">${esc(mensaje)}</div></div>`
   mostrar('login')
 }
 
@@ -283,8 +299,8 @@ async function iniciar() {
 $('app').addEventListener('click', (e) => {
   const t = e.target
   if (t.closest('#entrar')) { entrar(); return }
-  const tarjetaEl = t.closest('.order')
-  if (tarjetaEl) { actual = tarjetaEl.dataset.id; mostrar('detail'); return }
+  const filaEl = t.closest('.order')
+  if (filaEl) { actual = filaEl.dataset.id; mostrar('detail'); return }
   const ir = t.closest('[data-ir="detalle"]')
   if (ir) { actual = ir.dataset.id; mostrar('detail'); return }
   if (t.closest('#volver')) { mostrar('list'); return }
@@ -304,11 +320,16 @@ $('btn-salir').addEventListener('click', async () => {
   pantallaLogin()
 })
 
+function iconoTema(oscuro) {
+  $('btn-tema').innerHTML = icono(oscuro ? 'sun' : 'moon')
+}
+iconoTema(document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && window.matchMedia('(prefers-color-scheme: dark)').matches))
+
 $('btn-tema').addEventListener('click', () => {
   const r = document.documentElement
   const oscuro = r.dataset.theme ? r.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
   r.dataset.theme = oscuro ? 'light' : 'dark'
-  $('btn-tema').textContent = oscuro ? '☼' : '☾'
+  iconoTema(!oscuro)
 })
 
 setInterval(async () => {
@@ -317,4 +338,3 @@ setInterval(async () => {
 }, REFRESCO_MS)
 
 iniciar()
-
