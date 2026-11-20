@@ -1,4 +1,5 @@
 import { supabase, obtenerSesionActual } from './sesion.js'
+import { MAPBOX_TOKEN } from './mapa-config.js'
 
 // Pantalla del repartidor. Lee la lista con `obtener_para_repartir` y marca cada entrega con
 // `marcar_entrega` (la base decide el estado y, en efectivo, pasa el pedido a "pagado" recién al
@@ -23,6 +24,12 @@ let tab = 'list'
 let ocupado = false
 let sesion = null
 let ultimaCarga = null
+// Mapa (se carga recién al abrir la pestaña Mapa)
+let local = null // { lat, lng } del local, para que el recorrido salga de ahí
+let mapaCtl = null
+let mapaEstado = 'sin-iniciar' // 'cargando' | 'ok' | 'error'
+let rutaInfo = null
+let seleccion = null // pedido elegido tocando un marcador
 
 // ---------- Datos ----------
 function cobro(p) {
@@ -68,6 +75,11 @@ async function cargar() {
   return true
 }
 
+async function cargarLocal() {
+  const { data, error } = await supabase.from('locales').select('latitud, longitud').not('latitud', 'is', null).not('longitud', 'is', null).order('creado_en').limit(1)
+  if (!error && data && data.length) local = { lat: Number(data[0].latitud), lng: Number(data[0].longitud) }
+}
+
 function hora(d) {
   return d ? d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : ''
 }
@@ -109,13 +121,69 @@ function botonesMapa(p) {
     <a class="btn line ${w ? '' : 'off'}" ${w ? `href="${esc(w)}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('ext')}Abrir en Waze</a>`
 }
 
-function pintarSiguiente() {
-  const p = siguiente()
-  if (!p) {
-    $('screen-next').innerHTML = '<div class="empty"><b>Vuelta terminada</b>No quedan pedidos para entregar. Si entra uno nuevo, aparece acá.</div>'
+const tokenValido = () => typeof MAPBOX_TOKEN === 'string' && /^pk\./.test(MAPBOX_TOKEN) && !/PEGAR/.test(MAPBOX_TOKEN)
+const esOscuro = () => (document.documentElement.dataset.theme
+  ? document.documentElement.dataset.theme === 'dark'
+  : window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+function avisoMapa(texto) {
+  const el = $('mapa-aviso')
+  if (!el) return
+  el.textContent = texto
+  el.hidden = !texto
+}
+
+function paradasConMapa() {
+  return pedidos.map((p, i) => ({ id: p.pedido_id, numero: i + 1, lat: Number(p.lat), lng: Number(p.lng), sig: p === siguiente(), ok: tieneMapa(p) })).filter((x) => x.ok)
+}
+
+function actualizarMapa() {
+  if (!mapaCtl) return
+  const elegido = pedidos.find((x) => x.pedido_id === seleccion) || siguiente()
+  mapaCtl.actualizar({ local, paradas: paradasConMapa(), seleccionada: elegido ? elegido.pedido_id : null })
+}
+
+async function asegurarMapa() {
+  if (mapaEstado !== 'sin-iniciar') return
+  if (!tokenValido()) {
+    mapaEstado = 'error'
+    avisoMapa('El mapa todavía no está activado. Mientras tanto, usá los botones de Google Maps y Waze.')
     return
   }
-  $('screen-next').innerHTML = `
+  mapaEstado = 'cargando'
+  avisoMapa('Cargando mapa…')
+  try {
+    const { crearMapa } = await import('./mapa-reparto.js')
+    mapaCtl = await crearMapa($('mapa'), {
+      token: MAPBOX_TOKEN,
+      oscuro: esOscuro(),
+      onSeleccionar: (id) => { seleccion = id; pintarSiguiente() },
+      onRuta: (r) => { rutaInfo = r; pintarPanelMapa() },
+      onError: (m) => toast(m),
+    })
+    mapaEstado = 'ok'
+    avisoMapa('')
+    actualizarMapa()
+  } catch (e) {
+    mapaEstado = 'error'
+    avisoMapa('No se pudo cargar el mapa: ' + e.message + '. Usá los botones de Google Maps y Waze.')
+  }
+}
+
+function pintarPanelMapa() {
+  const panel = $('mapa-panel')
+  if (!panel) return
+  const p = pedidos.find((x) => x.pedido_id === seleccion) || siguiente()
+  if (!p) {
+    panel.innerHTML = '<div class="empty"><b>Vuelta terminada</b>No quedan pedidos para entregar. Si entra uno nuevo, aparece acá.</div>'
+    return
+  }
+  const sinUbicacion = pedidos.length - paradasConMapa().length
+  const info = rutaInfo && !rutaInfo.aprox
+    ? `Recorrido completo: ${rutaInfo.km.toLocaleString('es-AR', { maximumFractionDigits: 1 })} km · unos ${Math.max(1, Math.round(rutaInfo.min))} min de manejo`
+    : rutaInfo && rutaInfo.aprox ? 'Recorrido aproximado: no se pudo trazar por las calles' : ''
+  panel.innerHTML = `
+    ${info ? `<p class="ruta-info">${esc(info)}</p>` : ''}
     <div class="next-card">
       <span class="stop" style="background:var(--accent);border-color:var(--accent);color:var(--on-accent)">${pedidos.indexOf(p) + 1}</span>
       <span class="who"><span class="num">Pedido #${esc(p.numero_corto)}</span><span class="ref" style="display:-webkit-box">${esc(lugar(p))}</span></span>
@@ -126,7 +194,18 @@ function pintarSiguiente() {
       ${botonesMapa(p)}
       <button class="btn line" data-id="${esc(p.pedido_id)}" data-ir="detalle">Ver el pedido</button>
     </div>
-    <p class="note">El orden es el de llegada de los pedidos. El mapa con la ruta completa llega en una próxima etapa.</p>`
+    ${sinUbicacion ? `<p class="note">${sinUbicacion === 1 ? '1 pedido no tiene ubicación' : sinUbicacion + ' pedidos no tienen ubicación'} y no se ve en el mapa (el cliente escribió la dirección). Está en la lista.</p>` : ''}
+    <p class="note">El orden de las paradas es el de llegada de los pedidos. Tocá un número en el mapa para ver ese pedido.</p>`
+}
+
+function pintarSiguiente() {
+  if (!$('mapa-panel')) {
+    $('screen-next').innerHTML = '<div class="mapa-wrap"><div id="mapa" class="mapa" role="region" aria-label="Mapa de la vuelta"></div><div id="mapa-aviso" class="mapa-aviso" hidden></div></div><div id="mapa-panel"></div>'
+    if (mapaEstado === 'error' || mapaEstado === 'cargando') mapaEstado = 'sin-iniciar'
+  }
+  pintarPanelMapa()
+  asegurarMapa()
+  actualizarMapa()
 }
 
 function pintarDetalle() {
@@ -192,7 +271,7 @@ function pintarCierre() {
     : '<div class="empty"><b>Todavía no hay entregas hoy</b>Cuando entregues el primer pedido, acá ves el efectivo que tenés que dejar en caja y lo que te corresponde por los envíos.</div>'
 }
 
-const TITULOS = { login: 'Reparto', list: 'Para repartir', next: 'Siguiente parada', detail: 'Entrega', close: 'Cierre del día' }
+const TITULOS = { login: 'Reparto', list: 'Para repartir', next: 'Mapa', detail: 'Entrega', close: 'Cierre del día' }
 
 function mostrar(pantalla) {
   tab = pantalla
@@ -204,6 +283,7 @@ function mostrar(pantalla) {
   if (pantalla === 'next') pintarSiguiente()
   if (pantalla === 'detail') pintarDetalle()
   if (pantalla === 'close') pintarCierre()
+  if (pantalla === 'next' && mapaCtl) setTimeout(() => mapaCtl.redimensionar(), 0)
   $('main').scrollTop = 0
 }
 
@@ -291,6 +371,7 @@ async function iniciar() {
   }
   $('btn-salir').hidden = false
   $('nav').classList.remove('off')
+  await cargarLocal()
   await cargar()
   mostrar('list')
 }
@@ -330,6 +411,7 @@ $('btn-tema').addEventListener('click', () => {
   const oscuro = r.dataset.theme ? r.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
   r.dataset.theme = oscuro ? 'light' : 'dark'
   iconoTema(!oscuro)
+  if (mapaCtl) mapaCtl.setOscuro(!oscuro)
 })
 
 setInterval(async () => {

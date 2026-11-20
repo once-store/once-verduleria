@@ -118,6 +118,15 @@ main{flex:1;overflow:auto;padding:0 16px 24px;scrollbar-width:thin;scrollbar-col
 .actionbar{position:sticky;bottom:0;margin:16px -16px -24px;padding:12px 16px calc(12px + env(safe-area-inset-bottom) * 0);background:var(--bg);border-top:1px solid var(--line);display:grid;gap:10px;box-shadow:0 -6px 14px rgba(22,25,26,.06)}
 .actionbar .btn{min-height:58px}
 
+.mapa-wrap{position:relative;height:clamp(250px,44vh,420px);margin-top:4px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.mapa{position:absolute;inset:0}
+.mapa-aviso{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--muted);background:var(--surface);font-size:15px;line-height:1.45;z-index:2}
+.mapa-aviso[hidden]{display:none}
+.pin{width:40px;height:40px;padding:0;border-radius:50%;border:2px solid var(--ink);background:var(--surface);color:var(--ink);font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;display:grid;place-items:center;box-shadow:0 1px 5px rgba(0,0,0,.4)}
+.pin.sig{width:48px;height:48px;background:var(--accent);border-color:var(--surface);color:var(--on-accent);font-size:19px}
+.pin.sel{box-shadow:0 0 0 4px var(--ink)}
+.pin.local{border-radius:12px;background:var(--ink);color:var(--bg)}
+.ruta-info{margin:10px 0 0;color:var(--muted);font-size:14px}
 .next-card{padding:14px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center}
 .next-actions{display:grid;gap:10px;margin-top:16px}
 
@@ -161,6 +170,7 @@ main{flex:1;overflow:auto;padding:0 16px 24px;scrollbar-width:thin;scrollbar-col
   <symbol id="i-moto" viewBox="0 0 24 24"><circle cx="6" cy="17" r="2.5"/><circle cx="18" cy="17" r="2.5"/><path d="M8.5 17h5l2-7h-3M9 10h3M15.5 10l2.5 7"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10l1.5-5h13L20 10M4 10v10h16V10M4 10c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3M10 20v-4h4v4"/></symbol>
 </svg>
 <div class="phone" id="app">
   <header class="top">
@@ -177,7 +187,7 @@ main{flex:1;overflow:auto;padding:0 16px 24px;scrollbar-width:thin;scrollbar-col
   </main>
   <nav class="bottom off" id="nav" aria-label="Navegación principal">
     <button class="navbtn active" data-tab="list"><svg class="i"><use href="#i-list"/></svg>Repartir</button>
-    <button class="navbtn" data-tab="next"><svg class="i"><use href="#i-pin"/></svg>Siguiente</button>
+    <button class="navbtn" data-tab="next"><svg class="i"><use href="#i-pin"/></svg>Mapa</button>
     <button class="navbtn" data-tab="close"><svg class="i"><use href="#i-receipt"/></svg>Cierre</button>
   </nav>
   <div class="toast" id="toast" role="status"></div>
