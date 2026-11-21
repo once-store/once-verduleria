@@ -1,5 +1,4 @@
 import { supabase, obtenerSesionActual } from './sesion.js'
-import { MAPBOX_TOKEN } from './mapa-config.js'
 
 // Pantalla del repartidor. Lee la lista con `obtener_para_repartir` y marca cada entrega con
 // `marcar_entrega` (la base decide el estado y, en efectivo, pasa el pedido a "pagado" recién al
@@ -26,6 +25,7 @@ let sesion = null
 let ultimaCarga = null
 // Mapa (se carga recién al abrir la pestaña Mapa)
 let local = null // { lat, lng } del local, para que el recorrido salga de ahí
+let tokenMapa = null // token público de Mapbox; se lee de la base al entrar, no está en ningún archivo
 let mapaCtl = null
 let mapaEstado = 'sin-iniciar' // 'cargando' | 'ok' | 'error'
 let rutaInfo = null
@@ -75,6 +75,11 @@ async function cargar() {
   return true
 }
 
+async function cargarTokenMapa() {
+  const { data, error } = await supabase.rpc('obtener_token_mapa')
+  tokenMapa = !error && typeof data === 'string' ? data : null
+}
+
 async function cargarLocal() {
   const { data, error } = await supabase.from('locales').select('latitud, longitud').not('latitud', 'is', null).not('longitud', 'is', null).order('creado_en').limit(1)
   if (!error && data && data.length) local = { lat: Number(data[0].latitud), lng: Number(data[0].longitud) }
@@ -121,7 +126,7 @@ function botonesMapa(p) {
     <a class="btn line ${w ? '' : 'off'}" ${w ? `href="${esc(w)}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${icono('ext')}Abrir en Waze</a>`
 }
 
-const tokenValido = () => typeof MAPBOX_TOKEN === 'string' && /^pk\./.test(MAPBOX_TOKEN) && !/PEGAR/.test(MAPBOX_TOKEN)
+const tokenValido = () => typeof tokenMapa === 'string' && /^pk\./.test(tokenMapa)
 const esOscuro = () => (document.documentElement.dataset.theme
   ? document.documentElement.dataset.theme === 'dark'
   : window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -155,7 +160,7 @@ async function asegurarMapa() {
   try {
     const { crearMapa } = await import('./mapa-reparto.js')
     mapaCtl = await crearMapa($('mapa'), {
-      token: MAPBOX_TOKEN,
+      token: tokenMapa,
       oscuro: esOscuro(),
       onSeleccionar: (id) => { seleccion = id; pintarSiguiente() },
       onRuta: (r) => { rutaInfo = r; pintarPanelMapa() },
@@ -372,6 +377,7 @@ async function iniciar() {
   $('btn-salir').hidden = false
   $('nav').classList.remove('off')
   await cargarLocal()
+  await cargarTokenMapa()
   await cargar()
   mostrar('list')
 }
